@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -49,10 +49,9 @@ class AuthController extends Controller
 
         ]);
 
-        return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
+        return redirect()->route('/')->with('success', 'Registration successful. Please log in.');
     }
 
-    // Show the login form
     public function showLoginForm()
     {
         return view('admin.auth.login');
@@ -111,121 +110,81 @@ class AuthController extends Controller
     }
 
 
-
-    // Handle logout
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('status', 'You have been logged out.');
+        return redirect()->route('/')->with('status', 'You have been logged out.');
     }
 
-
-    // Dashboard view - both user and admin
     public function dashboard()
     {
-        echo"sa"; die();
-
-        $purchasesCount = Purchase::count();
-        $brandCount = Brand::count();
-        $salesCount = Sale::count();
-        $productCount = Products::count();
-        $billerCount = Companies::where('group_id', 2)->count();
-
-        // Get sales totals per month (current year), grouped by month number (1-12)
-        $salesMonthly = Sale::select(
-            DB::raw('MONTH(date) as month'),
-            DB::raw('SUM(total_amount) as total')
-        )
-            ->whereYear('date', Carbon::now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-        $purchasesMonthly = Purchase::select(
-            DB::raw('MONTH(date) as month'),
-            DB::raw('SUM(total_amount) as total')
-        )
-            ->whereYear('date', Carbon::now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-        // Initialize all 12 months
-        $salesData = [];
-        $purchasesData = [];
-        $labels = [];
-
-        for ($i = 1; $i <= 12; $i++) {
-            $labels[] = $i; // month number 1–12
-            $monthSales = $salesMonthly->firstWhere('month', $i);
-            $salesData[] = $monthSales ? $monthSales->total : 0;
-
-            $monthPurchase = $purchasesMonthly->firstWhere('month', $i);
-            $purchasesData[] = $monthPurchase ? $monthPurchase->total : 0;
-        }
-
-        $recentBeforSales = Sale::whereDate('date', '>=', Carbon::now()->subMonths(2))
-            ->whereDate('date', '<', Carbon::today())
-            ->sum('total_amount');
-
-        $recentBeforPurchases = Purchase::whereDate('date', '>=', Carbon::now()->subMonth(2))
-            ->whereDate('date', '<', Carbon::today())
-            ->sum('total_amount');
-        // / Get latest 5 sales
-        $recentSales = Sale::whereDate('date', Carbon::today())->orderBy('date', 'desc')->take(1)->get();
-        // Get latest 5 updated products
-        $recentProducts = Products::orderBy('updated_at', 'desc')->take(1)->get();
-
-        // Optional: Low stock alerts (products with quantity < 5)
-        $lowStockProducts = Products::where('stock_quantity', '<', 0)->orderBy('stock_quantity')->take(5)->get();
         $currentUser = auth()->user();
         $ipFromDB = $currentUser->ip_address;
 
 
-        return view('admin.dashboard.main', [
-            'brandCount' => $brandCount,
-            'productCount' => $productCount,
-            'salesCount' => $salesCount,
-            'billerCount' => $billerCount,
-            'ipFromDB' => $ipFromDB,
-            'purchasesCount' => $purchasesCount,
-            'salesLabels' => $labels,
-            'purchasesData' => $purchasesData,
-            'salesData' => $salesData,
-            'recentSales' => $recentSales,
-            'recentBeforSales'  => $recentBeforSales,
-            'recentProducts' => $recentProducts,
-            'recentBeforPurchases'  => $recentBeforPurchases,
-            'lowStockProducts' => $lowStockProducts,
+        return view('admin.dashboard', [
+            'ipFromDB' => $ipFromDB
+    
         ]);
     }
     public function getAlerts()
     {
-        // $today = now()->toDateString();
-
-        // ->orWhere('expiry_date', '<', $today)
         return Products::where('stock_quantity', '<=', -1)->get(['id', 'name', 'stock_quantity']);
     }
 
-    public function getGroups(){
 
-        return DB::table('groups')
-        ->select('id', 'name')
-        ->get();
-    }
-
-    public function show($id)
+    public function edit($id)
     {
-        $group = DB::table('groups')
-            ->where('id', $id)
-            ->first();
+        $user = User::with('profile')->findOrFail($id);
 
-        if (!$group) {
-            abort(404, 'Group not found');
+        return view('admin.profile.edit', compact('user'));
+    }
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'dob' => 'nullable|date',
+            'old_password' => 'nullable|required_with:new_password|string',
+            'new_password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user->name = $request->name;
+        $user->save();
+
+        $profileData = ['dob' => $request->dob];
+
+        if ($request->hasFile('image')) {
+            if ($user->profile && $user->profile->image) {
+                Storage::disk('public')->delete($user->profile->image);
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $profileData['image'] = $image->storeAs('profiles', $imageName, 'public');
         }
 
-        return $group;
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            $profileData
+        );
+
+        if ($request->filled('new_password')) {
+            if (!Hash::check($request->old_password, $user->password)) {
+                return back()->withErrors(['old_password' => 'The current password is incorrect.']);
+            }
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
     }
+
+
 
 }
