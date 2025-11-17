@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
+<html lang="{{ app()->getLocale() }}" data-bs-theme="auto">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    
+    @php
+        $shopInfo = \App\Models\Shop::first();
+    @endphp
+    
+    @if($shopInfo && $shopInfo->logo_shop)
+        <link rel="icon" href="{{ asset('storage/' . $shopInfo->logo_shop) }}" type="image/x-icon">
+    @else
+        <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    @endif
+    
     <title>@yield('title', 'Stock Management')</title>
-
-    <!-- Bootstrap 5.3 CSS -->
-    <link href="{{ asset('assets1/bootstrap.min.css') }}" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-
+    
+    <!-- CSS Files -->
+    <link href="{{ asset('assets/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/DataTables/datatables.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{-- <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet"> --}}
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.min.css" rel="stylesheet">
     
     <style>
@@ -114,7 +120,6 @@
             background-color: var(--hover-bg) !important;
         }
 
-        /* Rest of your existing styles... */
         body {
             min-height: 100vh;
             display: flex;
@@ -448,24 +453,32 @@
         aria-label="Back to top">
         <i class="bi bi-arrow-up fs-5"></i>
     </button>
-
-
-    <!-- Bootstrap 5.3 JS -->
-    <script src="{{ asset('assets1/bootstrap.bundle.min.js') }}"></script>
     
 
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    
+    <script src="{{ asset('assets/jquery-3.7.1.min.js') }}"></script>
+    
+
+    <script src="{{ asset('assets/bootstrap.bundle.min.js') }}"></script>
+    
+    <script src="{{ asset('assets/DataTables/datatables.min.js')}}"></script>
+
+    <!-- 3. DataTables Core (requires jQuery) -->
+    {{-- <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+     --}}
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script>
+     --}}
+    {{-- <script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script> --}}
+
+    <!-- 8. SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -474,16 +487,15 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            $('#selectAll').on('click', function() {
+                $('.Checkbox').prop('checked', $(this).prop('checked'));
+                toggleBulkDeleteButton();
+            });
+       let editorInstance = null;
         document.querySelectorAll('.sidebar .nav-link[data-bs-toggle="collapse"]').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.stopPropagation();
             });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            const offset = now.getTimezoneOffset() * 60000;
-            const localISOTime = new Date(now - offset).toISOString().slice(0, 16);
-            // document.getElementById('date').value = localISOTime;
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -496,6 +508,7 @@
             const currentThemeLabels = document.querySelectorAll('#currentThemeLabel');
             const currentThemeIcons = document.querySelectorAll('.dropdown-toggle-color i');
 
+            // Theme Management
             function setTheme(theme) {
                 let finalTheme = theme;
 
@@ -522,11 +535,11 @@
                 });
             }
 
-            // --- Load Saved Theme ---
+            // Load Saved Theme
             const savedTheme = localStorage.getItem('theme') || 'dark';
             setTheme(savedTheme);
 
-            // --- Dropdown click event ---
+            // Theme dropdown click events
             themeDropdownItems.forEach(item => {
                 item.addEventListener('click', e => {
                     e.preventDefault();
@@ -534,7 +547,8 @@
                     setTheme(selectedTheme);
                 });
             });
-            // --- Sidebar State Persistence ---
+
+            // Sidebar State Persistence
             const savedSidebarState = localStorage.getItem('sidebar-visible');
             if (savedSidebarState === 'true') body.classList.add('sidebar-visible');
 
@@ -548,7 +562,7 @@
                 localStorage.setItem('sidebar-visible', false);
             });
 
-            // --- Auto-close sidebar on mobile when selecting theme ---
+            // Auto-close sidebar on mobile when selecting theme
             const sidebarThemeDropdowns = document.querySelectorAll('.sidebar .dropdown-menu');
             sidebarThemeDropdowns.forEach(dropdown => {
                 dropdown.addEventListener('click', () => {
@@ -558,17 +572,15 @@
                     }
                 });
             });
-        });
 
-
-        document.addEventListener('DOMContentLoaded', () => {
+            // Product Alerts
             const alertList = document.getElementById('alertList');
             const cartBadge = document.getElementById('cartBadge');
 
             fetch('/product-alerts')
                 .then(res => res.json())
                 .then(products => {
-                    alertList.innerHTML = ''; // clear old alerts
+                    alertList.innerHTML = '';
 
                     if (!products.length) {
                         alertList.innerHTML = '<div class="text-center small">Null</div>';
@@ -580,11 +592,9 @@
                     cartBadge.textContent = products.length;
 
                     products.forEach(product => {
-                        // Create clickable alert item linking to product detail page
                         const alertItem = document.createElement('a');
                         alertItem.href = `/products/show/${product.id}`;
-                        alertItem.className =
-                            'dropdown-item d-flex justify-content-between align-items-center';
+                        alertItem.className = 'dropdown-item d-flex justify-content-between align-items-center';
                         alertItem.textContent = product.name;
 
                         const badge = document.createElement('span');
@@ -602,6 +612,7 @@
                 });
         });
 
+        // Back to Top Button
         document.addEventListener('DOMContentLoaded', function() {
             const backToTopBtn = document.getElementById('backToTopBtn');
             const scrollThreshold = 300;
@@ -624,8 +635,6 @@
                     top: 0,
                     behavior: 'smooth'
                 });
-
-                // Hide tooltip after click
                 tooltip.hide();
             }
 
@@ -640,8 +649,89 @@
                     scrollToTop();
                 }
             });
+
+            const descriptionElement = document.querySelector('#description');
+            
+            // if (descriptionElement) {
+            //     ClassicEditor
+            //         .create(descriptionElement, {
+            //             toolbar: {
+            //                 items: [
+            //                     'heading', '|',
+            //                     'bold', 'italic', 'underline', '|',
+            //                     'link', 'bulletedList', 'numberedList', '|',
+            //                     'outdent', 'indent', '|',
+            //                     'blockQuote', 'insertTable', '|',
+            //                     'undo', 'redo'
+            //                 ]
+            //             },
+            //             language: 'en',
+            //             table: {
+            //                 contentToolbar: [
+            //                     'tableColumn',
+            //                     'tableRow',
+            //                     'mergeTableCells'
+            //                 ]
+            //             }
+            //         })
+            //         .then(editor => {
+            //             editorInstance = editor;
+            //             window.descriptionEditor = editor;
+                        
+            //             // Apply initial theme
+            //             applyEditorTheme();
+                        
+            //             // Set up theme observer
+            //             const observer = new MutationObserver((mutations) => {
+            //                 mutations.forEach((mutation) => {
+            //                     if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+            //                         applyEditorTheme();
+            //                     }
+            //                 });
+            //             });
+                        
+            //             observer.observe(document.documentElement, {
+            //                 attributes: true,
+            //                 attributeFilter: ['data-bs-theme']
+            //             });
+            //         })
+            //         .catch(error => {
+            //             console.error('CKEditor initialization error:', error);
+            //         });
+            // }
         });
+
+        // Function to apply theme to CKEditor
+        function applyEditorTheme() {
+            if (!editorInstance) return;
+            
+            const theme = document.documentElement.getAttribute('data-bs-theme');
+            const editorElement = editorInstance.ui.view.element;
+            
+            // Force update CSS custom properties
+            const rootStyles = getComputedStyle(document.documentElement);
+            
+            if (editorElement) {
+                // Update editor container
+                editorElement.style.setProperty('--editor-bg', rootStyles.getPropertyValue('--editor-bg'));
+                editorElement.style.setProperty('--editor-text', rootStyles.getPropertyValue('--editor-text'));
+                editorElement.style.setProperty('--editor-border', rootStyles.getPropertyValue('--editor-border'));
+                editorElement.style.setProperty('--card-bg', rootStyles.getPropertyValue('--card-bg'));
+                editorElement.style.setProperty('--text-color', rootStyles.getPropertyValue('--text-color'));
+                editorElement.style.setProperty('--hover-bg', rootStyles.getPropertyValue('--hover-bg'));
+                editorElement.style.setProperty('--primary-color', rootStyles.getPropertyValue('--primary-color'));
+                editorElement.style.setProperty('--border-color', rootStyles.getPropertyValue('--border-color'));
+                
+                // Force repaint
+                editorElement.style.display = 'none';
+                editorElement.offsetHeight; // Trigger reflow
+                editorElement.style.display = '';
+            }
+        }
+
+
     </script>
-    @yield('scripts')
+    
+    @stack('scripts')
 </body>
 </html>

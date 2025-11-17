@@ -53,9 +53,9 @@
                                 <table class="table table-striped table-bordered rounded-3 align-middle" id="groupsTable">
                                     <thead class="table-primary">
                                         <tr>
-                                            <!-- <th class="py-3"><input type="checkbox" id="selectAll"></th> -->
-                                            <th scope="col" class="py-3"><input type="checkbox" id="selectAll"></th>
-                                            <th class="py-3">Name</th>
+                                            <!-- <th ><input type="checkbox" id="selectAll"></th> -->
+                                            <th scope="col" ><input type="checkbox" id="selectAll"></th>
+                                            <th >Name</th>
                                             <th class="py-3 text-center">Actions</th>
                                         </tr>
                                     </thead>
@@ -177,139 +177,71 @@
 
 @push('scripts')
     <script>
-$(function() {
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-        const table = $('#groupsTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('groups.index') }}",
-        columns: [{
-                data: 'id',
-                name: 'id',
-                render: function(data) {
-                    return `<input type="checkbox" class="Checkbox" value="${data}">`;
-                },
-                orderable: false,
-                searchable: false
-            },
-            {
-                data: 'name',
-                name: 'name'
-            },
-            {
-                data: 'action',
-                orderable: false,
-                searchable: false,
-                className: 'text-center'
-            }
-        ]
-    });
+    const imageBaseUrl = "{{ asset('/storage/images/') }}";
+    const noimage = "{{ asset('noimage.png') }}";
+        $(document).ready(function() {
+            var table = $('#groupsTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [
+                    [10, 20, 30, 50, -1],
+                    [10, 20, 30, 50, "{{ __('messages.all') }}"]
+                ],
+                buttons: [],
+                responsive: true,
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('brands.index') }}",
+                columns: [{
+                        data: 'id',
+                        name: 'id',
+                        render: function(data) {
+                            return `<input type="checkbox" class="brandCheckbox" value="${data}">`;
+                        },
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                language: {
+                    paginate: {
+                        previous: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>',
+                        next: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>'
+                    },
+                    // info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                    lengthMenu: '{{ __('messages.show') }} _MENU_{{ __('messages.entries') }}',
+                    search: '{{ __('messages.search') }}',
+                    emptyTable: "{{ __('messages.no_data_available') }}",
+                    processing: "{{ __('messages.processing') }}",
+                    zeroRecords: "{{ __('messages.no_matching_records') }}",
+                    infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
+                    infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
+                }
+            });
+            // Select/Deselect All Checkboxes
+            $('#selectAll').on('click', function() {
+                $('.brandCheckbox').prop('checked', $(this).prop('checked'));
+                toggleBulkDeleteButton();
+            });
 
-    $('#addGroupBtn').click(function() {
-        $('#createGroupForm')[0].reset();
-        $('#addGroupModal').modal('show');
-    });
+            // Check individual checkboxes
+            $(document).on('change', '.brandCheckbox', function() {
+                toggleBulkDeleteButton();
+            });
 
-    // Create Group
-    $('#createGroupForm').submit(function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: "{{ route('groups.store') }}",
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#addGroupModal').modal('hide');
-                table.ajax.reload();
-                $('#alertsContainer').html(`
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        Group added successfully!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `);
-            },
-            error: function(response) {
-                alert('Error: ' + (response.responseJSON?.message || 'Unable to create'));
-            }
-        });
-    });
-
-    // Edit groups (open modal)
-    $(document).on('click', '.editGroup', function() {
-        const id = $(this).data('id');
-        $.get("{{ url('groups') }}/" + id + "/edit", function(data) {
-            $('#editGroupModal').modal('show');
-            $('#editName').val(data.group.name);
-            $('#editGroupForm').attr('data-id', id);
-        }).fail(function() {
-            alert('Unable to fetch group details.');
-        });
-    });
-
-    // Update groups
-    $('#editGroupForm').submit(function(e) {
-        e.preventDefault();
-        const id = $(this).attr('data-id');
-        $.ajax({
-            url: "{{ url('groups') }}/" + id,
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#editGroupModal').modal('hide');
-                table.ajax.reload();
-                $('#alertsContainer').html(`
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        ${response.message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `);
-            },
-            error: function(response) {
-                alert('Error: ' + (response.responseJSON?.message || 'Unable to update'));
+            // Enable/Disable Bulk Delete Button
+            function toggleBulkDeleteButton() {
+                const anyChecked = $('.brandCheckbox:checked').length > 0;
+                $('#bulkDeleteBtn').prop('disabled', !anyChecked);
             }
         });
-    });
-
-    $('#selectAll').on('click', function() {
-        var isChecked = $(this).prop('checked');
-        $('.Checkbox').prop('checked', isChecked);
-    });
-
-
-
-
-    
-    $(document).on('click', '.deleteGroup', function() {
-        var id = $(this).data('id');
-        $('#deleteGroupForm').attr('action', "{{ url('groups') }}/" + id);
-        $('#deleteGroupModal').modal('show');
-    });
-
-    $('#deleteGroupForm').submit(function(e) {
-        e.preventDefault();
-        var id = $(this).attr('action').split('/').pop();
-        $.ajax({
-            url: "{{ url('groups') }}/" + id,
-            method: 'DELETE',
-            success: function(response) {
-                $('#deleteGroupModal').modal('hide');
-                table.ajax.reload();
-                const successAlert = `
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        Group Delete successfully!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>`;
-                $('#alertsContainer').html(successAlert);
-            },
-            error: function(response) {
-                alert('Error: ' + response.responseJSON.message);
-            }
-        });
-    });
-
-});
     </script>
 @endpush

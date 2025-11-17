@@ -19,7 +19,16 @@ class WarehouseController extends Controller
 
             return DataTables::of($data)
                 ->addColumn('action', function ($row) {
-                    return view('admin.warehouse.partials.actions', compact('row'))->render();
+                    return '
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-sm btn-primary editWarehouse action-btn" data-id="' . $row->id . '">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger deleteWarehouse action-btn" data-id="' . $row->id . '">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                ';
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -50,7 +59,19 @@ class WarehouseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'note'     => 'nullable|string|max:255',
+        ]);
+
+        $warehouse = Warehouses::create($validated);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Warehouse added successfully',
+            'warehouse' => $warehouse
+        ]);
     }
 
     /**

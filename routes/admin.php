@@ -61,8 +61,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('/categories',CategoriesController::class)->except(['show']);
         Route::resource('/sub_category',SubCategoryController::class)->except(['show']);        
         Route::resource('/units',UnitController::class)->except(['show']);
-        Route::resource('warehouse',WarehouseController::class)->except(['show']);
-        Route::resource('qualitys', QualitysController::class)->except(['show']);
+        Route::resource('/warehouse',WarehouseController::class)->except(['show']);
+        Route::resource('/qualitys', QualitysController::class)->except(['show']);
     });
 
 

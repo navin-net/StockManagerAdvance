@@ -211,6 +211,7 @@ return [
     'dark' => 'ងងឹត',
     'light' => 'ពន្លឺ',
     'close' => 'បិទ',
+    'create_sale' => 'បង្កើតការលក់',
     'no_products_available' => 'គ្មានផលិតផលដែលអាចប្រើបាន',
     'purchases_by_month' => 'ទិញតាមខែ',
     'name_unique'      => 'ឈ្មោះនេះត្រូវបានចុះឈ្មោះរួចហើយ។',

@@ -49,7 +49,14 @@ class SalesController extends Controller
     {
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'selling_price')->get();
         // die($products);
-        return view('admin.sales.create', compact('products'));
+        $pageTitle = __('messages.create_sale');
+        $breadcrumbs = [
+            ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+            ['label' => __('messages.sales'), 'url' => route('sales.index'), 'active' => false],
+            ['label' => __('messages.create'), 'url' => '', 'active' => true]
+        ];
+
+        return view('admin.sales.create', compact('pageTitle', 'breadcrumbs','products'));
     }
 
 }

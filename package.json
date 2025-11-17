@@ -6,8 +6,31 @@
         "build": "vite build"
     },
     "devDependencies": {
-        "axios": "^1.6.4",
-        "laravel-vite-plugin": "^1.0.0",
-        "vite": "^5.0.0"
-    }
+        "axios": "^1.13.2",
+        "laravel-vite-plugin": "^1.3.0",
+        "vite": "^6.4.1"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "5.3",
+        "bootstrap-icons": "^1.13.1"
+    },
+    "name": "stockmanageradvance",
+    "version": "1.0.0",
+    "description": "\"# Mart24h\" When you clone a Laravel project from GitHub and it doesn't include the `.env` and `vendor` directories, you can follow these steps to set it up:",
+    "main": "vite.config.js",
+    "directories": {
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/navin-net/StockManagerAdvance.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/navin-net/StockManagerAdvance/issues"
+    },
+    "homepage": "https://github.com/navin-net/StockManagerAdvance#readme"
 }

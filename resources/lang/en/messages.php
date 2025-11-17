@@ -30,6 +30,7 @@ return [
     'search'        => 'Search',
     'show'          => 'Show',
     'entries'       => 'Entries',
+    'create_sale'   => 'Create Sale',
     'to'            => 'From',
     'go'            => 'To',
     'purchase'      => 'Purchase',

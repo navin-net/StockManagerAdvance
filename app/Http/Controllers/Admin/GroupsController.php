@@ -11,7 +11,7 @@ class GroupsController extends Controller
 {
     public function index(Request $request)
     {
-        // if ($request->ajax()) {
+        if ($request->ajax()) {
             $data = Groups::select(['id', 'name']);
 
             return DataTables::of($data)
@@ -35,8 +35,8 @@ class GroupsController extends Controller
                 })
                 ->rawColumns(['action'])
                 ->make(true);
-                die($data);
-        // }
+                // die($data);
+        }
 
         return view('admin.settings.groups.index', [
             'pageTitle' => __('messages.groups_list'),
