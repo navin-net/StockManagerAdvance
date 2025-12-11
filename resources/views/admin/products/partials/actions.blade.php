@@ -9,7 +9,7 @@
       </button>
     </li>
   <li>
-  <a class="dropdown-item" href="{{ url('products/show/' . $row->id) }}">
+  <a class="dropdown-item" href="{{ url('admin/products/show/' . $row->id) }}">
     <i class="bi bi-eye me-2"></i> {{ __('messages.show') }}
   </a>
   </li>

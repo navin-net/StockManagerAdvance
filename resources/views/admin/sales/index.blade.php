@@ -93,78 +93,96 @@
                 </div>
             </div>
         </section>
-
-        <!-- Delete Confirmation Modal -->
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-3 border-0 shadow">
-                    <div class="modal-header border-0 rounded-top-3">
-                        <h5 class="modal-title fw-semibold" id="deleteModalLabel">{{ __('messages.confirm_delete') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{ __('messages.delete_confirm') }}
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
-                            data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                        <form id="deleteForm" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                class="btn btn-danger btn-sm rounded-3">{{ __('messages.delete') }}</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Delete Confirmation Modal -->
-        <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-3 border-0 shadow">
-                    <div class="modal-header border-0 rounded-top-3">
-                        <h5 class="modal-title fw-semibold" id="bulkDeleteModalLabel">
-                            {{ __('messages.confirm_bulk_delete') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{ __('messages.delete_confirm') }}
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
-                            data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                        <button type="button" class="btn btn-danger btn-sm rounded-3"
-                            id="confirmBulkDelete">{{ __('messages.delete') }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 border-0 shadow">
+                <div class="modal-header border-0 rounded-top-3">
+                    <h5 class="modal-title fw-semibold" id="deleteModalLabel">{{ __('messages.confirm_delete') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ __('messages.delete_confirm') }}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm rounded-3">{{ __('messages.delete') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 border-0 shadow">
+                <div class="modal-header border-0 rounded-top-3">
+                    <h5 class="modal-title fw-semibold" id="bulkDeleteModalLabel">
+                        {{ __('messages.confirm_bulk_delete') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ __('messages.delete_confirm') }}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                    <button type="button" class="btn btn-danger btn-sm rounded-3"
+                        id="confirmBulkDelete">{{ __('messages.delete') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Show Sale Modal -->
+    {{-- <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body" id="payment-body">
+                    <div class="text-center p-3">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div> --}}
+
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 border-0 shadow">
+                <div class="modal-header border-0 rounded-top-1">
+                    <h5 class="modal-title fw-semibold" id="paymentModalLabel">Process Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="payment-body">
+                    <div class="text-center p-3">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
 
 
 @endsection
 
-@push('styles')
-    <style>
-        .action-btn {
-            margin: 0 3px;
-        }
-    </style>
-@endpush
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
+        let storePaymentUrl = "{{ route('sales.payment.store') }}"; // POST
 
+        $(document).ready(function() {
             var table = $('#salesTable').DataTable({
-                // dom: 'lBfrtip',
                 pageLength: 10,
                 lengthMenu: [
                     [10, 20, 30, 50, -1],
@@ -193,7 +211,7 @@
                         data: 'customer_id',
                         name: 'customer_id',
                         defaultContent: 'N/A',
-                        searchable: false
+
                     },
                     {
                         data: 'date',
@@ -202,12 +220,12 @@
                     {
                         data: 'items_count',
                         name: 'items_count',
-                        searchable: false
+
                     },
                     {
                         data: 'items_sum_quantity',
                         name: 'items_sum_quantity',
-                        searchable: false
+
                     },
                     {
                         data: 'action',
@@ -231,12 +249,12 @@
                 }
             });
 
-            $(document).on('click', '.show-sale', function () {
+            $(document).on('click', '.show-sale', function() {
                 const id = $(this).data('id');
                 $.ajax({
                     url: '{{ route('sales.show', ['id' => ':id']) }}'.replace(':id', id),
                     method: 'GET',
-                    success: function (response) {
+                    success: function(response) {
                         if (response.error) {
                             $('#alertsContainer').html(
                                 `<div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -261,10 +279,11 @@
                                 </tr>
                             `;
                         });
-                        $('#show-items').html(itemsHtml || '<tr><td colspan="3">No items</td></tr>');
+                        $('#show-items').html(itemsHtml ||
+                            '<tr><td colspan="3">No items</td></tr>');
                         $('#showSaleModal').modal('show');
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         let errorMsg = 'Failed to load sale details. Please try again.';
                         if (xhr.status === 404) errorMsg = 'Sale not found.';
                         else if (xhr.status === 500) errorMsg = 'Server error occurred.';
@@ -280,8 +299,92 @@
 
 
 
+            // -----------------------
+            // 1. Open Payment Modal
+            // -----------------------
+            $(document).on("click", ".payment-sale", function(e) {
+                e.preventDefault();
 
+                let id = $(this).data("id");
 
+                // Reset modal content and Header
+                $('#payment-body').html('<div class="text-center p-3">Loading...</div>');
+                $('#paymentModalLabel').text('Loading...'); // Optional: reset header while loading
+
+                $.ajax({
+                    url: 'sales/' + 'payments/' + id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(res) {
+                        let sale = res.sale;
+
+                        $('#paymentModalLabel').text('Payment for ' + (sale.reference ||'Sale'));
+                        let paymentFormHtml = `
+                        <div style="padding: 20px;">
+                            <form id="paymentForm">
+                                <input type="hidden" name="sale_id" value="${sale.id}">
+                                <div class="mb-2">
+                                    <label>Amount</label>
+                                    <input type="number" name="amount" value="${sale.total_amount}" class="form-control" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label>Payment Method</label>
+                                    <select name="method" id="paymentMethod" class="form-select" required>
+                                        <option value="">Select Method</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Card">Card</option>
+                                        <option value="Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label>Payment Date</label>
+                                    <input type="date" name="date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <button class="btn btn-primary col-12">Save</button>
+                            </form>
+                        </div>
+                        `;
+                        $('#payment-body').html(paymentFormHtml);
+                        $('#paymentModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', status, error);
+                        $('#paymentModalLabel').text('Error'); // Set header to Error
+                        $('#payment-body').html(
+                            '<div class="text-danger p-3">Failed to load payment form. Please try again.</div>'
+                        );
+                    }
+                });
+            }); // -----------------------
+            // 2. Submit Payment Form
+            // -----------------------
+            $(document).on('submit', '#paymentForm', function(e) {
+                e.preventDefault(); // important! prevents the form from doing a normal GET submit
+
+                let form = $(this);
+
+                $.ajax({
+                    url: storePaymentUrl, // match your POST route
+                    type: 'POST', // must be POST
+                    data: form.serialize(),
+                    dataType: 'json',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: res.message,
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                        $('#paymentModal').modal('hide');
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseJSON);
+                    }
+                });
+            });
 
 
 

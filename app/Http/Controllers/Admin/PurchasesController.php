@@ -18,8 +18,8 @@ class PurchasesController extends Controller
                     'purchases.id',
                     'purchases.total_amount',
                     'purchases.date',
-                    DB::raw('COUNT(purchase_items.id) as item_count'),
-                    DB::raw('SUM(purchase_items.quantity) as total_quantity')
+                    DB::raw('COUNT(sma_purchase_items.id) as item_count'),
+                    DB::raw('SUM(sma_purchase_items.quantity) as total_quantity')
                 )
                 ->leftJoin('purchase_items', 'purchases.id', '=', 'purchase_items.purchase_id')
                 ->groupBy('purchases.id', 'purchases.total_amount', 'purchases.date');

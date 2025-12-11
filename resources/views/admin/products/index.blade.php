@@ -86,6 +86,7 @@
                                             <th>{{ __('messages.category') }}</th>
                                             <th>{{ __('messages.subcategory') }}</th>
                                             <th>{{ __('messages.quality') }}</th>
+                                            <th>{{ __('messages.unit') }}</th>
                                             <th>{{ __('messages.stock_quantity') }}</th>
                                             <th>{{ __('messages.cost_price') }}</th>
                                             <th>{{ __('messages.selling_price') }}</th>
@@ -102,7 +103,7 @@
         </section>
 
         <!-- Image Modal -->
-        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     {{-- <div class="modal-header border-0 rounded-top-3">
@@ -264,37 +265,41 @@
     <script>
         $(document).ready(function() {
             let table = $('#productsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+
+                ajax: "{{ route('products.index') }}",
+
                 pageLength: 10,
                 lengthMenu: [
                     [10, 20, 30, 50, -1],
                     [10, 20, 30, 50, "{{ __('messages.all') }}"]
                 ],
-                buttons: [],
-                responsive: true,
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('products.index') }}",
+
                 columns: [{
                         data: 'id',
                         name: 'id',
-                        render: function(data) {
-                            return `<input type="checkbox" class="ProductCheckbox" value="${data}">`;
-                        },
+                        orderable: false,
                         searchable: false,
-                        orderable: false
+                        render: data =>
+                            `<input type="checkbox" class="ProductCheckbox" value="${data}">`
                     },
                     {
                         data: 'image',
                         name: 'image',
                         render: function(data) {
-                            let imageUrl = data ? data : '{{ asset('noimage.png') }}';
+
+                            let imageUrl = data
+                                ? `/storage/${data}`
+                                : `/noimage.png`;
+
                             return `
-            <a href="#" class="image-popup" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="${imageUrl}">
-                <img src="${imageUrl}" width="50" class="img-thumbnail brand-image-thumbnail">
-            </a>`;
+                                <a href="#" class="image-popup" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="${imageUrl}">
+                                    <img src="${imageUrl}" width="50" class="img-thumbnail brand-image-thumbnail">
+                                </a>`;
                         }
                     },
-
 
                     {
                         data: 'name',
@@ -307,25 +312,26 @@
                     {
                         data: 'brand_name',
                         name: 'brand_name',
-                        defaultContent: 'N/A',
+                        defaultContent: 'N/A'
                     },
                     {
                         data: 'category_name',
                         name: 'category_name',
                         defaultContent: 'N/A'
-
                     },
                     {
                         data: 'subcategory_name',
                         name: 'subcategory_name',
                         defaultContent: 'N/A'
-
                     },
                     {
                         data: 'quality_name',
                         name: 'quality_name',
                         defaultContent: 'N/A'
-
+                    },
+                    {
+                        data: 'unit_name',
+                        name: 'unit_name'
                     },
                     {
                         data: 'stock_quantity',
@@ -346,22 +352,37 @@
                         searchable: false
                     }
                 ],
+
                 language: {
                     paginate: {
-                        previous: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>',
-                        next: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>'
+                        previous: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646
+                       a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6
+                       a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            `,
+                        next: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6
+                       a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354
+                       a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            `
                     },
-                    // info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-                    lengthMenu: '{{ __('messages.show') }} _MENU_{{ __('messages.entries') }}',
+                    lengthMenu: '{{ __('messages.show') }} _MENU_ {{ __('messages.entries') }}',
                     search: '{{ __('messages.search') }}',
                     emptyTable: "{{ __('messages.no_data_available') }}",
-                    processing: "{{ __('messages.processing') }}",
-                    zeroRecords: "{{ __('messages.no_matching_records') }}",
-                    infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
-                    infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
+                    processing: "{{ __('messages.processing') }}"
+                    // zeroRecords: "{{ __('messages.no_matching_records') }}",
+                    // infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
+                    // infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
-
 
             $('#selectAll').on('click', function() {
                 var isChecked = $(this).prop('checked');

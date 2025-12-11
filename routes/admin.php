@@ -14,10 +14,11 @@ use App\Http\Controllers\Admin\{
     SubCategoryController,
     WarehouseController,
     QualitysController,
+    CustomerController,
     UnitController
 };
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
     Route::middleware('auth')->get('/', [AuthController::class, 'dashboard'])->name('dashboard');
@@ -37,6 +38,9 @@ Route::prefix('admin')->group(function () {
     Route::post('/sales/bulk-delete', [SalesController::class, 'bulkDelete'])->name('sales.bulkDelete');
     Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
     Route::get('/sales/detail/{id}', [SalesController::class, 'show'])->name('sales.show');
+    Route::get('/sales/payments/{id}', [SalesController::class, 'payments'])->name('sales.payments');
+    Route::post('/sales/payment/store', [SalesController::class, 'storePayment'])->name('sales.payment.store');
+
     //Purchases
     Route::resource('purchases', PurchasesController::class)->except(['show']);
     Route::post('purchases/bulk-delete', [PurchasesController::class, 'bulkDelete'])->name('purchases.bulkDelete');
@@ -54,14 +58,27 @@ Route::prefix('admin')->group(function () {
     Route::get('/billers/{id}/users/edit', [BillerController::class, 'editUser'])
         ->name('billers.users.edit');
     Route::delete('/billers/users/{id}/delete', [BillerController::class, 'deleteUser'])->name('billers.users.delete');
+
+    Route::resource('customers', CustomerController::class)->except(['show']);
+    Route::get('/customers/{id}/users', [CustomerController::class, 'listUsers'])->name('customers.users');
+    Route::get('/customers/{id}/users/add', [CustomerController::class, 'addUser'])
+        ->name('customers.users.add');
+    Route::post('/customers/{id}/users/store', [CustomerController::class, 'storeUser'])
+        ->name('customers.users.store');
+    Route::get('/customers/{id}/users/edit', [CustomerController::class, 'editUser'])
+        ->name('customers.users.edit');
+    Route::delete('/customers/users/{id}/delete', [CustomerController::class, 'deleteUser'])->name('customers.users.delete');
+
+
     // Setting system
     Route::prefix('system_settings')->group(function () {
-        Route::resource('/groups',GroupsController::class)->except(['show']);
-        Route::resource('/brands',BrandController::class)->except(['show']);
-        Route::resource('/categories',CategoriesController::class)->except(['show']);
-        Route::resource('/sub_category',SubCategoryController::class)->except(['show']);        
-        Route::resource('/units',UnitController::class)->except(['show']);
-        Route::resource('/warehouse',WarehouseController::class)->except(['show']);
+        Route::resource('/groups', GroupsController::class)->except(['show']);
+        Route::post('groups/bulkDelete', [GroupsController::class, 'bulkDelete'])->name('groups.bulkDelete');
+        Route::resource('/brands', BrandController::class)->except(['show']);
+        Route::resource('/categories', CategoriesController::class)->except(['show']);
+        Route::resource('/sub_category', SubCategoryController::class)->except(['show']);
+        Route::resource('/units', UnitController::class)->except(['show']);
+        Route::resource('/warehouse', WarehouseController::class)->except(['show']);
         Route::resource('/qualitys', QualitysController::class)->except(['show']);
     });
 

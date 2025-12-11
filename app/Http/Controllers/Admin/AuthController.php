@@ -2,61 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Brand;
-use App\Models\Products;
-use App\Models\Purchase;
-use App\Models\Sale;
-use App\Models\User;
-use App\Models\Companies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Auth, Hash, RateLimiter, Storage};
+use App\Models\{Products, Purchase, Sale, User};
 
 class AuthController extends Controller
 {
-    // Show the registration form
-    public function showRegisterForm()
-    {
-        $groups = DB::table('groups')->select('id', 'name')->get();
-        return view('admin.auth.register', compact('groups'));
-    }
-
-
-
-
-    // Handle user registration
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'group_id' => 'required|exists:groups,id', // validate group
-
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            // 'role_id' => 2, // Default role is 'user'
-            'group_id' => $request->group_id,
-
-        ]);
-
-        return redirect()->route('/')->with('success', 'Registration successful. Please log in.');
-    }
 
     public function showLoginForm()
     {
         return view('admin.auth.login');
     }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -64,7 +21,8 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $key = 'login|' . $request->ip();
+        $loginInput = $request->login;
+        $key = 'login|' . $request->getClientIp() . '|' . $loginInput;
 
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
@@ -75,31 +33,28 @@ class AuthController extends Controller
 
         $loginInput = $request->input('login');
         $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-
-        $credentials = [
-            $field => $loginInput,
-            'password' => $request->input('password'),
-        ];
+        $credentials = [$field => $loginInput,'password' => $request->password];
 
         $remember = $request->has('remember');
 
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-        if ($user->group_id != 1 && $user->group_id != 2){
+            if (!in_array($user->group_id ?? 1, [1])) {
                 Auth::logout();
                 return back()->withErrors([
                     'login' => 'Your account does not have permission to log in.',
                 ])->withInput($request->only('login'));
             }
 
-            $user->ip_address = $request->ip();
+            $user->ip_address = $request->getClientIp();
             $user->save();
 
             RateLimiter::clear($key);
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
+
         }
 
         RateLimiter::hit($key, 180);
@@ -108,8 +63,6 @@ class AuthController extends Controller
             'login' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('login'));
     }
-
-
     public function logout(Request $request)
     {
         Auth::logout();
@@ -118,24 +71,29 @@ class AuthController extends Controller
 
         return redirect()->route('/')->with('status', 'You have been logged out.');
     }
-
     public function dashboard()
     {
         $currentUser = auth()->user();
         $ipFromDB = $currentUser->ip_address;
 
-
+        $productCount = Products::count();
+        $salesCount = Sale::count();
+        $saleTotal = Sale::sum('total_amount');
+        $Purchases = Purchase::count();
+        // die($avg_sales);
         return view('admin.dashboard', [
-            'ipFromDB' => $ipFromDB
-    
+            'ipFromDB' => $ipFromDB,
+            'salesCount' => $salesCount,
+            'saleTotal' => $saleTotal,
+            'avg_sales' => $Purchases,
+            'productCount' => $productCount
+
         ]);
     }
     public function getAlerts()
     {
         return Products::where('stock_quantity', '<=', -1)->get(['id', 'name', 'stock_quantity']);
     }
-
-
     public function edit($id)
     {
         $user = User::with('profile')->findOrFail($id);
@@ -184,7 +142,5 @@ class AuthController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
     }
-
-
 
 }

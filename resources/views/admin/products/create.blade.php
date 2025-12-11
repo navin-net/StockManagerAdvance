@@ -32,7 +32,7 @@
                                     <input type="text" name="name" id="name" class="form-control" required>
                                     <div class="invalid-feedback" id="name_error"></div>
                                 </div>
-                                
+
                             <div class="col-md-6 mb-3">
                                 <label for="code" class="form-label">{{ __('messages.code') }}</label>
                                 <div class="input-group">
@@ -161,7 +161,7 @@
         });
         function generateRandomCode() {
             let prefix = 'P0';
-            let randomNumber = Math.floor(Math.random() * 100000); 
+            let randomNumber = Math.floor(Math.random() * 100000);
             return prefix + String(randomNumber).padStart(5, '0');
         }
         $(document).ready(function() {
@@ -227,9 +227,9 @@
                     processData: false,
                     success: function(response) {
                         $('#createProductForm')[0].reset();
-                        $('#subcategory_id').prop('disabled', true).html(
-                            '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                        );
+                        // $('#subcategory_id').prop('disabled', true).html(
+                        //     '<option value="">{{ __('messages.select_subcategory') }}</option>'
+                        // );
                         window.location.href = response.redirect;
                     },
                     error: function(xhr) {

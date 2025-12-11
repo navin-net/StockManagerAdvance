@@ -2,15 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\Brand;
-use App\Models\Categories;
-use App\Models\ProductImage;
-use App\Models\PurchaseItem;
-use App\Models\Qualitys;
-use App\Models\Units;
-use App\Models\SubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\{Brand, Categories, ProductImage, Qualitys, SubCategory, Units};
 
 class Products extends Model
 {

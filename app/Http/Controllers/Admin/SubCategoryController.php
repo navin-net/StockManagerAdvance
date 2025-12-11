@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Categories;
-use App\Models\SubCategory;
 use Illuminate\Http\Request;
+use App\Models\{Categories, SubCategory};
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -29,20 +28,26 @@ class SubCategoryController extends Controller
                 ->addColumn('action', function ($row) {
                     return '
                         <div class="d-flex gap-2">
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-primary editSubCategory" 
-                                    data-id="' . $row->id . '" 
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary editSubCategory"
+                                    data-id="' . $row->id . '"
                                     title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-danger deleteSubCategory" 
-                                    data-id="' . $row->id . '" 
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger deleteSubCategory"
+                                    data-id="' . $row->id . '"
                                     title="Delete">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     ';
+                })
+                ->filterColumn('sub_category_name', function($query,$keyword){
+                    $query->where('sub_categories.name','like',"%$keyword%");
+                })
+                ->filterColumn('category_name', function($query,$keyword){
+                    $query->where('categories.name','like',"%$keyword%");
                 })
                 ->rawColumns(['action'])
                 ->make(true);

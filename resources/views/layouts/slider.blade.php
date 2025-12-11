@@ -1,6 +1,6 @@
 @php
     $userId = Auth::user()->id;
-    $prefix = 'admin'; 
+    $prefix = 'admin';
 @endphp
 
 <aside class="sidebar">
@@ -23,7 +23,7 @@
                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <div>
                     {{-- <i class="bi bi-flag me-2"></i> --}}
-                    
+
                     <span>{{ app()->getLocale() == 'en' ? __('messages.english') : __('messages.khmer') }}</span>
                 </div>
             </button>
@@ -146,7 +146,7 @@
         {{-- Users / Admin Only --}}
         @if(Auth::user()->group_id == 1)
             @php
-                $isUserNavActive = request()->is($prefix.'/users*') || request()->is($prefix.'/billers*');
+                $isUserNavActive = request()->is($prefix.'/users*') || request()->is($prefix.'/billers*') || request()->is($prefix.'/customers*');
             @endphp
             <div class="mb-2">
                 <a class="nav-link d-flex align-items-center justify-content-between {{ $isUserNavActive ? 'active' : '' }}"
@@ -179,6 +179,11 @@
                         class="nav-link d-flex align-items-center {{ request()->is($prefix.'/billers/create') ? 'active' : '' }}">
                         <i class="bi bi-building-fill-add"></i>
                         <span>{{ __('messages.add_billers') }}</span>
+                    </a>
+                    <a href="{{ url($prefix.'/customers') }}"
+                        class="nav-link d-flex align-items-center {{ request()->is($prefix.'/customers') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i>
+                        <span>{{ __('messages.customers') }}</span>
                     </a>
                 </div>
             </div>

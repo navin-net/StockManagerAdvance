@@ -34,11 +34,11 @@ Route::get('/switch-language/{language}', [LanguageController::class, 'switch'])
 
 
 // Define the GET route and name it 'login'
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); 
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 
 // Define the POST route for submission, but DO NOT name it 'login' again.
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('throttle:3,1'); 
+    ->middleware('throttle:3,1');
     // ->name('login'); <--- REMOVED THIS LINE
 
 

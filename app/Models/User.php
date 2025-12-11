@@ -6,8 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Profile;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\{Companies, Profile};
 
 class User extends Authenticatable
 {
@@ -48,7 +48,6 @@ class User extends Authenticatable
 
     public function groups()
     {
-        // return $this->belongsTo(Groups::class);
         return $this->belongsTo(Groups::class, 'group_id');
 
     }
@@ -57,5 +56,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Profile::class);
     }
-
+    public function company()
+    {
+        return $this->belongsTo(Companies::class);
+    }
 }

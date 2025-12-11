@@ -70,7 +70,7 @@
         </section>
 
         <!-- Add Group Modal -->
-        <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     <div class="modal-header border-0 rounded-top-3">
@@ -97,7 +97,7 @@
 
 
         <!-- Edit Group Modal -->
-        <div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
+        <div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     <div class="modal-header border-0 rounded-top-3">
@@ -125,7 +125,7 @@
 
 
         <div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel"
-            aria-hidden="true">
+            aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     <div class="modal-header border-0  rounded-top-3">
@@ -149,7 +149,7 @@
         </div>
 
         <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel"
-            aria-hidden="true">
+            aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     <div class="modal-header border-0 rounded-top-3">
@@ -190,12 +190,12 @@
                 responsive: true,
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('brands.index') }}",
+                ajax: "{{ route('groups.index') }}",
                 columns: [{
                         data: 'id',
                         name: 'id',
                         render: function(data) {
-                            return `<input type="checkbox" class="brandCheckbox" value="${data}">`;
+                            return `<input type="checkbox" class="Checkbox" value="${data}">`;
                         },
                         orderable: false,
                         searchable: false
@@ -226,22 +226,153 @@
                     infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
-            // Select/Deselect All Checkboxes
-            $('#selectAll').on('click', function() {
-                $('.brandCheckbox').prop('checked', $(this).prop('checked'));
-                toggleBulkDeleteButton();
+
+            $('#addGroupBtn').click(function() {
+                $('#createGroupForm')[0].reset();
+                $('#addGroupModal').modal('show');
             });
 
-            // Check individual checkboxes
-            $(document).on('change', '.brandCheckbox', function() {
-                toggleBulkDeleteButton();
+            // Create Group
+            $('#createGroupForm').submit(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{{ route('groups.store') }}",
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#addGroupModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                Group added successfully!
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + (response.responseJSON?.message || 'Unable to create'));
+                    }
+                });
             });
 
-            // Enable/Disable Bulk Delete Button
-            function toggleBulkDeleteButton() {
-                const anyChecked = $('.brandCheckbox:checked').length > 0;
-                $('#bulkDeleteBtn').prop('disabled', !anyChecked);
-            }
+            const BaseUrl = "/admin/system_settings/groups/";
+
+            // Edit groups (open modal)
+            $(document).on('click', '.editGroup', function() {
+                const id = $(this).data('id');
+                $.get(BaseUrl + id + "/edit", function(data) {
+
+                    $('#editGroupModal').modal('show');
+                    $('#editName').val(data.group.name);
+                    $('#editGroupForm').attr('data-id', id);
+                }).fail(function() {
+                    alert('Unable to fetch group details.');
+                });
+            });
+            // Update groups
+            $('#editGroupForm').submit(function(e) {
+                e.preventDefault();
+                const id = $(this).attr('data-id');
+                $.ajax({
+                    url: BaseUrl + id,
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#editGroupModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + (response.responseJSON?.message || 'Unable to update'));
+                    }
+                });
+            });
+
+            $(document).on('click', '.deleteGroup', function() {
+                var id = $(this).data('id');
+                $('#deleteGroupForm').attr('action', BaseUrl + id);
+                $('#deleteGroupModal').modal('show');
+            });
+
+            $('#deleteGroupForm').submit(function(e) {
+                e.preventDefault();
+                var id = $(this).attr('action').split('/').pop();
+                $.ajax({
+                    url: BaseUrl + id,
+                    method: 'DELETE',
+                    success: function(response) {
+                        $('#deleteGroupModal').modal('hide');
+                        table.ajax.reload();
+                        const successAlert = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                Group Delete successfully!
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        $('#alertsContainer').html(successAlert);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + response.responseJSON.message);
+                    }
+                });
+            });
+
+
+
+            $('#bulkDeleteBtn').on('click', function() {
+                var selectedIds = $('.Checkbox:checked').map(function() { return $(this).val(); }).get();
+
+                if (selectedIds.length > 0) {
+                    $('#bulkDeleteModal .modal-body').text(
+                        `Are you sure you want to delete ${selectedIds.length} selected group(s)?`
+                    );
+                    $('#bulkDeleteModal').modal('show');
+
+                    $('#confirmBulkDeleteBtn').off('click').on('click', function() {
+                        $.ajax({
+                            url: "{{ route('groups.bulkDelete') }}",
+                            method: 'POST',
+                            data: { ids: selectedIds },
+                            success: function(response) {
+                                $('#bulkDeleteModal').modal('hide');
+                                table.ajax.reload();
+                                $('#alertsContainer').html(`
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        ${response.success || 'Selected group(s) deleted successfully!'}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                `);
+                            },
+                            error: function(response) {
+                                alert('Error: ' + (response.responseJSON?.message || 'Unable to delete'));
+                            }
+                        });
+                    });
+                } else {
+                    // alert('Please select at least one group.');
+                    $('#alertsContainer').html(`
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            Please select at least one group.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `);
+                }
+            });
+
+            $(document).on('click','.payment-sale',function(){
+                let id = $(this).data('id');
+                $.get('/sales/' + id + '/payments', function(res){
+                    $("#paymentsContent").html(res);
+                    $("#paymentsModal").modal('show');
+                });
+            });
+
+
+
         });
     </script>
 @endpush

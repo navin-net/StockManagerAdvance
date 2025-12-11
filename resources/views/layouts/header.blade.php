@@ -10,72 +10,55 @@
             </button>
         </div>
 
-        <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center gap-3 desktop-only">
 
-            <!-- POS Icon with Link -->
-            <a href="{{ url('shop') }}" class="d-none d-md-flex align-items-center me-3 px-3 py-1 rounded text-primary" role="button" aria-label="POS" title="POS">
-            <i class="bi bi-stripe"></i></a>
-            <!-- Shop Icon with Link -->
-            <div class="d-flex align-items-center gap-3 desktop-only">
+                        <!-- 🌐 Language Switch -->
+                        <div class="dropdown desktop-only">
+                            <button class="btn nbt-outline-custom d-flex align-items-center" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
+                                    alt="Lang" width="20" height="14">
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
+                                        href="{{ route('language.switch', ['language' => 'en']) }}">
+                                        <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2" width="20" height="14">
+                                        <span>{{ __('messages.english') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
+                                        href="{{ route('language.switch', ['language' => 'km']) }}">
+                                        <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2" width="20" height="14">
+                                        <span>{{ __('messages.khmer') }}</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <!-- 🛍️ Shop Button -->
-                {{-- <div>
-                    <a href="{{ url('shop/banners') }}" class="btn nbt-outline-custom d-flex align-items-center">
-                        <i class="bi bi-shop me-2"></i>
-                        <span>{{ __('messages.shop') }}</span>
-                    </a>
-                </div> --}}
-
-                <!-- 🌞 Theme Toggle -->
-
-
-                <!-- 🌐 Language Switch -->
-                <div class="dropdown desktop-only">
-                    <button class="btn nbt-outline-custom d-flex align-items-center" type="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
-                            alt="Lang" width="20" height="14">
+                    <div class="dropdown desktop-only">
+                    <button class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"
+                        type="button" id="themeDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div>
+                            <i class="bi bi-moon-stars me-2"></i>
+                            <span id="currentThemeLabel">Dark</span>
+                        </div>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    <ul class="dropdown-menu w-100">
                         <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
-                                href="{{ route('language.switch', ['language' => 'en']) }}">
-                                <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2" width="20" height="14">
-                                <span>{{ __('messages.english') }}</span>
+                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="dark">
+                                <i class="bi bi-moon-stars me-2"></i> {{ __('messages.dark') }}
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
-                                href="{{ route('language.switch', ['language' => 'km']) }}">
-                                <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2" width="20" height="14">
-                                <span>{{ __('messages.khmer') }}</span>
+                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="light">
+                                <i class="bi bi-sun me-2"></i> {{ __('messages.light') }}
                             </a>
                         </li>
                     </ul>
                 </div>
-
-            <div class="dropdown desktop-only">
-            <button class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"
-                type="button" id="themeDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
-                <div>
-                    <i class="bi bi-moon-stars me-2"></i>
-                    <span id="currentThemeLabel">Dark</span>
-                </div>
-            </button>
-            <ul class="dropdown-menu w-100">
-                <li>
-                    <a class="dropdown-item d-flex align-items-center" href="#" data-theme="dark">
-                        <i class="bi bi-moon-stars me-2"></i> {{ __('messages.dark') }}
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item d-flex align-items-center" href="#" data-theme="light">
-                        <i class="bi bi-sun me-2"></i> {{ __('messages.light') }}
-                    </a>
-                </li>
-            </ul>
-        </div>
-
                 <!-- ⚠️ Alerts -->
                 <div class="dropdown">
                     <button class="btn btn-outline-danger position-relative" id="cartIcon" data-bs-toggle="dropdown"
@@ -120,7 +103,7 @@
                                 <i class="bi bi-person me-2"></i>{{ __('messages.profile') }}
                             </a>
                         </li>
- 
+
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
