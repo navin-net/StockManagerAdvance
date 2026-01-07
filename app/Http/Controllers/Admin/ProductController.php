@@ -200,7 +200,6 @@ class ProductController extends Controller
         $images = DB::table('product_images')
             ->where('product_id', $id)
             ->pluck('image_review');
-        // return response()->json(['product' => $product,'images'  => $images]);
 
         return view('admin.products.products-detail', [
             'product'      => $product,
@@ -215,8 +214,33 @@ class ProductController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $product      = Products::with(['brand', 'category', 'subCategory', 'quality'])->findOrFail($id);
+        $brands       = DB::table('brands')->select('id', 'name')->get();
+        $categories   = DB::table('categories')->select('id', 'name')->get();
+        $qualities    = DB::table('qualitys')->select('id', 'name')->get();
+        $units       = DB::table('units')->select('id', 'name')->get();
+        $subcategories = DB::table('sub_categories')
+            ->select('id', 'name')
+            ->where('category_id', $product->category_id)
+            ->get();
+        return view('admin.products.edit', [
+            'pageTitle'    => __('messages.edit_product'),
+            'heading'      => __('messages.edit_product'),
+            'product'      => $product,
+            'brands'       => $brands,
+            'categories'   => $categories,
+            'qualities'    => $qualities,
+            'units'       => $units,
+            'subcategories' => $subcategories,
 
-
+            'breadcrumbs' => [
+                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
+                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
+            ]
+        ]);
+    }
 
 
 

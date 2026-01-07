@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
-    protected $fillable = ['supplier_id', 'total_amount', 'date','status'];
+    protected $fillable = [
+        'supplier_id',
+        'total_amount',
+        'date',
+        'status'
+    ];
 
     public function items()
     {
-        return $this->hasMany(PurchaseItem::class);
+        return $this->hasMany(PurchaseItem::class, 'purchase_id');
     }
 }

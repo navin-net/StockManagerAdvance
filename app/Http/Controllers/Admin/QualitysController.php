@@ -19,8 +19,20 @@ class QualitysController extends Controller
             return DataTables::of($data)
                 ->addColumn('action', function ($row) {
                     return '
-                        <button class="btn btn-primary btn-sm editQuality" data-id="' . $row->id . '">Edit</button>
-                        <button class="btn btn-danger btn-sm deleteQuality" data-id="' . $row->id . '">Delete</button>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary editQuality"
+                                data-id="'.$row->id.'"
+                                title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger deleteQuality"
+                                data-id="'.$row->id.'"
+                                title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                     ';
                 })
                 ->rawColumns(['action'])
@@ -33,7 +45,7 @@ class QualitysController extends Controller
             'description' => __('messages.dashboard_welcome'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
-                
+
                 ['label' => __('messages.qualitys'), 'url' => '', 'active' => true],
             ]
         ]);

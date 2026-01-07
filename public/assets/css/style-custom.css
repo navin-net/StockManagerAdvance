@@ -220,18 +220,6 @@ body {
     transform: rotate(15deg);
 }
 
-/* .btn-outline-custom {
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            background-color: transparent;
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
-        }
-
-        .btn-outline-custom:hover {
-            background-color: var(--hover-bg);
-            transform: translateY(-2px);
-        } */
-
 .section-title {
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -349,7 +337,22 @@ table.dataTable.stripe tbody tr.odd {
     background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
+.brand-scroll {
+    overflow-y: auto;
+}
+
+.cart-sidebar {
+    max-height: 100%;
+}
+
 @media (max-width: 992px) {
+    .brand-scroll {
+        height: 760px;
+    }
+    .cart-sidebar {
+        max-height: calc(100vh - 30px);
+        overflow-y: auto;
+    }
     .main-content {
         padding: 1rem;
     }
@@ -402,7 +405,6 @@ table.dataTable.stripe tbody tr.odd {
 .back-to-top:hover {
     transform: translateY(-0.25rem);
 }
-
 
 /* Main product image container */
 .main-image-container {
@@ -508,7 +510,7 @@ table.dataTable.stripe tbody tr.odd {
     padding: 10px 12px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-size: 13px;
     color: var(--text-color);
     word-break: break-all;
@@ -662,6 +664,9 @@ table.dataTable.stripe tbody tr.odd {
 
 /* Mobile styles */
 @media (max-width: 768px) {
+    .search-bar {
+        font-size: 14px;
+    }
     .main-image-container {
         height: 200px;
         padding: 10px;
@@ -699,6 +704,10 @@ table.dataTable.stripe tbody tr.odd {
 
 /* Small mobile styles */
 @media (max-width: 480px) {
+    .product-card img {
+        width: 50px;
+        height: 50px;
+    }
     .main-image-container {
         height: 180px;
         margin: 0 5px;
@@ -748,4 +757,132 @@ table.dataTable.stripe tbody tr.odd {
     .btn {
         transition: none;
     }
+}
+
+/* .footer {
+    font-size: 0.875rem;
+} */
+
+/* Preloader overlay */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-color); /* Use theme background */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Spinner style */
+.loader {
+    border: 8px solid rgba(0, 0, 0, 0.1); /* default light border */
+    border-top: 8px solid var(--text-color); /* colored according to theme */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+/* Spin animation */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+[data-bs-theme="light"] #preloader .loader {
+    border: 8px solid rgba(0, 0, 0, 0.1);
+    border-top: 8px solid #1e293b;
+}
+
+[data-bs-theme="dark"] #preloader .loader {
+    border: 8px solid rgba(255, 255, 255, 0.1);
+    border-top: 8px solid #e2e8f0;
+}
+
+/* pos */
+.cart-item {
+    font-size: 14px;
+}
+
+.cart-item-name {
+    min-width: 45%;
+}
+
+.cart-item-qty {
+    min-width: 110px;
+}
+
+.cart-item-price {
+    min-width: 80px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--hover-bg);
+    /* background: #e9ecef; */
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.qty-btn:hover {
+    /* background: #dee2e6; */
+
+    background-color: var(--bg-color);
+}
+
+.qty-value {
+    width: 30px;
+    text-align: center;
+    display: inline-block;
+}
+.qty-input {
+    width: 42px;
+    height: 28px;
+    text-align: center;
+    border-radius: 6px;
+    /* border: 1px solid #ced4da; */
+    font-size: 14px;
+    margin: 0 6px;
+}
+
+.qty-input::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.modal-header {
+    border-bottom: none;
+}
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    overflow-y: scroll !important;
+}
+.no-scrollbar::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+}
+.no-scrollbar::-webkit-scrollbar-track,
+.no-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent !important;
+    display: none !important;
 }

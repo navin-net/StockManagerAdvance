@@ -16,12 +16,12 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'profile' => [
-                'id' => $this->profile->id ?? null,
-                'image' => $this->profile->image ?? null,
-                'dob' => $this->profile->dob ?? null,
-                'user_id' => $this->profile->user_id ?? null,
-            ],
+            // 'profile' => [
+            //     'id' => $this->profile->id ?? null,
+            //     'image' => $this->profile->image ?? null,
+            //     'dob' => $this->profile->dob ?? null,
+            //     'user_id' => $this->profile->user_id ?? null,
+            // ],
             'group_id' => $this->group_id,
             'groups' => [
                 'id' => $this->groups->id ?? 'who are you',

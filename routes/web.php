@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LanguageController;
+use App\Models\Banner;
 // use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\{
-    AuthController
+    AuthController,
+    ProfileController
 };
 /*
 |--------------------------------------------------------------------------
@@ -18,28 +20,46 @@ use App\Http\Controllers\Admin\{
 */
 
 Route::get('/', function () {
-    return view('welcome');
-})->name('/'); // Add a name
+    return view('index');
+})->name('/');
 
-Route::get('/sa',function(){
-    echo "sa";
+
+
+
+// Route::get('/pos', function () {
+//     return view('testing1');
+// })->name('pos');
+
+
+
+Route::get('/banner/{id}', function ($id) {
+    return Banner::findByIdAndName($id);
+});
+
+Route::put('/banner/{id}', function (Request $request, $id) {
+    $updatedBanner = Banner::updateByIdAndName($id,  $request->all());
+
+    return response()->json([
+        'message' => 'Banner updated successfully!',
+        'data' => $updatedBanner
+    ]);
 });
 
 
 
+Route::get('/pos',[ProfileController::class, 'pos']);
 
 Route::get('/product-alerts', [AuthController::class, 'getAlerts']);
 
-Route::get('/switch-language/{language}', [LanguageController::class, 'switch'])->name('language.switch');
+// Route::get('/switch-language/{language}', [LanguageController::class, 'switch'])->name('language.switch');
+Route::get('/lang/{lang}', [LanguageController::class, 'switch']);
 
 
-// Define the GET route and name it 'login'
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 
-// Define the POST route for submission, but DO NOT name it 'login' again.
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:3,1');
-    // ->name('login'); <--- REMOVED THIS LINE
+
 
 
 

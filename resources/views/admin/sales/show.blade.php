@@ -6,7 +6,7 @@
     <div class="container-fluid py-4">
         <!-- Page Header -->
         <div class="pagetitle mb-4">
-            <h1 class="display-6 fw-bold mb-3">Sale Receipt</h1>
+            <h1 class="display-6 fw-bold mb-3">{{ $sale->reference }}</h1>
             <nav>
                 <ol class="breadcrumb rounded-3 p-2">
                     <li class="breadcrumb-item">
@@ -15,7 +15,7 @@
                     <li class="breadcrumb-item">
                         <a href="#" class="text-primary text-decoration-none">Sales</a>
                     </li>
-                    <li class="breadcrumb-item active">View Receipt</li>
+                    <li class="breadcrumb-item active">{{ $sale->reference ?? 'N/A' }}</li>
                 </ol>
             </nav>
         </div>

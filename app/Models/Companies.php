@@ -11,15 +11,15 @@ use App\Models\User;
 class Companies extends Model
 {
     use HasFactory;
-    
+
     public $timestamps = false;
 
-    protected $fillable = ['name', 'group_id', 'group_name', 
-    'email', 'phone','city','number_of_houses','address','street',
+    protected $fillable = ['name', 'group_id', 'group_name',
+    'email', 'phone','city','number_of_houses','address','street','country',
     'warehouse_id','note','logo'];
 
     public function group(){
-        return $this->belongsTo(Groups::class, 'group_id'); 
+        return $this->belongsTo(Groups::class, 'group_id');
     }
 
     public function warehouse(){

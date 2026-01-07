@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\{Auth, Hash, RateLimiter, Storage};
-use App\Models\{Products, Purchase, Sale, User};
+use App\Models\{Companies, Products, Purchase, Sale, User};
 
 class AuthController extends Controller
 {
+
+
+
 
     public function showLoginForm()
     {
@@ -33,14 +36,14 @@ class AuthController extends Controller
 
         $loginInput = $request->input('login');
         $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-        $credentials = [$field => $loginInput,'password' => $request->password];
+        $credentials = [$field => $loginInput, 'password' => $request->password];
 
         $remember = $request->has('remember');
 
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-            if (!in_array($user->group_id ?? 1, [1])) {
+            if (!in_array($user->group_id ?? 1, [1,2,3])) {
                 Auth::logout();
                 return back()->withErrors([
                     'login' => 'Your account does not have permission to log in.',
@@ -80,7 +83,7 @@ class AuthController extends Controller
         $salesCount = Sale::count();
         $saleTotal = Sale::sum('total_amount');
         $Purchases = Purchase::count();
-        // die($avg_sales);
+
         return view('admin.dashboard', [
             'ipFromDB' => $ipFromDB,
             'salesCount' => $salesCount,
@@ -94,53 +97,83 @@ class AuthController extends Controller
     {
         return Products::where('stock_quantity', '<=', -1)->get(['id', 'name', 'stock_quantity']);
     }
-    public function edit($id)
+    public function edit()
     {
-        $user = User::with('profile')->findOrFail($id);
+        // $user = User::with('profile')->findOrFail($id);
 
-        return view('admin.profile.edit', compact('user'));
+        $user = Auth::user();
+        $id = $user->id;
+        $company = Companies::find($id);
+        // die($user);
+        return view('admin.profile.edit1', [
+            'pageTitle' => __('messages.my_account'),
+            'heading' => __('messages.my_account'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+                ['label' => __('messages.my_account'), 'url' => '', 'active' => true],
+            ],
+            'user' => $user,
+            'company' => $company,
+        ]);
+
     }
-    public function update(Request $request, $id)
+
+    public function update(Request $request)
     {
-        $user = User::findOrFail($id);
+        $user = Auth::user();
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'dob' => 'nullable|date',
-            'old_password' => 'nullable|required_with:new_password|string',
-            'new_password' => 'nullable|string|min:8|confirmed',
+            'email' => 'required|email',
         ]);
 
-        $user->name = $request->name;
-        $user->save();
+        $user->update($request->only('name', 'email'));
 
-        $profileData = ['dob' => $request->dob];
-
-        if ($request->hasFile('image')) {
-            if ($user->profile && $user->profile->image) {
-                Storage::disk('public')->delete($user->profile->image);
-            }
-
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $profileData['image'] = $image->storeAs('profiles', $imageName, 'public');
-        }
-
-        $user->profile()->updateOrCreate(
-            ['user_id' => $user->id],
-            $profileData
-        );
-
-        if ($request->filled('new_password')) {
-            if (!Hash::check($request->old_password, $user->password)) {
-                return back()->withErrors(['old_password' => 'The current password is incorrect.']);
-            }
-            $user->password = Hash::make($request->new_password);
-            $user->save();
-        }
-
-        return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'Profile updated successfully');
     }
+
+
+
+    //    public function update(Request $request, $id)
+//     {
+//         $user = User::findOrFail($id);
+
+    //         $validated = $request->validate([
+//             'phone' => 'required|string|max:15',
+//             'first_name' => 'nullable|string|max:50',
+//             'last_name' => 'nullable|string|max:50',
+//             'old_password' => 'required_with:new_password|string',
+//             'new_password' => 'nullable|string|min:8|confirmed',
+//             'avatar' => 'nullable|image|max:2048',
+//         ]);
+
+    //         $user->fill([
+//             'phone' => $validated['phone'],
+//             'first_name' => $validated['first_name'] ?? $user->first_name,
+//             'last_name' => $validated['last_name'] ?? $user->last_name,
+//         ]);
+
+    //         if ($request->filled('new_password')) {
+//             if (!Hash::check($request->old_password, $user->password)) {
+//                 return back()->withErrors(['old_password' => 'The current password is incorrect.']);
+//             }
+//             $user->password = Hash::make($request->new_password);
+//             $user->save();
+//         }
+
+    //         if ($request->hasFile('avatar')) {
+//             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+//                 Storage::disk('public')->delete($user->avatar);
+//             }
+//             $user->avatar = $request->file('avatar')->store('profiles', 'public');
+//         }
+
+    //         $user->save();
+
+    //         return back()->with('success', 'Profile updated successfully');
+//     }
+
+
 
 }

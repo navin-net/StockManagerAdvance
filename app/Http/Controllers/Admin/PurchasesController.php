@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\{Products, Purchase};
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -44,6 +44,17 @@ class PurchasesController extends Controller
             'products' => $products
         ]);
     }
+
+    public function getData()
+    {
+        $query = Purchase::query()
+            ->select('purchases.id', 'purchases.total_amount', 'purchases.date')
+            ->withCount('items as item_count')
+            ->withSum('items as total_quantity', 'quantity');
+
+        return DataTables::of($query)->make(true);
+    }
+
 
     public function create()
     {

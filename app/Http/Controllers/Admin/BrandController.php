@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{DB, Storage, Validator};
+use App\Models\Brand;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
 
 class BrandController extends Controller
@@ -40,7 +38,7 @@ class BrandController extends Controller
             'description' => __('messages.dashboard_welcome'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
-                
+
                 ['label' => __('messages.brands'), 'url' => '', 'active' => true],
             ]
         ]);
@@ -72,7 +70,7 @@ class BrandController extends Controller
 
         return response()->json(['success' => __('messages.brand_added_successfully')]);
     }
-    
+
     public function edit($id)
     {
         $brand = Brand::findOrFail($id);
@@ -95,12 +93,12 @@ class BrandController extends Controller
         if ($image = $request->file('image')) {
             // Generate unique filename
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            
+
             // Delete old image if exists
             if ($brand->image && Storage::disk('public')->exists('images/' . $brand->image)) {
                 Storage::disk('public')->delete('images/' . $brand->image);
             }
-            
+
             // Store new image in storage/app/public/images
             $image->storeAs('images', $profileImage, 'public');
             $data['image'] = $profileImage;
@@ -109,6 +107,36 @@ class BrandController extends Controller
         $brand->update($data);
 
         return response()->json(['success' => __('messages.brand_updated_successfully')]);
+    }
+
+    public function destroy($id)
+    {
+        $brand = Brand::findOrFail($id);
+
+        // Delete image from storage if exists
+        if ($brand->image && Storage::disk('public')->exists('images/' . $brand->image)) {
+            Storage::disk('public')->delete('images/' . $brand->image);
+        }
+
+        $brand->delete();
+
+        return response()->json(['success' => __('messages.brand_deleted_successfully')]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+
+        $brands = Brand::whereIn('id', $ids)->get();
+
+        foreach ($brands as $brand) {
+            if ($brand->image && Storage::disk('public')->exists('images/' . $brand->image)) {
+                Storage::disk('public')->delete('images/' . $brand->image);
+            }
+            $brand->delete();
+        }
+
+        return response()->json(['success' => __('messages.selected_brands_deleted_successfully')]);
     }
 
 

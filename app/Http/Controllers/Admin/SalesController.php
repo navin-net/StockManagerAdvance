@@ -54,8 +54,10 @@ class SalesController extends Controller
 
     public function create()
     {
+        $pageTitle = __('messages.create');
+        $breadcrumbs = [['label' => __('messages.sales'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.add'), 'url' => '', 'active' => true]];
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'selling_price')->get();
-        return view('admin.sales.create', compact('products'));
+        return view('admin.sales.create', compact('pageTitle', 'breadcrumbs', 'products'));
     }
 
     public function store(Request $request)
@@ -153,7 +155,10 @@ class SalesController extends Controller
     {
         $sale = Sale::with('items.product')->findOrFail($id);
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'selling_price')->get();
-        return view('admin.sales.edit', compact('sale', 'products'));
+        $pageTitle = __('messages.edit');
+        $breadcrumbs = [['label' => __('messages.sales_list'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.edit'), 'url' => '', 'active' => true]];
+
+        return view('admin.sales.edit', compact('pageTitle', 'breadcrumbs', 'products','sale'));
     }
 
     public function update(Request $request, $id)

@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-use App\Models\Purchase;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\{Products, Purchase};
 
 class PurchaseItem extends Model
 {
-    protected $fillable = ['purchase_id', 'product_id', 'quantity', 'cost_price'];
+  protected $fillable = [
+        'purchase_id',
+        'product_id',
+        'quantity',
+        'cost_price'
+    ];
 
     public function purchase()
     {
-        return $this->belongsTo(Purchase::class);
+        return $this->belongsTo(Purchase::class, 'purchase_id');
     }
 
     public function product()

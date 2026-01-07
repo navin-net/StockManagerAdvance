@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\{
     AuthController,
+    ProfileController,
     SalesController,
     PurchasesController,
     BillerController,
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\{
     WarehouseController,
     QualitysController,
     CustomerController,
+    ShopController,
     UnitController
 };
 
@@ -22,9 +24,17 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
     Route::middleware('auth')->get('/', [AuthController::class, 'dashboard'])->name('dashboard');
+
     //Mengemnt Profile
-    Route::get('/profile/{id}', [AuthController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile/{id}', [AuthController::class, 'update'])->name('profile.update');
+    // Route::get('/profile/{id}', [AuthController::class, 'edit'])->name('profile.edit');
+    // Route::put('/profile/{id}', [AuthController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [AuthController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [AuthController::class, 'update'])->name('profile.update');
+
+
+    Route::put('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
+    Route::put('/profile/upload-avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.upload-avatar');
+    Route::put('/profile/updateInformation', [ProfileController::class, 'updateInformation'])->name('profile.updateInformation');
     //Products
     Route::resource('products', ProductController::class)->except(['show']);
     Route::get('/products/getData', [ProductController::class, 'getData'])->name('products.getData');
@@ -32,6 +42,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/products/subcategories', [ProductController::class, 'getSubCategories'])->name('products.subcategories');
     Route::delete('/products/images/{id}', [ProductController::class, 'removeImage'])->name('products.images.remove');
     Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
+
     //SALES
     Route::resource('sales', SalesController::class)->except(['show']);
     Route::get('/sales/getData', [SalesController::class, 'getData'])->name('sales.getData');
@@ -45,8 +56,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::resource('purchases', PurchasesController::class)->except(['show']);
     Route::post('purchases/bulk-delete', [PurchasesController::class, 'bulkDelete'])->name('purchases.bulkDelete');
     Route::get('purchases/export', [PurchasesController::class, 'export'])->name('purchases.export');
-    Route::get('/purchases/getData', [PurchasesController::class, 'getData'])->name('purchases.getData');
     Route::get('/purchases/show', [PurchasesController::class, 'show'])->name('purchases.show');
+    Route::get('purchases/getData', [PurchasesController::class, 'getData'])->name('purchases.getData');
+
     // Megement Permission
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('billers', BillerController::class)->except(['show']);
@@ -75,6 +87,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::resource('/groups', GroupsController::class)->except(['show']);
         Route::post('groups/bulkDelete', [GroupsController::class, 'bulkDelete'])->name('groups.bulkDelete');
         Route::resource('/brands', BrandController::class)->except(['show']);
+        Route::post('brands/bulkDelete', [BrandController::class, 'bulkDelete'])->name('brands.bulkDelete');
         Route::resource('/categories', CategoriesController::class)->except(['show']);
         Route::resource('/sub_category', SubCategoryController::class)->except(['show']);
         Route::resource('/units', UnitController::class)->except(['show']);
@@ -82,6 +95,15 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::resource('/qualitys', QualitysController::class)->except(['show']);
     });
 
+
+    Route::prefix('shop')->group(function () {
+        Route::get('settings', [ShopController::class, 'index'])->name('settings');
+        Route::post('settings', [ShopController::class, 'update'])->name('settings.update');
+        Route::get('banners', [ShopController::class, 'banners'])->name('banners');
+        Route::post('/banners/update', [ShopController::class, 'bannersUpdate'])
+            ->name('banners.update');
+
+    });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

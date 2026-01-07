@@ -29,6 +29,9 @@ class UserController extends Controller
                         <button class="btn btn-danger btn-sm deleteUser" data-id="' . $row->id . '">' . __('messages.delete') . '</button>
                     ';
                 })
+                ->filterColumn('group_name', function($query,$keyword){
+                    $query->where('groups.name','like',"%$keyword%");
+                })
                 ->rawColumns(['action'])
                 ->make(true);
         }

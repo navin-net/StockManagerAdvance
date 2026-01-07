@@ -10,36 +10,39 @@
             </button>
         </div>
 
-                <div class="d-flex align-items-center">
-                    <div class="d-flex align-items-center gap-3 desktop-only">
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3 desktop-only">
 
-                        <!-- 🌐 Language Switch -->
-                        <div class="dropdown desktop-only">
-                            <button class="btn nbt-outline-custom d-flex align-items-center" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
-                                    alt="Lang" width="20" height="14">
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
-                                        href="{{ route('language.switch', ['language' => 'en']) }}">
-                                        <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2" width="20" height="14">
-                                        <span>{{ __('messages.english') }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
-                                        href="{{ route('language.switch', ['language' => 'km']) }}">
-                                        <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2" width="20" height="14">
-                                        <span>{{ __('messages.khmer') }}</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                <!-- 🌐 Language Switch -->
+                <div class="dropdown desktop-only">
+                    <button class="btn nbt-outline-custom d-flex align-items-center" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
+                            alt="Lang" width="20" height="14">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
+                                href="/lang/en">
+                                <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2" width="20"
+                                    height="14">
+                                <span>{{ __('messages.english') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
+                                href="/lang/km">
+                                <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2" width="20"
+                                    height="14">
+                                <span>{{ __('messages.khmer') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                    <div class="dropdown desktop-only">
-                    <button class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"
+                <div class="dropdown desktop-only">
+                    <button
+                        class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"
                         type="button" id="themeDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <div>
                             <i class="bi bi-moon-stars me-2"></i>
@@ -91,22 +94,31 @@
                 <div class="dropdown desktop-only">
                     <button class="btn btn-outline-custom dropdown-toggle d-flex align-items-center" type="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ Auth::user()->profile && Auth::user()->profile->image
-                            ? asset('storage/' . Auth::user()->profile->image)
+                        <img src="{{ Auth::user() && Auth::user()->avatar
+                            ? asset('storage/' . Auth::user()->avatar)
                             : asset('assets/img/profile-img.jpg') }}"
                             alt="Profile" class="rounded-circle me-2" width="40" height="40">
-                        <span>{{ Auth::user()->name }}</span>
+                        <span>{{ Auth::user()->first_name }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
                         <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit', Auth::user()->id) }}">
+                            <a class="dropdown-item {{ request()->routeIs('profile.edit') && !str_contains(url()->current(), '#change_password') ? 'active' : '' }}"
+                                href="{{ route('profile.edit', Auth::user()->id) }}">
                                 <i class="bi bi-person me-2"></i>{{ __('messages.profile') }}
                             </a>
                         </li>
-
-                        <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                            <a class="dropdown-item {{ str_contains(request()->fullUrl(), '#change_password') ? 'active' : '' }}"
+                                href="{{ route('profile.edit') }}#change_password">
+                                <i class="bi bi-lock me-2"></i>{{ __('messages.change_password') }}
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf
+                            </form>
                             <a class="dropdown-item text-danger" href="#"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                 <i class="bi bi-box-arrow-right me-2"></i>{{ __('messages.logout') }}

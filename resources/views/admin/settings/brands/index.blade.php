@@ -4,23 +4,39 @@
 
 @section('content')
     <div class="container-fluid py-4">
-        <div class="pagetitle mb-4">
-            <h1 class="display-6 fw-bold">{{ $pageTitle }}</h1>
-            <nav>
-                <ol class="breadcrumb rounded-3 p-2">
-                    @foreach ($breadcrumbs as $breadcrumb)
-                        <li class="breadcrumb-item {{ $breadcrumb['active'] ? 'active text-muted' : '' }}">
-                            @if (!$breadcrumb['active'])
-                                <a href="{{ $breadcrumb['url'] }}"
-                                    class="text-primary text-decoration-none">{{ $breadcrumb['label'] }}</a>
-                            @else
-                                {{ $breadcrumb['label'] }}
-                            @endif
-                        </li>
-                    @endforeach
-                </ol>
-            </nav>
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <div class="pagetitle">
+                    <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            @foreach ($breadcrumbs as $breadcrumb)
+                                @if (!$breadcrumb['active'])
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
+                                            {{ $breadcrumb['label'] }}
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="breadcrumb-item active text-muted" aria-current="page">
+                                        {{ $breadcrumb['label'] }}
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <small class="text-muted fw-semibold">
+                    {{ __('messages.ip_address') }}:
+                </small>
+                <span class="fw-semibold text-primary">
+                    {{ auth()->user()->ip_address }}
+                </span>
+            </div>
         </div>
+
         <section class="section">
             <div class="row">
                 <div class="col-lg-12">
@@ -74,12 +90,11 @@
                                 <table id="brandsTable" class="table table-striped table-bordered rounded-3 align-middle">
                                     <thead class="table-primary">
                                         <tr>
-                                            <th ><input type="checkbox" id="selectAll"
-                                                    class="form-check-input"></th>
-                                            <th >{{ __('messages.code') }}</th>
-                                            <th >{{ __('messages.image') }}</th>
-                                            <th >{{ __('messages.name') }}</th>
-                                            <th >{{ __('messages.slug') }}</th>
+                                            <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                                            <th>{{ __('messages.code') }}</th>
+                                            <th>{{ __('messages.image') }}</th>
+                                            <th>{{ __('messages.name') }}</th>
+                                            <th>{{ __('messages.slug') }}</th>
                                             <th scope="col" class="py-3 text-center" width="120">
                                                 {{ __('messages.actions') }}</th>
                                         </tr>
@@ -221,8 +236,8 @@
 @endsection
 @push('scripts')
     <script>
-    const imageBaseUrl = "{{ asset('/storage/images/') }}";
-    const noimage = "{{ asset('noimage.png') }}";
+        const imageBaseUrl = "{{ asset('/storage/images/') }}";
+        const noimage = "{{ asset('noimage.png') }}";
         $(document).ready(function() {
             var table = $('#brandsTable').DataTable({
                 pageLength: 10,
@@ -239,7 +254,7 @@
                         data: 'id',
                         name: 'id',
                         render: function(data) {
-                            return `<input type="checkbox" class="brandCheckbox" value="${data}">`;
+                            return `<input type="checkbox" class="Checkbox" value="${data}">`;
                         },
                         orderable: false,
                         searchable: false
@@ -249,15 +264,15 @@
                         name: 'code'
                     },
                     {
-                    data: 'image',
-                    name: 'image',
-                    render: function(data) {
-                        let imageUrl = data ? `${imageBaseUrl}/${data}` : noimage;
-                        return `
+                        data: 'image',
+                        name: 'image',
+                        render: function(data) {
+                            let imageUrl = data ? `${imageBaseUrl}/${data}` : noimage;
+                            return `
                             <a href="#" class="image-popup" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="${imageUrl}">
                                 <img src="${imageUrl}" width="50" class="img-thumbnail brand-image-thumbnail">
                             </a>`;
-                    }
+                        }
                     },
                     {
                         data: 'name',
@@ -290,14 +305,6 @@
                 }
             });
 
-            // CSRF Token Setup
-            // $.ajaxSetup({
-            //     headers: {
-            //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            //     }
-            // });
-
-
             // Add Brand Button
             $('#addBrandBtn').on('click', function() {
                 $('#brandForm').trigger('reset');
@@ -313,15 +320,15 @@
 
             $('#brandForm').on('submit', function(e) {
                 e.preventDefault();
-                
+
                 var formData = new FormData(this);
                 var brandId = $('#brand_id').val();
                 var isUpdate = brandId ? true : false;
-                
-                var url = isUpdate ? 
-                    "/admin/system_settings/brands/" + brandId : 
+
+                var url = isUpdate ?
+                    "/admin/system_settings/brands/" + brandId :
                     "/admin/system_settings/brands";
-                
+
                 if (isUpdate) {
                     formData.append('_method', 'PUT');
                 }
@@ -336,7 +343,7 @@
                         $('#brandModal').modal('hide');
                         $('#brandForm').trigger('reset');
                         table.ajax.reload();
-                        
+
                         const successAlert = `
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 ${isUpdate ? '{{ __('messages.brand_updated_successfully') }}' : '{{ __('messages.brand_added_successfully') }}'}
@@ -347,16 +354,16 @@
                     error: function(xhr) {
                         let errors = xhr.responseJSON.errors || {};
                         let errorMsg = 'Please fix the following errors:\n';
-                        
+
                         $('.invalid-feedback').text('').hide();
                         $('.form-control').removeClass('is-invalid');
-                        
+
                         for (let key in errors) {
                             $(`#${key}-error`).text(errors[key][0]).show();
                             $(`#${key}`).addClass('is-invalid');
                             errorMsg += `- ${errors[key][0]}\n`;
                         }
-                        
+
                         if (!Object.keys(errors).length) {
                             errorMsg = 'An error occurred. Please try again.';
                         }
@@ -369,27 +376,27 @@
 
             $(document).on('click', '.editBrandBtn', function() {
                 var id = $(this).data('id');
-                
+
                 $.get(BaseUrl + id + "/edit", function(data) {
-                    $('#brandModalLabel').text('{{ __("messages.edit_brand") }}');
-                    $('#saveBtn').text('{{ __("messages.update") }}');
-                    
+                    $('#brandModalLabel').text('{{ __('messages.edit_brand') }}');
+                    $('#saveBtn').text('{{ __('messages.update') }}');
+
                     $('#brand_id').val(data.id);
                     $('#name').val(data.name).removeClass('is-invalid');
                     $('#code').val(data.code).removeClass('is-invalid');
                     $('#slug').val(data.slug).removeClass('is-invalid');
                     $('#description').val(data.description).removeClass('is-invalid');
                     $('#image').removeClass('is-invalid');
-                    
+
                     if (data.image) {
                         $('#currentImage').attr('src', `/storage/images/${data.image}`);
                         $('#currentImageContainer').removeClass('d-none');
                     } else {
                         $('#currentImageContainer').addClass('d-none');
                     }
-                    
+
                     $('#method').val('PUT');
-                    
+
                     $('#brandModal').modal('show');
                 });
             });
@@ -397,7 +404,8 @@
             // Delete Brand
             $(document).on('click', '.deleteBrandBtn', function() {
                 const brandId = $(this).data('id');
-                const deleteUrl = "{{ url('brands') }}/" + brandId;
+                const deleteUrl = BaseUrl + brandId;
+
                 $('#deleteForm').attr('action', deleteUrl);
                 $('#deleteModal').modal('show');
             });
@@ -427,25 +435,10 @@
                 });
             });
 
- 
 
 
-            // Select/Deselect All Checkboxes
-            $('#selectAll').on('click', function() {
-                $('.brandCheckbox').prop('checked', $(this).prop('checked'));
-                toggleBulkDeleteButton();
-            });
 
-            // Check individual checkboxes
-            $(document).on('change', '.brandCheckbox', function() {
-                toggleBulkDeleteButton();
-            });
 
-            // Enable/Disable Bulk Delete Button
-            function toggleBulkDeleteButton() {
-                const anyChecked = $('.brandCheckbox:checked').length > 0;
-                $('#bulkDeleteBtn').prop('disabled', !anyChecked);
-            }
 
             // Image Popup
             $(document).on('click', '.image-popup', function(e) {
