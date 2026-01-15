@@ -17,16 +17,17 @@
         <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     @endif
 
-    <title>@yield('title', 'Stock Management')</title>
+
+    <title>{{ $shopInfo->name_shop }} - @yield('title')</title>
 
     <!-- CSS Files -->
     <link href="{{ asset('assets/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/DataTables/datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style-custom.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.min.css" rel="stylesheet">
+    {{-- <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css"> --}}
     @yield('styles')
 </head>
 

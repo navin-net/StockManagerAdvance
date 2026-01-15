@@ -48,16 +48,16 @@
                                     <div class="invalid-feedback" id="name_error"></div>
                                 </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="code" class="form-label">{{ __('messages.code') }}</label>
-                                <div class="input-group">
-                                    <input type="text" name="code" id="code" class="form-control" >
-                                    <button type="button" class="btn btn-outline-secondary" id="generateCodeBtn">
-                                        <i class="bi bi-shuffle"></i> {{ __('messages.generate') }}
-                                    </button>
+                                <div class="col-md-6 mb-3">
+                                    <label for="code" class="form-label">{{ __('messages.code') }}</label>
+                                    <div class="input-group">
+                                        <input type="text" name="code" id="code" class="form-control">
+                                        <button type="button" class="btn btn-outline-secondary" id="generateCodeBtn">
+                                            <i class="bi bi-shuffle"></i> {{ __('messages.generate') }}
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="code_error"></div>
                                 </div>
-                                <div class="invalid-feedback" id="code_error"></div>
-                            </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="second_name" class="form-label">{{ __('messages.second_name') }}</label>
                                     <input type="text" name="second_name" id="second_name" class="form-control" required>
@@ -117,17 +117,12 @@
                                     <div class="invalid-feedback" id="cost_price_error"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="selling_price" class="form-label">{{ __('messages.selling_price') }}</label>
+                                    <label for="selling_price"
+                                        class="form-label">{{ __('messages.selling_price') }}</label>
                                     <input type="number" name="selling_price" id="selling_price" class="form-control"
                                         step="0.01" min="0" required>
                                     <div class="invalid-feedback" id="selling_price_error"></div>
                                 </div>
-                                <!-- <div class="col-md-6 mb-3">
-                                    <label for="stock_quantity" class="form-label">{{ __('messages.stock_quantity') }}</label>
-                                    <input type="number" name="stock_quantity" id="stock_quantity" class="form-control"
-                                        min="0" value="0" required>
-                                    <div class="invalid-feedback" id="stock_quantity_error"></div>
-                                </div> -->
                                 <div class="col-md-6 mb-3">
                                     <label for="image" class="form-label">{{ __('messages.image') }}</label>
                                     <input type="file" name="image" id="image" class="form-control"
@@ -166,62 +161,52 @@
 @endsection
 @push('scripts')
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const nameInput = document.getElementById("name");
             const secondNameInput = document.getElementById("second_name");
 
-            nameInput.addEventListener("input", function () {
+            nameInput.addEventListener("input", function() {
                 secondNameInput.value = nameInput.value.toLowerCase();
             });
         });
+
         function generateRandomCode() {
             let prefix = 'P0';
             let randomNumber = Math.floor(Math.random() * 100000);
             return prefix + String(randomNumber).padStart(5, '0');
         }
         $(document).ready(function() {
+
             $('#category_id').on('change', function() {
                 let categoryId = $(this).val();
                 let subcategorySelect = $('#subcategory_id');
 
-                subcategorySelect.prop('disabled', true).html(
-                    '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                );
+                subcategorySelect.prop('disabled', true);
+                subcategorySelect.html('<option value="">{{ __('messages.Loading') }}</option>');
 
-                if (categoryId) {
-                    $.ajax({
-                        url: '{{ route('products.subcategories') }}',
-                        type: 'GET',
-                        data: { category_id: categoryId },
-                        beforeSend: function() {
-                            subcategorySelect.append('<option value="">Loading...</option>');
-                        },
-                        success: function(data) {
-                            subcategorySelect.html(
-                                '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                            );
-                            if (data.length > 0) {
-                                $.each(data, function(index, subcategory) {
-                                    subcategorySelect.append(
-                                        `<option value="${subcategory.id}">${subcategory.name}</option>`
-                                    );
-                                });
-                                subcategorySelect.prop('disabled', false);
-                            } else {
-                                subcategorySelect.append(
-                                    '<option value="">{{ __('messages.no_subcategories') }}</option>'
-                                );
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error('Subcategory AJAX error:', xhr.status, xhr.responseText);
-                            $('#formError').removeClass('d-none').text(
-                                '{{ __('messages.subcategory_load_error') }}'
-                            );
-                        }
-                    });
+                if (!categoryId) {
+                    subcategorySelect.html(
+                        '<option value="">{{ __('messages.select_subcategory') }}</option>');
+                    return;
                 }
+
+                $.ajax({
+                    url: "{{ route('products.subcategories', ':id') }}".replace(':id', categoryId),
+                    type: 'GET',
+                    success: function(data) {
+                        subcategorySelect.prop('disabled', false);
+                        subcategorySelect.html(
+                            '<option value="">{{ __('messages.select_sub_categories') }}</option>'
+                        );
+                        $.each(data, function(key, subcategory) {
+                            subcategorySelect.append(
+                                `<option value="${subcategory.id}">${subcategory.name}</option>`
+                            );
+                        });
+                    }
+                });
             });
+
 
             $('#createProductForm').on('submit', function(e) {
                 e.preventDefault();
@@ -267,7 +252,8 @@
                             );
                         } else if (xhr.status === 500) {
                             $('#formError').removeClass('d-none').text(
-                                xhr.responseJSON?.error || 'Server error occurred. Please try again later.'
+                                xhr.responseJSON?.error ||
+                                'Server error occurred. Please try again later.'
                             );
                         } else {
                             $('#formError').removeClass('d-none').text(
@@ -280,7 +266,7 @@
 
             $('#code').val(generateRandomCode());
 
-            $('#generateCodeBtn').on('click', function () {
+            $('#generateCodeBtn').on('click', function() {
                 $('#code').val(generateRandomCode());
             });
         });

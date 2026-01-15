@@ -63,13 +63,6 @@
                                 <input type="hidden" name="banners[{{ $index }}][id]" value="{{ $banner->id }}">
                                 <input type="hidden" name="banners[{{ $index }}][_delete]" value="0"
                                     class="delete-flag">
-
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <strong></strong>
-                                    <button type="button" class="btn btn-sm btn-outline-danger remove-banner">
-                                        <i class="bi bi-trash"></i> Remove
-                                    </button>
-                                </div>
                                 <div class="row g-3">
 
                                     <div class="col-md-6">
@@ -108,6 +101,12 @@
                                     </div>
 
                                 </div>
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong></strong>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-banner">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
                             </div>
                         @endforeach
 
@@ -122,6 +121,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-end">
+
                     <button class="btn btn-primary">
                         <i class="bi bi-save"></i> Save Changes
                     </button>
@@ -170,14 +170,6 @@
                     banner.innerHTML = `
                         <input type="hidden" name="banners[${newIndex}][id]" value="">
                         <input type="hidden" name="banners[${newIndex}][_delete]" value="0" class="delete-flag">
-
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <strong>Banner</strong>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-banner">
-                                <i class="bi bi-trash"></i> Remove
-                            </button>
-                        </div>
-
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Title</label>
@@ -206,8 +198,13 @@
                                 </div>
                             </div>
                         </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>Banner</strong>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-banner">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
                     `;
-
                     if (container) container.appendChild(banner);
                 });
             }

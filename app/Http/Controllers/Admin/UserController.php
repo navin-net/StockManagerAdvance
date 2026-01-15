@@ -54,7 +54,7 @@ class UserController extends Controller
             'groups' => $groups,
             'pageTitle' => __('messages.list_users'),
             'breadcrumbs' => [
-                ['label' => __('messages.users'), 'url' => '#', 'active' => false],
+                ['label' => __('messages.users'), 'url' => '', 'active' => false],
                 ['label' => __('messages.add'), 'url' => '', 'active' => true],
             ]
         ]);

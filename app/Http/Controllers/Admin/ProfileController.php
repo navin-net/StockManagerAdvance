@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, Hash};
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\{Auth, Hash};
 use App\Models\{Brand, Categories, Companies, Products, User};
 
 class ProfileController extends BaseController
@@ -13,6 +13,7 @@ class ProfileController extends BaseController
     public function __construct()
     {
         parent::__construct();
+
     }
 
 
@@ -94,8 +95,9 @@ class ProfileController extends BaseController
         $brands = Brand::all();
         $customers = Companies::where('group_id', 4)->get();
 
-        // die($customers);
-        return view('testing1', compact('products','categories','brands','customers'))->with('pageTitle', 'POS System');
+
+        return view('admin.pos.index', compact('products','categories','brands','customers'))
+        ->with('pageTitle',  $this->shopDetail->name . ' | POS System');
     }
 
 

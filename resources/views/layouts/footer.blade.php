@@ -5,6 +5,8 @@
     <i class="bi bi-arrow-up fs-5"></i>
 </button>
 
+
+
 <footer class="footer mt-auto py-3  border-top">
     <div class="container-fluid">
         <div class="row align-items-center">
@@ -35,6 +37,34 @@
     </div>
 </footer>
 
+
+
+<div id="mini-calculator" class="card shadow-lg d-none"
+    style="position: fixed; bottom: 80px; right: 20px; width: 260px; z-index: 9999;">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-calculator"></i> Calculator</span>
+        <button type="button" class="btn-close btn-close-white" onclick="toggleCalc()"></button>
+    </div>
+    <div class="card-body p-2 bg-secondary">
+        <input type="text" id="calc-display" class="form-control form-control-lg text-end mb-2" readonly
+            style="background: #e9ecef; font-family: monospace;">
+        <div class="row g-1">
+            @foreach (['C', '/', '*', '-', '7', '8', '9', '+', '4', '5', '6', '1', '2', '3', '0', '.', '='] as $key)
+                <div class="{{ $key == '=' ? 'col-6' : ($key == '0' ? 'col-3' : 'col-3') }}">
+                    <button
+                        class="btn {{ is_numeric($key) || $key == '.' ? 'btn-light' : 'btn-warning' }} w-100 fw-bold"
+                        onclick="calcInput('{{ $key }}')">
+                        {{ $key }}
+                    </button>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
@@ -46,6 +76,14 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- JsBarcode for barcodes -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+<!-- QRCode.js for QR codes -->
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
 
 <script>
     $.ajaxSetup({
@@ -60,6 +98,7 @@
     $(document).on('change', '.Checkbox', function() {
         toggleBulkDeleteButton();
     });
+
     function toggleBulkDeleteButton() {
         const anyChecked = $('.Checkbox:checked').length > 0;
         $('#bulkDeleteBtn').prop('disabled', !anyChecked);
@@ -190,7 +229,7 @@
                     alertItem.href = `/products/show/${product.id}`;
                     alertItem.className =
                         'dropdown-item d-flex justify-content-between align-items-center';
-                    alertItem.textContent = product.name;
+                    alertItem.textContent = product.code;
 
                     const badge = document.createElement('span');
                     badge.className = 'badge bg-danger rounded-pill';
@@ -347,4 +386,32 @@
             }
         }
     });
+
+
+    let calcDisplay = '';
+
+    function toggleCalc() {
+        const calc = document.getElementById('mini-calculator');
+        calc.classList.toggle('d-none');
+    }
+
+    function calcInput(value) {
+        const displayElement = document.getElementById('calc-display');
+
+        if (value === 'C') {
+            calcDisplay = '';
+        } else if (value === '=') {
+            try {
+                // Using Function() instead of eval() for slightly better security
+                calcDisplay = new Function('return ' + calcDisplay)();
+            } catch (e) {
+                calcDisplay = 'Error';
+            }
+        } else {
+            // Prevent multiple operators in a row
+            calcDisplay += value;
+        }
+
+        displayElement.value = calcDisplay;
+    }
 </script>

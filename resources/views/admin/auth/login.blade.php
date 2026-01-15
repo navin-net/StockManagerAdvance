@@ -13,7 +13,7 @@
 </head>
 <body class="d-flex align-items-center justify-content-center min-vh-100 bg-dark text-white">
     @auth
-        <script>window.location.href = "{{ route('dashboard') }}";</script>
+        <script>window.location.href = "{{ route('/') }}";</script>
     @else
 
     <video id="video-bg" autoplay muted loop playsinline>

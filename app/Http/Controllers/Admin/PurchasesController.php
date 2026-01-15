@@ -38,7 +38,7 @@ class PurchasesController extends Controller
             'pageTitle' => __('messages.purchases_list'),
             'heading' => __('messages.purchases_list'),
             'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
                 ['label' => __('messages.purchases'), 'url' => '', 'active' => true],
             ],
             'products' => $products
@@ -65,7 +65,7 @@ class PurchasesController extends Controller
             'pageTitle' => __('messages.add_purchase'),
             'heading' => __('messages.add_purchase'),
             'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
                 ['label' => __('messages.purchases'), 'url' => route('purchases.index'), 'active' => false],
                 ['label' => __('messages.create'), 'url' => '', 'active' => true],
             ]

@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'content')
+@section('title', $pageTitle)
 
 @section('content')
     <div class="container-fluid">
@@ -38,6 +38,7 @@
                     <!-- Search, Sort & Offcanvas Category Toggle -->
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-12 mb-2 desktop-only">
+
                             <div class="input-group">
                                 <input type="text" class="form-control search-bar" id="searchInput"
                                     placeholder="Search products...">
@@ -78,14 +79,22 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="col-12 text-center text-danger no-results-message">
-                                <p>No products found.</p>
+                            <div class="col-12 text-center text-danger no-results-message mt-3">
+                                <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
+                                    class="img-fluid floating-img" style="max-width: 250px;">
+                                <div class="content-fade-up">
+                                    <h1 class="fw-bold ">{{ __('messages.oops') }}</h1>
+                                    {{-- <p class="text-muted mb-4">We couldn't find the item you're looking for. It might have been moved or is no longer available.</p> --}}
+                                </div>
                             </div>
                         @endforelse
-
-                        <!-- Dynamic "No products found" for client-side filtering -->
-                        <div class="col-12 text-center text-danger no-results-message d-none">
-                            <p>No products found.</p>
+                        <div class="col-12 text-center text-danger no-results-message d-none mt-3">
+                            <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
+                                class="img-fluid floating-img" style="max-width: 250px;">
+                                <div class="content-fade-up">
+                                    <h1 class="fw-bold ">{{ __('messages.oops') }}</h1>
+                                    {{-- <p class="text-muted mb-4">We couldn't find the item you're looking for. It might have been moved or is no longer available.</p> --}}
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +105,7 @@
                 <div class="cart-sidebar p-3 card mb-2">
                     <div class="row">
                         <div class="col-sm-9 text-start">
-                            <b>Order List</b>
+                            <b>{{ __('messages.order_list') }}</b>
                         </div>
                         <div class="col-sm-3 text-end">
                             <InvoiceNo->#ORD123</InvoiceNo->
@@ -110,7 +119,7 @@
 
                         <div class="col-sm-9">
                             <select name="customer_id" class="form-select" aria-label="Select customer">
-                                <option value="">-- Select Customer --</option>
+                                <option value="">-- {{ __('messages.select_customer') }} --</option>
 
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}"
@@ -135,7 +144,7 @@
                     <div class="row">
                         <div class="col-sm-9 text-start">
                             <h4>
-                                <i class="bi bi-cart3"></i> Current Order
+                                <i class="bi bi-cart3"></i>{{__('messages.current_order')}}
                                 <span class="badge bg-primary ms-2" id="cartCount">0</span>
                             </h4>
                         </div>
@@ -153,18 +162,18 @@
                             <p class="mt-2">No items in cart</p>
                         </div>
                     </div>
-                    <h5>Payment Summary</h5>
+                    <h5 class="mt-4">{{ __('messages.payment_summary') }}</h5>
                     <div class="total-section mt-3">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal:</span>
+                            <span>{{ __('messages.subtotal') }}:</span>
                             <span id="subtotal">$0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Tax (8%):</span>
+                            <span>{{ __('messages.tax') }} (8%):</span>
                             <span id="tax">$0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Discount:
+                            <span>{{ __('messages.discount') }}:
                                 <a type="button" data-bs-toggle="modal" data-bs-target="#discountModal">
                                     <i class="bi bi-pencil"></i>
                                 </a>
@@ -173,7 +182,7 @@
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between fs-4 fw-bold">
-                            <span>Total:</span>
+                            <span>{{ __('messages.total') }}:</span>
                             <span id="total">$0.00</span>
                         </div>
                     </div>
@@ -249,8 +258,7 @@
         </div>
     </div>
 
-    <div class="modal fade " id="discountModal"  tabindex="-1"
-        aria-labelledby="discountModalLabel" aria-hidden="true">
+    <div class="modal fade " id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -258,14 +266,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <label class="mb-2">Order Discount Type</label>
+                    <label class="mb-2">{{ __('messages.order_discount_type') }}</label>
                     <select class="form-select mb-2" aria-label="Default select example">
                         <option selected>Open this select menu</option>
                         <option value="1">One</option>
                         <option value="2">Two</option>
                         <option value="3">Three</option>
                     </select>
-                    <label class="mb-2">Value</label>
+                    <label class="mb-2">{{ __('messages.value') }}</label>
                     <input type="text" class="form-control" id="DiscountValue" placeholder="">
                 </div>
                 <div class="modal-footer">
@@ -283,27 +291,7 @@
 
 @endsection
 
-@push('style')
-    <style>
-        .no-scrollbar {
-            -ms-overflow-style: none !important;
-            scrollbar-width: none !important;
-            overflow-y: scroll !important;
-        }
 
-        .no-scrollbar::-webkit-scrollbar {
-            width: 0 !important;
-            height: 0 !important;
-            display: none !important;
-        }
-
-        .no-scrollbar::-webkit-scrollbar-track,
-        .no-scrollbar::-webkit-scrollbar-thumb {
-            background: transparent !important;
-            display: none !important;
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script>
@@ -482,6 +470,17 @@
                 </div>
             `);
 
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const img = document.querySelector('.floating-img');
+
+            // Subtle interaction: image follows mouse slightly
+            document.addEventListener('mousemove', (e) => {
+                let x = (window.innerWidth / 2 - e.pageX) / 50;
+                let y = (window.innerHeight / 2 - e.pageY) / 50;
+                img.style.transform = `translate(${x}px, ${y}px)`;
+            });
         });
     </script>
 @endpush

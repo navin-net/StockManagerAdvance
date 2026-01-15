@@ -64,7 +64,7 @@ class ShopController extends Controller
 
     public function banners()
     {
-        $banners = Banner::orderBy('id', 'asc')->take(3)->get();
+        $banners = Banner::orderBy('id', 'asc')->get();
         // die(json_encode($banners));
         return view('admin.shop.banners', [
             'banners' => $banners,

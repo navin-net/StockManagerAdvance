@@ -13,7 +13,7 @@ class SalesController extends Controller
     public function index()
     {
         $pageTitle = __('messages.sales_list');
-        $breadcrumbs = [['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false], ['label' => __('messages.sales'), 'url' => '', 'active' => true]];
+        $breadcrumbs = [['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false], ['label' => __('messages.sales'), 'url' => '', 'active' => true]];
         $products = Products::select('id', 'name', 'code')->get();
         return view('admin.sales.index', compact('pageTitle', 'breadcrumbs', 'products'));
     }

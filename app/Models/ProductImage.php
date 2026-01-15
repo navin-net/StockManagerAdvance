@@ -15,6 +15,10 @@ class ProductImage extends Model
         'image_review',
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
     // Each image belongs to one product
     public function product()
     {

@@ -6,6 +6,8 @@ use App\Models\Banner;
 // use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\{
     AuthController,
+    BaseController,
+    ProductController,
     ProfileController
 };
 /*
@@ -20,36 +22,27 @@ use App\Http\Controllers\Admin\{
 */
 
 Route::get('/', function () {
-    return view('index');
+    return view('welcome');
 })->name('/');
 
+Route::get('/testing',function(){
+    return view('testing');
+})->name('testing');
 
 
-
-// Route::get('/pos', function () {
-//     return view('testing1');
-// })->name('pos');
-
-
-
-Route::get('/banner/{id}', function ($id) {
-    return Banner::findByIdAndName($id);
-});
-
-Route::put('/banner/{id}', function (Request $request, $id) {
-    $updatedBanner = Banner::updateByIdAndName($id,  $request->all());
-
-    return response()->json([
-        'message' => 'Banner updated successfully!',
-        'data' => $updatedBanner
-    ]);
+Route::get('/slider',function(){
+    return view('frontend.index');
 });
 
 
 
-Route::get('/pos',[ProfileController::class, 'pos']);
 
-Route::get('/product-alerts', [AuthController::class, 'getAlerts']);
+
+Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
+
+
+
+Route::get('/product-alerts', [BaseController::class, 'getAlerts']);
 
 // Route::get('/switch-language/{language}', [LanguageController::class, 'switch'])->name('language.switch');
 Route::get('/lang/{lang}', [LanguageController::class, 'switch']);

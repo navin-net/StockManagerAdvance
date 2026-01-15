@@ -70,6 +70,29 @@ return [
     'view_orders' => 'មើលការបញ្ជាទិញ',
     'payment' => 'ការទូទាត់',
     'discount' => 'បញ្ចុះតម្លៃ',
+    'oops'  => 'អូហ៍! រកមិនឃើញផលិតផលទេ',
+    'close' => 'បិទ',
+    'order_discount_type' => 'ប្រភេទបញ្ចុះតម្លៃសម្រាប់ការបញ្ជាទិញ',
+    'value' => 'តម្លៃ',
+    'total' => 'សរុប',
+    'select_customer' => 'ជ្រើសរើសអតិថិជន',
+    'order_list' => 'បញ្ជីបញ្ជាទិញ',
+    'close_register' => 'បិទបញ្ជី',
+    'register_detail' => 'ព័ត៌មានលម្អិតចុះឈ្មោះ',
+    'add_expense' => 'បន្ថែមការចំណាយ',
+    'view_bill' => 'មើលវិក្កយបត្រ',
+    'calculator' => 'ម៉ាស៊ីនគិតលេខ',
+    'total_cash' => 'សាច់ប្រាក់សរុប',
+    'cash_in_hand' => 'សាច់ប្រាក់ក្នុងដៃ',
+    'note' => 'កំណត់ចំណាំ',
+    'pos_system' => 'ប្រព័ន្ធចំណុចលក់',
+    'cpr' => 'សូមពិនិត្យ និងបញ្ជាក់ថា ចំនួនសរុបខាងក្រោម បានបង់ប្រាក់រួចរាល់',
+    'stock' => 'ស្តុក',
+    'This_product_is_out_of_stock' => 'ផលិតផលនេះអស់ស្តុកហើយ',
+    'no_more_stock_available' => 'គ្មានស្តុកទៀតទេ',
+    'Loading' => 'កំពុងផ្ទុក.........',
+    'No_items_in_cart' => 'គ្មានទំនិញនៅក្នុងរទេះទេ',
+
     /* ================= Language ================= */
     'khmer' => 'ខ្មែរ',
     'english' => 'អង់គ្លេស',
@@ -123,7 +146,11 @@ return [
     'product_deleted_successfully' => 'បានលុបផលិតផលដោយជោគជ័យ!',
     'product_cannot_be_deleted_has_sales' => 'មិនអាចលុបផលិតផលបានទេ ព្រោះមានប្រវត្តិការលក់។',
     'no_products_available' => 'គ្មានផលិតផលដែលអាចប្រើបាន',
-
+    'select_sub_categories' => 'ជ្រើសរើស​ប្រភេទរង',
+    'qr_code' => 'លេខកូដ QR',
+    'product_removed_from_cart' => 'ផលិតផលត្រូវបានដកចេញពីរទេះ',
+    'pdf' => 'ឯកសារ PDF',
+    'confirm_delete' => 'បញ្ជាក់ការលុប',
     /* ================= Categories & Brands ================= */
     'categories' => 'ប្រភេទ',
     'categories_list' => 'បញ្ជីប្រភេទ',
@@ -138,7 +165,8 @@ return [
     'brand_updated_successfully' => 'បានធ្វើបច្ចុប្បន្នភាពម៉ាក!',
     'brand_deleted_successfully' => 'បានលុបម៉ាកដោយជោគជ័យ!',
     'current_image' => 'រូបភាពបច្ចុប្បន្ន',
-
+    'payment_summary' => 'សេចក្តីសង្ខេបនៃការទូទាត់',
+    'current_order' => 'បញ្ជាទិញបច្ចុប្បន្ន',
     /* ================= Sales ================= */
     'sales' => 'ការលក់',
     'sales_list' => 'បញ្ជីការលក់',
@@ -162,7 +190,7 @@ return [
     'confirm_sale_submission' => 'បញ្ជាក់ការដាក់ស្នើការលក់',
     'confirm_submission' => 'បញ្ជាក់ការដាក់ស្នើ',
     'please_add_at_least_one_item' => 'សូមបន្ថែមទំនិញយ៉ាងហោចណាស់មួយ។',
-
+    'tax' => 'ពន្ធ',
     /* ================= Purchases ================= */
     'purchases' => 'ការទិញ',
     'purchase' => 'ការទិញ',
@@ -235,6 +263,11 @@ return [
     'processing' => 'កំពុងដំណើរការ...',
 
     /* ================= Validation & Messages ================= */
+    'do_you_want_to_delete' => 'តើអ្នកចង់លុប',
+    'from_your_cart' => 'ពីរទេះរបស់អ្នក?',
+    'allitems' => 'ទំនិញទាំងអស់',
+    'clear_cart' => 'សម្អាតរទេះ',
+    'action_warning' => 'សកម្មភាពនេះមិនអាចត្រឡប់ដើមវិញបានទេ។',
     'banner_management' => 'ការគ្រប់គ្រងបដា',
     'delete_confirm' => 'តើអ្នកប្រាកដថាចង់លុបមែនទេ?',
     'confirm_bulk_delete' => 'តើអ្នកប្រាកដថាចង់លុបកំណត់ត្រាទាំងអស់មែនទេ?',

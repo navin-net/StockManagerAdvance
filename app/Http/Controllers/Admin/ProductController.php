@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Validator};
+use Illuminate\Support\Facades\{DB, Storage, Validator};
 use App\Http\Controllers\Controller;
-use App\Models\{ProductImage, Products};
+use App\Models\{Brand, Categories, ProductImage, Products, Qualitys, SaleItem, SubCategory, Units};
 use Yajra\DataTables\Facades\DataTables;
+
 class ProductController extends Controller
 {
 
@@ -15,54 +16,54 @@ class ProductController extends Controller
     {
         if ($request->ajax()) {
             $data = Products::select([
-                    'products.id',
-                    'products.image',
-                    'products.name',
-                    'products.code',
-                    'products.stock_quantity',
-                    'products.cost_price',
-                    'products.selling_price',
-                    'brands.name as brand_name',
-                    'categories.name as category_name',
-                    'sub_categories.name as subcategory_name',
-                    'qualitys.name as quality_name',
-                    'units.name as unit_name'
-                ])
+                'products.id',
+                'products.image',
+                'products.name',
+                'products.code',
+                'products.stock_quantity',
+                'products.cost_price',
+                'products.selling_price',
+                'brands.name as brand_name',
+                'categories.name as category_name',
+                'sub_categories.name as subcategory_name',
+                'qualitys.name as quality_name',
+                'units.name as unit_name'
+            ])
                 ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
                 ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
                 ->leftJoin('sub_categories', 'products.subcategory_id', '=', 'sub_categories.id')
                 ->leftJoin('qualitys', 'products.quality_id', '=', 'qualitys.id')
                 ->leftJoin('units', 'products.unit_id', '=', 'units.id');
-
+                // ->Orderby('products.id','DESC')
             return DataTables::of($data)
                 ->addColumn('action', function ($row) {
                     return view('admin.products.partials.actions', compact('row'))->render();
                 })
-                ->filterColumn('subcategory_name', function($query,$keyword){
-                    $query->where('sub_categories.name','like',"%$keyword%");
+                ->filterColumn('subcategory_name', function ($query, $keyword) {
+                    $query->where('sub_categories.name', 'like', "%$keyword%");
                 })
-                ->filterColumn('brand_name', function($query,$keyword){
-                    $query->where('brands.name','like',"%$keyword%");
+                ->filterColumn('brand_name', function ($query, $keyword) {
+                    $query->where('brands.name', 'like', "%$keyword%");
                 })
-                ->filterColumn('quality_name', function($query,$keyword){
-                    $query->where('qualitys.name','like',"%$keyword%");
+                ->filterColumn('quality_name', function ($query, $keyword) {
+                    $query->where('qualitys.name', 'like', "%$keyword%");
                 })
-                ->filterColumn('unit_name', function($query,$keyword){
-                    $query->where('units.name','like',"%$keyword%");
+                ->filterColumn('unit_name', function ($query, $keyword) {
+                    $query->where('units.name', 'like', "%$keyword%");
                 })
-                ->filterColumn('category_name', function($query,$keyword){
-                    $query->where('categories.name','like',"%$keyword%");
+                ->filterColumn('category_name', function ($query, $keyword) {
+                    $query->where('categories.name', 'like', "%$keyword%");
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
 
         return view('admin.products.index', [
-            'pageTitle'   => __('messages.products_list'),
-            'heading'     => __('messages.products_list'),
+            'pageTitle' => __('messages.products_list'),
+            'heading' => __('messages.products_list'),
             'description' => __('messages.dashboard_welcome'),
             'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
                 ['label' => __('messages.products'), 'url' => '', 'active' => true],
             ]
         ]);
@@ -108,7 +109,7 @@ class ProductController extends Controller
             'qualities' => $qualities,
             'units' => $units,
             'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('dashboard'), 'active' => false],
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
                 ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
                 ['label' => __('messages.create'), 'url' => '', 'active' => true],
             ],
@@ -132,50 +133,57 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image_review.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
         $data = $request->except('image', 'image_review');
-
         if ($request->hasFile('image')) {
-            $imageName = time() . '.' . $request->image->extension();
-            $path = $request->image->storeAs('products', $imageName, 'public');
-            $data['image'] = $path;
+            $data['image'] = $request->file('image')
+                ->store('products', 'public');
         }
-
         $product = Products::create($data);
-
         if ($request->hasFile('image_review')) {
-            foreach($request->file('image_review') as $img){
-                $imgName = uniqid().'.'.$img->extension();
-                $path = $img->storeAs('products/review', $imgName, 'public');
-
+            foreach ($request->file('image_review') as $img) {
+                $path = $img->store('products/review', 'public');
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_review' => $path,
                 ]);
             }
         }
-
-
-        session()->flash('success', __('messages.product_created'));
-
+        // session()->flash('success', __('messages.product_created'));
         return response()->json([
             'message' => __('messages.product_created'),
             'redirect' => route('products.index'),
         ], 201);
     }
 
-    public function getSubCategories(Request $request)
+    public function edit($id)
     {
-        $subCategories = DB::table('sub_categories')
-            ->select('id', 'name')
-            ->where('category_id', $request->category_id)
-            ->get();
+        $product = Products::with([
+            'brand',
+            'category',
+            'subCategory',
+            'quality',
+            'images'
+        ])->findOrFail($id);
 
-        return response()->json($subCategories);
+    // die($product);
+
+        return view('admin.products.edit', [
+            'pageTitle' => __('messages.edit_product') . ' - ' . $product->name,
+            'heading' => __('messages.edit_product') . ' - ' . $product->name,
+            'product' => $product,
+            'brands' => Brand::select('id', 'name')->get(),
+            'categories' => Categories::all(),
+            'subcategories' => SubCategory::where('category_id', $product->category_id)->get(),
+            'qualities' => Qualitys::select('id', 'name')->get(),
+            'units' => Units::select('id', 'name')->get(),
+            'breadcrumbs' => [
+                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
+                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
+            ]
+        ]);
     }
 
     public function show($id)
@@ -186,62 +194,88 @@ class ProductController extends Controller
                 'brands.name as brand_name',
                 'categories.name as category_name',
                 'sub_categories.name as subcategory_name',
-                'product_images.image_review',
+                'units.name as unit_name',
                 'qualitys.name as quality_name'
             )
-            ->leftJoin('product_images', 'products.id', '=', 'product_images.product_id')
             ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
+            ->join('units', 'products.unit_id', '=', 'units.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->leftJoin('sub_categories', 'products.subcategory_id', '=', 'sub_categories.id')
             ->leftJoin('qualitys', 'products.quality_id', '=', 'qualitys.id')
             ->where('products.id', $id)
             ->first();
 
-        $images = DB::table('product_images')
-            ->where('product_id', $id)
-            ->pluck('image_review');
+
+        // dd($product);
+        $products = Products::with('images')->findOrFail($id);
+        $mainImage = $products->image;
+        $images = $products->images;
+
+
 
         return view('admin.products.products-detail', [
-            'product'      => $product,
-            'images'       => $images,
-            'pageTitle'    => __('messages.products_detail'),
-            'heading'      => __('messages.products_detail'),
-            'description'  => __('messages.dashboard_welcome'),
-            'breadcrumbs'  => [
+            'product' => $product,
+            'images' => $images,
+            'mainImage' => $mainImage,
+            'pageTitle' => __('messages.products_detail'),
+            'heading' => __('messages.products_detail'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
                 ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
                 ['label' => __('messages.products_detail'), 'url' => '', 'active' => true],
             ]
         ]);
     }
 
-    public function edit($id)
+    public function destroy($id)
     {
-        $product      = Products::with(['brand', 'category', 'subCategory', 'quality'])->findOrFail($id);
-        $brands       = DB::table('brands')->select('id', 'name')->get();
-        $categories   = DB::table('categories')->select('id', 'name')->get();
-        $qualities    = DB::table('qualitys')->select('id', 'name')->get();
-        $units       = DB::table('units')->select('id', 'name')->get();
-        $subcategories = DB::table('sub_categories')
-            ->select('id', 'name')
-            ->where('category_id', $product->category_id)
-            ->get();
-        return view('admin.products.edit', [
-            'pageTitle'    => __('messages.edit_product'),
-            'heading'      => __('messages.edit_product'),
-            'product'      => $product,
-            'brands'       => $brands,
-            'categories'   => $categories,
-            'qualities'    => $qualities,
-            'units'       => $units,
-            'subcategories' => $subcategories,
+        $product = Products::with('images')->findOrFail($id);
 
-            'breadcrumbs' => [
-                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
-                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
-            ]
+        if (SaleItem::where('product_id', $product->id)->exists()) {
+            return response()->json([
+                'message' => __('messages.product_cannot_be_deleted_has_sales')
+            ], 400);
+        }
+        DB::transaction(function () use ($product) {
+            if (!empty($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+            foreach ($product->images as $img) {
+                if (!empty($img->image)) {
+                    Storage::disk('public')->delete($img->image);
+                }
+            }
+            $product->images()->delete();
+
+            $product->delete();
+        });
+        return response()->json([
+            'message' => __('messages.product_deleted_successfully'),
+            'redirect' => route('products.index'),
+        ], 200);
+    }
+
+    public function deleteImage($id)
+    {
+        $image = ProductImage::findOrFail($id);
+        if ($image->image_review) {
+            Storage::disk('public')->delete($image->image_review);
+        }
+        $image->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'Image deleted successfully'
         ]);
     }
 
+    public function getSubCategories($categoryId)
+    {
+        $subCategories = DB::table('sub_categories')
+            ->select('id', 'name')
+            ->where('category_id', $categoryId)
+            ->get();
 
+        return response()->json($subCategories);
+    }
 
 }

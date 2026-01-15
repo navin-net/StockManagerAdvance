@@ -1,318 +1,335 @@
 @extends('layouts.master')
 @section('title', $product->name)
 @section('content')
-<div class="container my-5">
-    <div class="pagetitle mb-4">
-        <h1 class="display-6 fw-bold">{{ $pageTitle }}</h1>
-        <nav>
-            <ol class="breadcrumb rounded-3 p-2">
-                @foreach ($breadcrumbs as $breadcrumb)
-                <li class="breadcrumb-item {{ $breadcrumb['active'] ? 'active text-muted' : '' }}">
-                    @if (!$breadcrumb['active'])
-                    <a href="{{ $breadcrumb['url'] }}"
-                        class="text-primary text-decoration-none">{{ $breadcrumb['label'] }}</a>
-                    @else
-                    {{ $breadcrumb['label'] }}
-                    @endif
-                </li>
-                @endforeach
-            </ol>
-        </nav>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="main-image-container mb-3">
-                        <img src="{{ $product->image ? asset($product->image) : 'no-image.png' }}" alt="No Image Available" class="img-fluid main-image">
-                    </div>
-                    <div class="row thumbnail-row">
-                        @foreach ($images as $image)
-                        <div class="col-6">
-                            <div class="thumbnail-container">
-                                <img src="{{ $image ? asset($image) : 'no-image.png' }}" alt="No Image Available" class="img-fluid thumbnail">
-                            </div>
+    <div class="container my-5">
+        <div class="pagetitle mb-4">
+            <h1 class="display-6 fw-bold">{{ $pageTitle }}</h1>
+            <nav>
+                <ol class="breadcrumb rounded-3 p-2">
+                    @foreach ($breadcrumbs as $breadcrumb)
+                        <li class="breadcrumb-item {{ $breadcrumb['active'] ? 'active text-muted' : '' }}">
+                            @if (!$breadcrumb['active'])
+                                <a href="{{ $breadcrumb['url'] }}"
+                                    class="text-primary text-decoration-none">{{ $breadcrumb['label'] }}</a>
+                            @else
+                                {{ $breadcrumb['label'] }}
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </nav>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="main-image-container mb-3 text-center">
+                            <img id="mainImage"
+                                src="{{ $product->image ? Storage::url($product->image) : asset('no-image.png') }}"
+                                class="img-fluid main-image" alt="Main Image">
                         </div>
-                        @endforeach
+                        <div class="row thumbnail-row g-2">
+                            @foreach ($images as $img)
+                                <div class="col-6 col-md-3 image-item" id="image-{{ $img->id }}">
+                                    <div class="position-relative thumbnail-container">
+                                        <img src="{{ Storage::url($img->image_review) }}"
+                                            class="img-fluid thumbnail rounded" alt="Thumbnail">
+
+                                        <!-- Delete Button -->
+                                        <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-image"
+                                            data-id="{{ $img->id }}" title="Delete">
+                                            &times;
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="product-details">
-                        <div class="row mb-3">
-                            <div class="col-md-4 text-md-end ">Barcode & QRcode</div>
-                            <div class="col-md-8">
-                                <div class="d-flex">
-                                    <img src="barcode.png" alt="Barcode" class="barcode me-2">
-                                    <img src="qrcode.png" alt="QR Code" class="qrcode">
+                    <div class="col-md-6">
+                        <div class="product-details">
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-4 text-md-end">{{ __('messages.barcode') }} &amp;
+                                    {{ __('messages.qr_code') }}</div>
+                                <div class="col-md-8 mb-4">
+                                    <div class="d-flex align-items-center">
+                                        <svg id="barcode" class="barcode me-3"></svg>
+                                        <div id="qrcode" class="qrcode"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.code') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->code ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.name') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.second_name') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->second_name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">Brand</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->brand_name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.categories') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->category_name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.sub_categories') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->subcategory_name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.unit') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->unit_name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.cost_price') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ number_format($product->cost_price ?? 0, 2) }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">{{ __('messages.selling_price') }}</div>
+                                <div class="col-md-8">
+                                    <div>{{ number_format($product->selling_price ?? 0, 2) }}</div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-md-end ">Tax Method</div>
+                                <div class="col-md-8">
+                                    <div>{{ $product->tax_method ?? 'Exclusive' }}</div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Type</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->type ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Name</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->name ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Code</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->code ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Brand</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->brand_name ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Category</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->category ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Unit</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->unit ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Cost</div>
-                            <div class="col-md-8">
-                                <div >{{ number_format($product->cost ?? 0, 2) }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Price</div>
-                            <div class="col-md-8">
-                                <div >{{ number_format($product->price ?? 0, 2) }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Tax Rate</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->tax_rate ?? 'No Tax' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-4 text-md-end ">Tax Method</div>
-                            <div class="col-md-8">
-                                <div >{{ $product->tax_method ?? 'Exclusive' }}</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="d-flex action-buttons">
-                <button class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-printer"></i> Print Barcode/
-                </button>
-                <button class="btn btn-info flex-grow-1">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
-                </button>
-                <button class="btn btn-warning flex-grow-1">
-                    <i class="bi bi-pencil-square"></i> Edit
-                </button>
-                <button class="btn btn-danger flex-grow-1">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="d-flex action-buttons">
+                    {{-- <button class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-printer"></i> Print Barcode/
+                    </button> --}}
+                    <button class="btn btn-info flex-grow-1">
+                        <i class="bi bi-file-earmark-pdf"></i> {{ __('messages.pdf') }}
+                    </button>
+                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning flex-grow-1">
+                        <i class="bi bi-pencil-square"></i> {{ __('messages.edit') }}
+                    </a>
+                    <button type="button" class="btn btn-danger  flex-grow-1" data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ $product->id }}">
+                        <i class="bi bi-trash"></i> {{ __('messages.delete') }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-</div>
+    <div class="modal fade" id="deleteModal{{ $product->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        {{ __('messages.confirm_delete') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    {{ __('messages.delete_confirm') }}
+                    <br>
+                    {{-- <small class="text-muted">This action cannot be undone.</small> --}}
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ __('messages.cancel') }}
+                    </button>
+
+                    <form action="{{ route('products.destroy', $product->id) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            {{ __('messages.yes') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <div class="modal fade" id="deleteImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p>Are you sure you want to delete this image?</p>
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 @endsection
 @push('scripts')
-<script>
-      // Generate placeholder images for demo
-document.addEventListener('DOMContentLoaded', function() {
-    // Create no-image placeholder
-    createNoImagePlaceholder();
+    <script>
+        let imageIdToDelete = null;
+        const barcodeValue = String(@json($product->code ?? ''));
+        const id = String(@json($product->id ?? ''));
+        const baseUrl = "{{ url('/') }}";
+        const qrValue = `${baseUrl}/admin/products/show/${encodeURIComponent(id)}`;
 
-    // Create barcode and QR code
-    createBarcode();
-    createQRCode();
 
-    // Create logo
-    createLogo();
-});
+        JsBarcode("#barcode", barcodeValue, {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 2,
+            height: 60,
+            displayValue: true,
+            margin: 10,
+            fontSize: 14,
+            background: "#fff"
+        });
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, {
+            text: qrValue,
+            width: 128,
+            height: 128,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
 
-function createNoImagePlaceholder() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 300;
-    canvas.height = 300;
-    const ctx = canvas.getContext('2d');
 
-    // Draw circle
-    ctx.beginPath();
-    ctx.arc(150, 150, 120, 0, Math.PI * 2);
-    ctx.strokeStyle = '#aaa';
-    ctx.lineWidth = 10;
-    ctx.stroke();
 
-    // Draw camera icon
-    ctx.beginPath();
-    ctx.rect(100, 120, 100, 70);
-    ctx.fillStyle = '#555';
-    ctx.fill();
+        document.querySelectorAll('.thumbnail').forEach(img => {
+            img.addEventListener('click', function() {
+                document.getElementById('mainImage').src = this.src;
+            });
+        });
 
-    // Draw lens
-    ctx.beginPath();
-    ctx.arc(150, 155, 25, 0, Math.PI * 2);
-    ctx.fillStyle = '#777';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(150, 155, 15, 0, Math.PI * 2);
-    ctx.fillStyle = '#555';
-    ctx.fill();
 
-    // Draw flash
-    ctx.beginPath();
-    ctx.arc(180, 130, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
-    ctx.fill();
 
-    // Draw diagonal line
-    ctx.beginPath();
-    ctx.moveTo(80, 80);
-    ctx.lineTo(220, 220);
-    ctx.strokeStyle = '#aaa';
-    ctx.lineWidth = 10;
-    ctx.stroke();
 
-    const dataUrl = canvas.toDataURL();
-    document.querySelectorAll('img[src="no-image.png"]').forEach(img => {
-        img.src = dataUrl;
-    });
-}
 
-function createBarcode() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 80;
-    const ctx = canvas.getContext('2d');
+// Delete Products
+        $(document).on('click', '.delete-product', function() {
+            const productId = $(this).data('id');
+            const deleteUrl = "{{ url('admin/products') }}/" + productId;
+            $('#deleteProductForm').attr('action', deleteUrl);
+            $('#deleteProductModal').modal('show');
+        });
+        $('#deleteProductForm').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const action = form.attr('action');
 
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+            $.ajax({
+                url: action,
+                type: 'DELETE',
+                data: form.serialize(),
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    $('#deleteProductModal').modal('hide');
+                    table.ajax.reload();
+                    const successAlert = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                    $('#alertsContainer').html(successAlert);
+                    setTimeout(function() {
+                        $('#alertsContainer .alert').alert('close');
+                    }, 5000);
+                },
+                error: function(xhr) {
+                    $('#deleteProductModal').modal('hide');
 
-    // Draw barcode lines
-    ctx.fillStyle = '#000';
-    for (let i = 0; i < 30; i++) {
-        const x = 10 + i * 6;
-        const height = 20 + Math.random() * 40;
-        const width = 2 + Math.random() * 2;
-        ctx.fillRect(x, 10, width, height);
-    }
+                    const errorMessage = xhr.responseJSON?.error || xhr.responseJSON
+                        ?.message ||
+                        'Failed to delete the product. Please try again.';
 
-    const dataUrl = canvas.toDataURL();
-    document.querySelectorAll('img[src="barcode.png"]').forEach(img => {
-        img.src = dataUrl;
-    });
-}
+                    const errorAlert = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            ${errorMessage}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
 
-function createQRCode() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 80;
-    canvas.height = 80;
-    const ctx = canvas.getContext('2d');
+                    $('#alertsContainer').html(errorAlert);
 
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    setTimeout(function() {
+                        $('#alertsContainer .alert').alert('close');
+                    }, 5000);
+                }
 
-    // Draw QR code pattern
-    ctx.fillStyle = '#000';
-    const blockSize = 8;
+            });
+        });
 
-    // Corner squares
-    ctx.fillRect(10, 10, 20, 20);
-    ctx.fillRect(50, 10, 20, 20);
-    ctx.fillRect(10, 50, 20, 20);
 
-    // Inner white squares for corners
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(15, 15, 10, 10);
-    ctx.fillRect(55, 15, 10, 10);
-    ctx.fillRect(15, 55, 10, 10);
+// Delete Image
+        document.querySelectorAll('.delete-image').forEach(btn => {
+            btn.addEventListener('click', function() {
+                imageIdToDelete = this.dataset.id;
+                const modal = new bootstrap.Modal(document.getElementById('deleteImageModal'));
+                modal.show();
+            });
+        });
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            if (!imageIdToDelete) return;
+            fetch(`/product/image/${imageIdToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status) {
+                        const el = document.getElementById(`image-${imageIdToDelete}`);
+                        el && el.remove();
+                    }
+                    imageIdToDelete = null;
+                    const modalEl = document.getElementById('deleteImageModal');
+                    bootstrap.Modal.getInstance(modalEl).hide();
+                });
+        });
 
-    // Random QR code pattern
-    ctx.fillStyle = '#000';
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 6; j++) {
-            if (Math.random() > 0.5) {
-                ctx.fillRect(10 + i * blockSize, 10 + j * blockSize, blockSize, blockSize);
-            }
-        }
-    }
 
-    const dataUrl = canvas.toDataURL();
-    document.querySelectorAll('img[src="qrcode.png"]').forEach(img => {
-        img.src = dataUrl;
-    });
-}
-
-function createLogo() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 100;
-    canvas.height = 100;
-    const ctx = canvas.getContext('2d');
-
-    // Draw logo on red background
-    ctx.fillStyle = '#ff3b30';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw geometric shape (similar to Laravel logo)
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
-
-    // Draw cube-like shape
-    ctx.beginPath();
-    ctx.moveTo(30, 60);
-    ctx.lineTo(50, 70);
-    ctx.lineTo(70, 60);
-    ctx.lineTo(50, 50);
-    ctx.closePath();
-    ctx.stroke();
-
-    // Draw left extension
-    ctx.beginPath();
-    ctx.moveTo(30, 60);
-    ctx.lineTo(30, 40);
-    ctx.lineTo(50, 30);
-    ctx.lineTo(50, 50);
-    ctx.stroke();
-
-    // Draw right extension
-    ctx.beginPath();
-    ctx.moveTo(50, 50);
-    ctx.lineTo(70, 40);
-    ctx.lineTo(70, 60);
-    ctx.stroke();
-
-    const dataUrl = canvas.toDataURL();
-    document.querySelectorAll('img[src="logo.png"]').forEach(img => {
-        img.src = dataUrl;
-    });
-}
-</script>
+ </script>
 @endpush

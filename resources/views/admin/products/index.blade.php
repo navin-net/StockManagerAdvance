@@ -121,11 +121,6 @@
         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
-                    {{-- <div class="modal-header border-0 rounded-top-3">
-                        <h5 class="modal-title display-6 fw-bold" id="imageModalLabel">{{ __('messages.current_image') }}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div> --}}
                     <div class="modal-body text-center">
                         <img id="modalImage" src="/placeholder.svg" alt="Product Image" class="img-fluid rounded-3">
                     </div>
@@ -158,121 +153,7 @@
             </div>
         </div>
 
-        <!-- Edit Product Modal -->
-        <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editProductModalLabel">{{ __('messages.edit_product') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="modalError" class="alert alert-danger d-none" role="alert"></div>
-                        <form id="editProductForm" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="id" id="edit_id">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_name" class="form-label">{{ __('messages.name') }}</label>
-                                    <input type="text" name="name" id="edit_name" class="form-control" required>
-                                    <div class="invalid-feedback" id="edit_name_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_code" class="form-label">{{ __('messages.code') }}</label>
-                                    <input type="text" name="code" id="edit_code" class="form-control" required>
-                                    <div class="invalid-feedback" id="edit_code_error"></div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_brand_id" class="form-label">{{ __('messages.brand') }}</label>
-                                    <select name="brand_id" id="edit_brand_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_brand') }}</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="edit_brand_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_category_id"
-                                        class="form-label">{{ __('messages.category') }}</label>
-                                    <select name="category_id" id="edit_category_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_category') }}</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="edit_category_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_unit_id" class="form-label">{{ __('messages.unit') }}</label>
-                                    <select name="unit_id" id="edit_unit_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_unit') }}</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="edit_unit_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_subcategory_id"
-                                        class="form-label">{{ __('messages.subcategory') }}</label>
-                                    <select name="subcategory_id" id="edit_subcategory_id" class="form-select" disabled>
-                                        <option value="">{{ __('messages.select_subcategory') }}</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="edit_subcategory_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_quality_id" class="form-label">{{ __('messages.quality') }}</label>
-                                    <select name="quality_id" id="edit_quality_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_quality') }}</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="edit_quality_id_error"></div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_cost_price"
-                                        class="form-label">{{ __('messages.cost_price') }}</label>
-                                    <input type="number" name="cost_price" id="edit_cost_price" class="form-control"
-                                        step="0.01" min="0" required>
-                                    <div class="invalid-feedback" id="edit_cost_price_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_selling_price"
-                                        class="form-label">{{ __('messages.selling_price') }}</label>
-                                    <input type="number" name="selling_price" id="edit_selling_price"
-                                        class="form-control" step="0.01" min="0" required>
-                                    <div class="invalid-feedback" id="edit_selling_price_error"></div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_stock_quantity"
-                                        class="form-label">{{ __('messages.stock_quantity') }}</label>
-                                    <input type="number" name="stock_quantity" id="edit_stock_quantity"
-                                        class="form-control" min="0" required>
-                                    <div class="invalid-feedback" id="edit_stock_quantity_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_image" class="form-label">{{ __('messages.image') }}</label>
-                                    <input type="file" name="image" id="edit_image" class="form-control"
-                                        accept="image/jpeg,image/png,image/jpg">
-                                    <div class="invalid-feedback" id="edit_image_error"></div>
-                                    <img id="edit_image_preview" src="" alt="Preview"
-                                        class="img-thumbnail mt-2 d-none" style="max-width: 100px;">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="edit_description" class="form-label">{{ __('messages.description') }}</label>
-                                <textarea name="description" id="edit_description" class="form-control" rows="5"></textarea>
-                                <div class="invalid-feedback" id="edit_description_error"></div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                        <button type="submit" class="btn btn-primary"
-                            id="saveEditBtn">{{ __('messages.save') }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 @endsection
 
@@ -370,15 +251,10 @@
 
                 language: {
                     paginate: {
-                        previous: `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                     fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646
-                       a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6
-                       a.5.5 0 0 1 .708 0z"/>
-                </svg>
-            `,
+                        previous:
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646 a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6 a.5.5 0 0 1 .708 0z"/>
+                    </svg>`,
                         next: `
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                      fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -393,9 +269,6 @@
                     search: '{{ __('messages.search') }}',
                     emptyTable: "{{ __('messages.no_data_available') }}",
                     processing: "{{ __('messages.processing') }}"
-                    // zeroRecords: "{{ __('messages.no_matching_records') }}",
-                    // infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
-                    // infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
 
@@ -416,176 +289,10 @@
                 $('#alertsContainer .alert').alert('close');
             }, 5000);
 
-            // Edit product
-            $('#productsTable').on('click', '.edit-product', function() {
-                let id = $(this).data('id');
-                $.ajax({
-                    url: '{{ route('products.index') }}/' + id + '/edit',
-                    type: 'GET',
-                    success: function(response) {
-                        $('#edit_id').val(response.product.id);
-                        $('#edit_name').val(response.product.name);
-                        $('#edit_code').val(response.product.code);
-                        $('#edit_cost_price').val(response.product.cost_price);
-                        $('#edit_selling_price').val(response.product.selling_price);
-                        $('#edit_stock_quantity').val(response.product.stock_quantity);
-                        $('#edit_description').val(response.product.description);
-
-                        $('#edit_unit_id').html(
-                            '<option value="">{{ __('messages.select_unit') }}</option>');
-                        $.each(response.units, function(index, unit) {
-                            $('#edit_unit_id').append('<option value="' + unit.id +
-                                '">' + unit.name + '</option>');
-                        });
-                        $('#edit_unit_id').val(response.product.unit_id);
-                        $('#edit_brand_id').html(
-                            '<option value="">{{ __('messages.select_brand') }}</option>');
-                        $.each(response.brands, function(index, brand) {
-                            $('#edit_brand_id').append('<option value="' + brand.id +
-                                '">' + brand.name + '</option>');
-                        });
-                        $('#edit_brand_id').val(response.product.brand_id);
-
-                        $('#edit_category_id').html(
-                            '<option value="">{{ __('messages.select_category') }}</option>'
-                        );
-                        $.each(response.categories, function(index, category) {
-                            $('#edit_category_id').append('<option value="' + category
-                                .id + '">' + category.name + '</option>');
-                        });
-                        $('#edit_category_id').val(response.product.category_id);
-
-                        $('#edit_subcategory_id').html(
-                            '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                        );
-                        $.each(response.subcategories, function(index, subcategory) {
-                            $('#edit_subcategory_id').append('<option value="' +
-                                subcategory.id + '">' + subcategory.name +
-                                '</option>');
-                        });
-                        $('#edit_subcategory_id').val(response.product.subcategory_id).prop(
-                            'disabled', response.subcategories.length === 0);
-
-                        $('#edit_quality_id').html(
-                            '<option value="">{{ __('messages.select_quality') }}</option>'
-                        );
-                        $.each(response.qualities, function(index, quality) {
-                            $('#edit_quality_id').append('<option value="' + quality
-                                .id + '">' + quality.name + '</option>');
-                        });
-                        $('#edit_quality_id').val(response.product.quality_id);
-
-                        if (response.product.image) {
-                            $('#edit_image_preview').attr('src', '{{ asset('') }}' +
-                                response.product.image).removeClass('d-none');
-                        } else {
-                            $('#edit_image_preview').addClass('d-none');
-                        }
-
-                        $('#editProductModal').modal('show');
-                    },
-                    error: function(xhr) {
-                        $('#alertsContainer').html(
-                            '<div class="alert alert-danger alert-dismissible fade show" role="alert">Failed to load product data. Please try again.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
-                        );
-                    }
-                });
-            });
-
-            // Handle category change
-            $('#edit_category_id').on('change', function() {
-                let categoryId = $(this).val();
-                let subcategorySelect = $('#edit_subcategory_id');
-
-                subcategorySelect.prop('disabled', true).html(
-                    '<option value="">{{ __('messages.select_subcategory') }}</option>');
-
-                if (categoryId) {
-                    $.ajax({
-                        url: '{{ route('products.subcategories') }}',
-                        type: 'GET',
-                        data: {
-                            category_id: categoryId
-                        },
-                        success: function(data) {
-                            if (data.length > 0) {
-                                $.each(data, function(index, subcategory) {
-                                    subcategorySelect.append('<option value="' +
-                                        subcategory.id + '">' + subcategory.name +
-                                        '</option>');
-                                });
-                                subcategorySelect.prop('disabled', false);
-                            } else {
-                                subcategorySelect.append(
-                                    '<option value="">{{ __('messages.no_subcategories') }}</option>'
-                                );
-                            }
-                        },
-                        error: function(xhr) {
-                            $('#modalError').removeClass('d-none').text(
-                                '{{ __('messages.subcategory_load_error') }}');
-                        }
-                    });
-                }
-            });
-
-            // Save edited product
-            $('#saveEditBtn').on('click', function() {
-                let formData = new FormData($('#editProductForm')[0]);
-                let btn = $(this).prop('disabled', true).html(
-                    '<i class="bi bi-hourglass-split"></i> Saving...');
-
-                $.ajax({
-                    url: '{{ route('products.index') }}/' + $('#edit_id').val(),
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                        'X-HTTP-Method-Override': 'PUT'
-                    },
-                    success: function(response) {
-                        $('#editProductModal').modal('hide');
-                        table.ajax.reload();
-                        $('#alertsContainer').html(
-                            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                            response.message +
-                            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
-                        );
-                        setTimeout(function() {
-                            $('#alertsContainer .alert').alert('close');
-                        }, 5000);
-                    },
-                    error: function(xhr) {
-                        btn.prop('disabled', false).html('{{ __('messages.save') }}');
-                        $('#modalError').removeClass('d-none');
-                        if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            $.each(errors, function(key, value) {
-                                $('#edit_' + key + '_error').text(value[0]);
-                                $('#edit_' + key).addClass('is-invalid');
-                            });
-                            $('#modalError').text('Please correct the errors below.');
-                        } else if (xhr.status === 419) {
-                            $('#modalError').text(
-                                'CSRF token mismatch. Please refresh the page and try again.'
-                            );
-                        } else {
-                            $('#modalError').text('Server error (' + xhr.status +
-                                '). Please try again.');
-                        }
-                    },
-                    complete: function() {
-                        btn.prop('disabled', false).html('{{ __('messages.save') }}');
-                    }
-                });
-            });
-
             // Delete product
             $(document).on('click', '.delete-product', function() {
                 const productId = $(this).data('id');
-                const deleteUrl = "{{ url('products') }}/" + productId;
+                const deleteUrl = "{{ url('admin/products') }}/" + productId;
                 $('#deleteProductForm').attr('action', deleteUrl);
                 $('#deleteProductModal').modal('show');
             });
