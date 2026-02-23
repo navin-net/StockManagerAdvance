@@ -1,0 +1,11 @@
+code,name,second_name,unit_id,brand_id,category_id,subcategory_id,quality_id,stock_quantity,expiry_date,cost_price,selling_price
+KH-PEP-01,Black Kampot Pepper,ម្រេចខ្មៅកំពត,4,201,50,501,1,150,2027-12-31,5.50,12.00
+KH-SILK-02,Golden Silk Krama,ក្រមាខ្មែរថ្នៃ,3,202,60,601,1,45,2030-01-01,25.00,45.00
+KH-RICE-03,Ibis Jasmine Rice,អង្ករផ្ការំដួល,5,203,50,502,1,500,2026-06-20,0.90,1.50
+KH-SUG-04,Thnot Palm Sugar,ស្ករត្នោតកំពង់ស្ពឺ,4,204,50,503,2,300,2026-01-15,2.00,3.50
+KH-WINE-05,Jaya Palm Wine,ស្រាត្នោតជ័យ,6,204,70,701,1,80,2027-05-10,8.00,15.00
+KH-BEER-06,Angkor Beer (Can),ស្រាបៀរអង្គរ,6,206,70,702,2,1200,2026-11-20,0.45,0.65
+KH-HAND-07,Rattan Basket,កន្ត្រកផ្តៅ,1,207,80,801,2,60,2035-12-31,4.00,9.00
+KH-SPA-08,Bodia Lemongrass Oil,ប្រេងរឹតពោធិ៍សាត់,6,208,90,901,1,120,2027-08-15,6.50,14.50
+KH-SNK-09,Dried Mango Slices,ស្វាយសម្ងួត,4,209,50,504,2,400,2026-04-10,1.20,2.50
+KH-SILK-10,Phamuong Skirt,សំពត់ផាមួង,3,202,60,602,1,20,2032-01-01,85.00,150.00

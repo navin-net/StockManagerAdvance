@@ -34,7 +34,7 @@ class ProductController extends Controller
                 ->leftJoin('sub_categories', 'products.subcategory_id', '=', 'sub_categories.id')
                 ->leftJoin('qualitys', 'products.quality_id', '=', 'qualitys.id')
                 ->leftJoin('units', 'products.unit_id', '=', 'units.id');
-                // ->Orderby('products.id','DESC')
+            // ->Orderby('products.id','DESC')
             return DataTables::of($data)
                 ->addColumn('action', function ($row) {
                     return view('admin.products.partials.actions', compact('row'))->render();
@@ -168,7 +168,7 @@ class ProductController extends Controller
             'images'
         ])->findOrFail($id);
 
-    // die($product);
+        // die($product);
 
         return view('admin.products.edit', [
             'pageTitle' => __('messages.edit_product') . ' - ' . $product->name,
@@ -185,6 +185,79 @@ class ProductController extends Controller
             ]
         ]);
     }
+
+    public function update(Request $request, $id)
+    {
+        $product = Products::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:191',
+            'code' => 'required|string|max:191|unique:products,code,' . $id,
+            'brand_id' => 'required|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
+            'quality_id' => 'required|exists:qualitys,id',
+            'cost_price' => 'required|numeric|min:0',
+            'selling_price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'second_name' => 'nullable|string|max:191',
+            'unit_id' => 'required|exists:units,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image_review.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $data = $request->except('image', 'image_review');
+        if ($request->hasFile('image')) {
+
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $data['image'] = $request->file('image')
+                ->store('products', 'public');
+        }
+        $product->update($data);
+
+
+        if ($request->hasFile('image_review')) {
+            foreach ($product->images as $oldImage) {
+                if (Storage::disk('public')->exists($oldImage->image_review)) {
+                    Storage::disk('public')->delete($oldImage->image_review);
+                }
+                $oldImage->delete();
+            }
+            foreach ($request->file('image_review') as $img) {
+                $path = $img->store('products/review', 'public');
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_review' => $path,
+                ]);
+            }
+        }
+
+
+        // return response()->json([
+        //     'changed' => $product->getChanges(),
+        //     'product' => $product
+        // ]);
+
+
+        // return response()->json([
+        //     'redirect' => route('products.index', ['status' => 'success', 'message' => __('messages.product_updated'). ' - ' . $product->name])
+        // ]);
+
+        return redirect()->route('products.index')
+            ->with('success', __('messages.product_updated'). ' - ' . $product->name);
+
+
+
+    }
+
+
 
     public function show($id)
     {
@@ -236,7 +309,7 @@ class ProductController extends Controller
                 'message' => __('messages.product_cannot_be_deleted_has_sales')
             ], 400);
         }
-        DB::transaction(function () use ($product) {
+
             if (!empty($product->image)) {
                 Storage::disk('public')->delete($product->image);
             }
@@ -248,7 +321,7 @@ class ProductController extends Controller
             $product->images()->delete();
 
             $product->delete();
-        });
+
         return response()->json([
             'message' => __('messages.product_deleted_successfully'),
             'redirect' => route('products.index'),
@@ -276,6 +349,73 @@ class ProductController extends Controller
             ->get();
 
         return response()->json($subCategories);
+    }
+
+    public function import()
+    {
+
+        return view('admin.products.imports', [
+            'pageTitle' => __('messages.products_import'),
+            'heading' => __('messages.products_import'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
+                ['label' => __('messages.products_import'), 'url' => '', 'active' => true],
+            ]
+        ]);
+    }
+
+
+    public function barcodelabel(Request $request)
+    {
+
+
+        $search = $request->query('q');
+
+        $products = Products::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            })
+            ->select('id', 'code', 'name', 'image', 'selling_price')
+            ->orderBy('name')
+            // ->take(3)      // or ->limit(10)
+            ->get();
+        // die($products);
+
+        return view('admin.products.barcode-generator', [
+            'pageTitle' => __('messages.barcode-generator'),
+            'heading' => __('messages.barcode-generator'),
+            'description' => __('messages.dashboard_welcome'),
+            'products' => $products,
+            'breadcrumbs' => [
+                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
+                ['label' => __('messages.barcode-generator'), 'url' => '', 'active' => true],
+            ]
+        ]);
+    }
+
+
+
+    public function adjustment(Request $request)
+    {
+        return view('admin.products.adjustment', [
+            'pageTitle' => __('messages.add_adjustment'),
+            'heading' => __('messages.add_adjustment'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                        [
+            'label' => __('messages.home'),
+            'url' => route('admin.dashboard'), // or url('/admin')
+            'active' => false
+        ],
+                ['label' => __('messages.products'), 'url' => url('admin/products'), 'active' => false],
+                ['label' => __('messages.adjustment'), 'url' => '', 'active' => true],
+            ]
+        ]);
+
+
+
     }
 
 }

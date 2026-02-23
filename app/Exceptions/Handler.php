@@ -27,14 +27,14 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (NotFoundHttpException  $e, $request) {
 
-        // ✅ If request is API → return JSON
+
         if ($request->is('api/*') || $request->expectsJson()) {
             return response()->json([
                 'message' => 'Resource not found'
             ], 404);
         }
 
-        // ✅ Otherwise → show web 404 page
+
         return response()->view('errors.404', [], 404);
         });
     }

@@ -7,12 +7,14 @@
 
 return [
     /* ================= General ================= */
-    'welcome' => 'Welcome to our application!',
+    'welcome' => 'Welcome',
+    'portfolio' => 'Portfolio',
     'welcome_mart24h_users' => 'Welcome Mart24h Users',
     'dashboard' => 'Dashboard',
     'dashboard_welcome' => 'Welcome to Dashboard',
     'stock_management_system' => 'Stock Management System',
     'home' => 'Home',
+    'sold_out' => 'Sold Out',
     'ip_address' => 'IP Address',
     'search' => 'Search',
     'show' => 'Show',
@@ -29,7 +31,6 @@ return [
     'save' => 'Save',
     'view' => 'View',
     'back' => 'Back',
-    'actions' => 'Actions',
     'yes' => 'Yes',
     'no' => 'No',
     'avatar' => 'Avatar',
@@ -87,6 +88,12 @@ return [
     'note' => 'noted',
     'cpr' => 'Please review the details below as paid (total)',
     'No_items_in_cart' => 'No Items in cart',
+    'reference' => 'Reference',
+    'list_users' => 'User List',
+    'total_payable' => 'Total Payable',
+    'add_rights_reserved' => 'All rights reserved.',
+    'shipping' => 'Shipping',
+
     /* ================= Language ================= */
     'khmer' => 'Khmer',
     'english' => 'English',
@@ -107,12 +114,18 @@ return [
     'personal_information' => 'Personal Information',
     'manage_your_personal_information_and_security' => 'Manage Your Personal Information and Security',
     'dob' => 'Birth Date',
-
+    'upload_excel_file' => 'Upload Excel File',
+    'payment_list' => 'Payment List',
     /* ================= Products ================= */
     'generate' => 'Generate',
+    'file' => 'File',
+    'import_data' => 'Import Data',
+    'download_file_excel' => 'Download File Excel',
+    'products_import' => 'Products Import',
     'submit' => 'Submit',
     'products' => 'Products',
     'products_list' => 'Products List',
+    'import' => 'Import',
     'image' => 'Image',
     'code' => 'Code',
     'category' => 'Category',
@@ -133,7 +146,13 @@ return [
     'print' => 'Print',
     'search_product' => 'Search Product',
     'remove' => 'Remove',
-    'action' => 'Actions',
+    'payment_status' => 'Payment status',
+    'paid' => 'Paid',
+    'balance' => 'Balance',
+    'more_info' => 'More info',
+    'supplier' => 'Supplier',
+    'actions' => 'Actions',
+    'action' => 'Action',
     'see_all' => 'See All',
     'pos_system' => 'Point of Sale System',
     'unit' => 'Unit',
@@ -166,7 +185,19 @@ return [
     'qr_code' => 'Qr Code',
     'product_removed_from_cart' => 'Product Removed From Cart',
     'pdf' => 'PDF',
+    'grand_total' => 'Grand Total',
+    'add_payment' => 'Add Payment',
+    'attachment' => 'Attachment',
+    'payment_method' => 'Payment Method',
+    'barcode-generator' => 'Bar-Code Generator',
+    'remember_me' => 'Remember Me',
+    'add_adjustment' => 'Add Adjustment',
+    'adjustment' => 'adjustment',
+    'method' => 'Method',
 
+    'add_payments' => 'Add Payments',
+    'list_payment' => 'Payment List',
+    'barcode-label' => 'Barcode-Label',
     /* ================= Categories & Brands ================= */
     'categories' => 'Categories',
     'categories_list' => 'Categories List',
@@ -181,11 +212,11 @@ return [
     'brand_updated_successfully' => 'Brand updated successfully!',
     'brand_deleted_successfully' => 'Brand deleted successfully!',
     'current_image' => 'Current Image',
-
+    'categories_updated_successfully' => 'Categories updated successfully',
     /* ================= Sales ================= */
     'sales' => 'Sales',
     'sales_list' => 'Sales List',
-    'list_sales' => 'List Sales',
+    'list_sales' => 'Sales List',
     'add_sale' => 'Add Sale',
     'add_new_sale' => 'Add New Sale',
     'edit_sale' => 'Edit Sale',
@@ -222,7 +253,8 @@ return [
 
     /* ================= Users & Billers ================= */
     'users' => 'Users',
-    'list_users' => 'Users List',
+
+    'list_user' => 'Users List',
     'add_user' => 'Add User',
     'no_users_found' => 'No users found',
     'billers' => 'Billers',
@@ -233,7 +265,7 @@ return [
     'edit_biller' => 'Edit Biller',
     'billers_details' => 'Biller Details',
     'biller_deleted_successfully' => 'Biller deleted successfully!',
-
+    'edit_user' => 'Edit User',
     /* ================= Warehouse & Groups ================= */
     'warehouse' => 'Warehouse',
     'warehouse_list' => 'Warehouse List',
@@ -291,10 +323,15 @@ return [
     'do_you_want_to_delete' => 'Do you want to delete',
     'allitems' => 'All Items',
     'action_warning' => 'This action cannot be undone.',
+    'confirm_add_product' => 'Are you sure you want to add this product?',
     'clear_cart' => 'Clear Cart',
+    'clear' => 'Clear',
     'from_your_cart' => 'From Your Cart?',
+    'confirm_delete' => 'Confirm delete',
     'banner_management' => 'Banner Management',
     'delete_confirm' => 'Are you sure you want to delete?',
+    'exceeds_stock' => 'Exceeds Stock',
+    'stock_issues_detected' => 'stock issues detected',
     'confirm_bulk_delete' => 'Are you sure you want to delete all records?',
     'name_unique' => 'This name has already been registered.',
     'email_unique' => 'This email has already been registered.',
@@ -302,4 +339,7 @@ return [
     'password_mixed' => 'Password must contain both uppercase and lowercase letters.',
     'password_numbers' => 'Password must contain at least one number.',
     'password_symbols' => 'Password must contain at least one special symbol.',
+    'is_out_of_stock_Add_anyway' => 'is out of stock. Add anyway?',
+    'please_select_someone_columns_first_if_you_want_to_export' => 'Please select at least one column before exporting.',
+
 ];

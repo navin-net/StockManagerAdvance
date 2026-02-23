@@ -32,7 +32,7 @@
                             <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
                         @endif
 
-                        <form action="{{ route('login') }}" method="POST">
+                        <form method="POST" action="/login">
                             @csrf
 
                             <div class="mb-3">
@@ -57,12 +57,12 @@
 
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="remember">Remember me</label>
+                                    <input class="form-check-input" type="checkbox" name="remember">
+                                    <label class="form-check-label">{{ __('messages.remember_me') }}</label>
                                 </div>
-                                @if (Route::has('password.request'))
+                                {{-- @if (Route::has('password.request'))
                                     <a class="text-warning" href="{{ route('password.request') }}">Forgot password?</a>
-                                @endif
+                                @endif --}}
                             </div>
 
                             <button type="submit" class="btn btn-warning w-100 text-dark fw-bold">Log In</button>

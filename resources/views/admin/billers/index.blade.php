@@ -1,248 +1,267 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 @section('title', __('messages.billers_list'))
 @section('content')
-<div class="container-fluid py-4">
-<div class="row align-items-center mb-4">
+    <div class="container-fluid py-4">
+        <div class="row align-items-center mb-4">
 
-    {{-- LEFT: Page title + breadcrumb --}}
-    <div class="col-md-6">
-        <div class="pagetitle">
-            <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
+            {{-- LEFT: Page title + breadcrumb --}}
+            <div class="col-md-6">
+                <div class="pagetitle">
+                    <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
 
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    @foreach ($breadcrumbs as $breadcrumb)
-                        @if (!$breadcrumb['active'])
-                            <li class="breadcrumb-item">
-                                <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
-                                    {{ $breadcrumb['label'] }}
-                                </a>
-                            </li>
-                        @else
-                            <li class="breadcrumb-item active text-muted" aria-current="page">
-                                {{ $breadcrumb['label'] }}
-                            </li>
-                        @endif
-                    @endforeach
-                </ol>
-            </nav>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            @foreach ($breadcrumbs as $breadcrumb)
+                                @if (!$breadcrumb['active'])
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
+                                            {{ $breadcrumb['label'] }}
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="breadcrumb-item active text-muted" aria-current="page">
+                                        {{ $breadcrumb['label'] }}
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            {{-- RIGHT: IP address --}}
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <small class="text-muted fw-semibold">
+                    {{ __('messages.ip_address') }}:
+                </small>
+                <span class="fw-semibold text-primary">
+                    {{ auth()->user()->ip_address }}
+                </span>
+            </div>
+
         </div>
-    </div>
-
-    {{-- RIGHT: IP address --}}
-    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-        <small class="text-muted fw-semibold">
-            {{ __('messages.ip_address') }}:
-        </small>
-        <span class="fw-semibold text-primary">
-            {{ auth()->user()->ip_address }}
-        </span>
-    </div>
-
-</div>
 
 
-    <section class="section">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="card-title mb-0 fw-semibold"></h5>
-                            <div class="dropdown">
-                                <button class="btn btn-primary btn-sm dropdown-toggle rounded-3" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-gear-fill me-1"></i> Actions
-                                </button>
-                                <ul class="dropdown-menu shadow-sm rounded-3">
-                                    <li><a class="dropdown-item" href="{{ __('billers/create') }}" id="addProductBtn">
-                                        <i class="bi bi-plus-circle me-2"></i>{{ __('messages.add') }}</a>
-                                    </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" id="bulkDeleteBtn" disabled>
-                                        <i class="bi bi-trash me-2"></i>{{ __('messages.delete') }}</a>
-                                    </li>
-                                </ul>
+        <section class="section">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0 fw-semibold"></h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary btn-sm dropdown-toggle rounded-3" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-gear-fill me-1"></i> Actions
+                                    </button>
+                                    <ul class="dropdown-menu shadow-sm rounded-3">
+                                        <li><a class="dropdown-item" href="{{ __('billers/create') }}" id="addProductBtn">
+                                                <i class="bi bi-plus-circle me-2"></i>{{ __('messages.add') }}</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li><a class="dropdown-item text-danger" href="#" id="bulkDeleteBtn" disabled>
+                                                <i class="bi bi-trash me-2"></i>{{ __('messages.delete') }}</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
-                        <div id="alertsContainer" class="mb-4"></div>
+                            <div id="alertsContainer" class="mb-4">
+                                @if (session('success'))
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        {{ session('success') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                @endif
+                                @if (session('error'))
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        {{ session('error') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered rounded-3 align-middle" id="billersTable">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th scope="col" class="py-3"><input type="checkbox" id="selectAll"></th>
+                                            <th scope="col" class="py-3">{{ __('messages.name') }}</th>
+                                            <th scope="col" class="py-3">{{ __('messages.group') }}</th>
+                                            <th scope="col" class="py-3">{{ __('messages.warehouse') }}</th>
+                                            <th scope="col" class="py-3">{{ __('messages.email') }}</th>
+                                            <th scope="col" class="py-3">{{ __('messages.phone') }}</th>
+                                            <th scope="col" class="py-3">{{ __('messages.city') }}</th>
+                                            <th scope="col" class="py-3 text-center">{{ __('messages.actions') }}</th>
 
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered rounded-3 align-middle" id="billersTable">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th scope="col" class="py-3"><input type="checkbox" id="selectAll"></th>
-                                        <th scope="col" class="py-3">Name</th>
-                                        <th scope="col" class="py-3">Group</th>
-                                        <th scope="col" class="py-3">Warehouse</th>
-                                        <th scope="col" class="py-3">Email</th>
-                                        <th scope="col" class="py-3">Phone</th>
-                                        <th scope="col" class="py-3">City</th>
-                                        <th scope="col" class="py-3 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
-
-<!-- Company Details Modal -->
-<div class="modal fade" id="companyModal" tabindex="-1" aria-labelledby="companyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content rounded-3 shadow">
-            <div class="modal-header">
-                <h5 class="modal-title fw-semibold" id="companyModalLabel">{{ __('messages.billers_details') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="companyDetailsContent">
-                <table class="table table-bordered">
-                    <tbody>
-                        <tr>
-                            <th>Name</th>
-                            <td id="c_name"></td>
-                        </tr>
-                        <tr>
-                            <th>Email</th>
-                            <td id="c_email"></td>
-                        </tr>
-                        <tr>
-                            <th>Phone</th>
-                            <td id="c_phone"></td>
-                        </tr>
-                        <tr>
-                            <th>City</th>
-                            <td id="c_city"></td>
-                        </tr>
-                        <tr>
-                            <th>Street</th>
-                            <td id="c_street"></td>
-                        </tr>
-                        <tr>
-                            <th>Address</th>
-                            <td id="c_address"></td>
-                        </tr>
-                        <tr>
-                            <th>Group</th>
-                            <td id="c_group"></td>
-                        </tr>
-                        <tr>
-                            <th>Warehouse</th>
-                            <td id="c_warehouse"></td>
-                        </tr>
-                        <tr>
-                            <th>Number of Houses</th>
-                            <td id="c_houses"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="printCompanyBtn">Print</button>
-            </div>
-        </div>
+        </section>
     </div>
-</div>
 
+    <!-- Company Details Modal -->
+    <div class="modal fade" id="companyModal" tabindex="-1" aria-labelledby="companyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold" id="companyModalLabel">{{ __('messages.billers_details') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="companyDetailsContent">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>{{ __('messages.name') }}</th>
+                                <td id="c_name"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.email') }}</th>
+                                <td id="c_email"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.phone') }}</th>
+                                <td id="c_phone"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.city') }}</th>
+                                <td id="c_city"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.street') }}</th>
+                                <td id="c_street"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.address') }}</th>
+                                <td id="c_address"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.group') }}</th>
+                                <td id="c_group"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.warehouse') }}</th>
+                                <td id="c_warehouse"></td>
+                            </tr>
+                            <tr>
+                                <th>{{ __('messages.number_of_houses') }}</th>
+                                <td id="c_houses"></td>
+                            </tr>
 
-
-<!-- User List Modal -->
-<div class="modal fade" id="userListModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ __('messages.list_user') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="userListContent">
-                <!-- loader placeholder -->
-                <div class="text-center p-3">
-                    <div class="spinner-border text-primary" role="status"></div>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printCompanyBtn">Print</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-3 border-0 shadow">
-            <div class="modal-header border-0 rounded-top-3">
-                <h5 class="modal-title fw-semibold" id="deleteModalLabel">{{ __('messages.confirm_delete') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                {{ __('messages.delete_confirm') }}
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary btn-sm rounded-3"
-                    data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm rounded-3">{{ __('messages.delete') }}</button>
-                </form>
+    <!-- User List Modal -->
+    <div class="modal fade" id="userListModal" tabindex="-1" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('messages.list_user') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="userListContent">
+                    <!-- loader placeholder -->
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+
+
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 border-0 shadow">
+                <div class="modal-header border-0 rounded-top-3">
+                    <h5 class="modal-title fw-semibold" id="deleteModalLabel">{{ __('messages.confirm_delete') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ __('messages.delete_confirm') }}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="btn btn-danger btn-sm rounded-3">{{ __('messages.delete') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 @endsection
 
 @push('scripts')
-<script>
-$(document).ready(function() {
-    const table = $('#billersTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('billers.index') }}",
-        columns: [{
-                data: 'id',
-                render: data => `<input type="checkbox" class="selectRow" value="${data}">`,
-                orderable: false,
-                searchable: false
-            },
-            {
-                data: 'name',
-                name: 'name'
-            },
-            {
-                data: 'group_name',
-                name: 'group_name'
-            },
-            {
-                data: 'warehouse_name',
-                name: 'warehouse_name'
-            },
-            {
-                data: 'email',
-                name: 'email'
-            },
-            {
-                data: 'phone',
-                name: 'phone'
-            },
-            {
-                data: 'city',
-                name: 'city'
-            },
-            {
-                data: 'action',
-                orderable: false,
-                searchable: false,
-                className: 'text-center'
-            }
-        ],
+    <script>
+        $(document).ready(function() {
+            const table = $('#billersTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('billers.index') }}",
+                columns: [{
+                        data: 'id',
+                        render: data => `<input type="checkbox" class="selectRow" value="${data}">`,
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'group_name',
+                        name: 'group_name'
+                    },
+                    {
+                        data: 'warehouse_name',
+                        name: 'warehouse_name'
+                    },
+                    {
+                        data: 'email',
+                        name: 'email'
+                    },
+                    {
+                        data: 'phone',
+                        name: 'phone'
+                    },
+                    {
+                        data: 'city',
+                        name: 'city'
+                    },
+                    {
+                        data: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    }
+                ],
 
                 language: {
                     paginate: {
@@ -260,127 +279,133 @@ $(document).ready(function() {
                 }
             });
 
-    // Row click to show modal (skip first & last column)
-    $('#billersTable tbody').on('click', 'td', function(e) {
-        const colIndex = table.cell(this).index().column;
-        if (colIndex === 0 || colIndex === 7) return; // Skip checkbox and actions
+            // Row click to show modal (skip first & last column)
+            $('#billersTable tbody').on('click', 'td', function(e) {
+                const colIndex = table.cell(this).index().column;
+                if (colIndex === 0 || colIndex === 7) return; // Skip checkbox and actions
 
-        // Remove previous highlights
-        $('#billersTable tbody tr').removeClass('table-active');
-        $(this).closest('tr').addClass('table-active');
+                // Remove previous highlights
+                $('#billersTable tbody tr').removeClass('table-active');
+                $(this).closest('tr').addClass('table-active');
 
-        const rowData = table.row(this).data();
-        if (!rowData) return;
+                const rowData = table.row(this).data();
+                if (!rowData) return;
 
-        // Fill modal
-        $('#c_name').text(rowData.name || '');
-        $('#c_email').text(rowData.email || '');
-        $('#c_phone').text(rowData.phone || '');
-        $('#c_city').text(rowData.city || '');
-        $('#c_street').text(rowData.street || '');
-        $('#c_address').text(rowData.address || '');
-        $('#c_group').text(rowData.group_name || '');
-        $('#c_warehouse').text(rowData.warehouse_name || '');
-        $('#c_houses').text(rowData.number_of_houses || '');
+                // Fill modal
+                $('#c_name').text(rowData.name || '');
+                $('#c_email').text(rowData.email || '');
+                $('#c_phone').text(rowData.phone || '');
+                $('#c_city').text(rowData.city || '');
+                $('#c_street').text(rowData.street || '');
+                $('#c_address').text(rowData.address || '');
+                $('#c_group').text(rowData.group_name || '');
+                $('#c_warehouse').text(rowData.warehouse_name || '');
+                $('#c_houses').text(rowData.number_of_houses || '');
 
-        $('#companyModal').modal('show');
-    });
+                $('#companyModal').modal('show');
+            });
 
-    // Print modal content
-    $('#printCompanyBtn').on('click', function() {
-        const content = document.getElementById('companyDetailsContent').innerHTML;
-        const printWindow = window.open('', '', 'width=900,height=700');
-        printWindow.document.write('<html><head><title>Biller Details</title>');
-        printWindow.document.write(
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">'
-            );
-        printWindow.document.write('</head><body>');
-        printWindow.document.write('<h3 class="mb-4">Biller Details</h3>');
-        printWindow.document.write(content);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
-    });
-
-    $(document).on('click', '.editBiller', function() {
-        var id = $(this).data('id');
-        window.location.href = '/billers/' + id + '/edit';
-    });
-
-
-    $(document).on('click', '.listUser', function() {
-        var id = $(this).data('id');
-
-        // Show modal first with loader
-        $('#userListModal').modal('show');
-        $('#userListContent').html(
-            '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>'
-        );
-        $.ajax({
-            url: '/billers/' + id + '/users',
-            method: 'GET',
-            success: function(response) {
-                $('#userListContent').html(response);
-            },
-            error: function() {
-                $('#userListContent').html(
-                    '<div class="alert alert-danger">{{ __("messages.load_failed") }}</div>'
+            // Print modal content
+            $('#printCompanyBtn').on('click', function() {
+                const content = document.getElementById('companyDetailsContent').innerHTML;
+                const printWindow = window.open('', '', 'width=900,height=700');
+                printWindow.document.write('<html><head><title>Biller Details</title>');
+                printWindow.document.write(
+                    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">'
                 );
-            }
-        });
-    });
+                printWindow.document.write('</head><body>');
+                printWindow.document.write('<h3 class="mb-4">Biller Details</h3>');
+                printWindow.document.write(content);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+            });
 
-    $(document).on('click', '.addUser', function() {
-        var id = $(this).data('id');
-        window.location.href = '/billers/' + id + '/users/add';
-    });
 
-    $(document).on('click', '.deleteBillerBtn', function() {
-        const billerId = $(this).data('id');
-        const deleteUrl = "{{ url('billers') }}/" + billerId;
-        $('#deleteForm').attr('action', deleteUrl);
-        $('#deleteModal').modal('show');
-    });
+            $(document).on('click', '.listUser', function() {
+                var id = $(this).data('id');
 
-    $(document).on('click', '.deleteUserBtn', function() {
-        const userId = $(this).data('id');
-        const deleteUrl = "{{ url('billers/users') }}/" + userId + "/delete"; // match your route
-        $('#deleteForm').attr('action', deleteUrl);
-        $('#deleteModal').modal('show');
-    });
+                $('#userListModal').modal('show');
+                $('#userListContent').html(
+                    '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"></div></div>'
+                );
+                $.ajax({
+                    url: '/admin/billers/' + id + '/users',
+                    method: 'GET',
+                    success: function(response) {
+                        $('#userListContent').html(response);
+                    },
+                    error: function() {
+                        $('#userListContent').html(
+                            '<div class="alert alert-danger">{{ __('messages.load_failed') }}</div>'
+                        );
+                    }
+                });
+            });
 
-    $('#deleteForm').on('submit', function(e) {
-        e.preventDefault();
-        const form = $(this);
-        const action = form.attr('action');
+            $(document).on('click', '.addUser', function() {
+                var id = $(this).data('id');
+                window.location.href = '/admin/billers/' + id + '/users/add';
+            });
 
-        $.ajax({
-            url: action,
-            type: 'DELETE',
-            data: form.serialize(),
-            success: function(response) {
-                $('#deleteModal').modal('hide');
-                $('#userListModal').modal('hide');
-                table.ajax.reload();
-                // location.reload();
-                const successAlert = `
+            $(document).on('click', '.editBiller', function() {
+                var id = $(this).data('id');
+                // window.location.href = '/admin/billers/' + id + '/edit';
+                window.location.href = '/admin/billers/' + id + '/users/edit';
+
+            });
+
+
+
+
+
+
+
+
+
+            $(document).on('click', '.deleteBillerBtn', function() {
+                const billerId = $(this).data('id');
+                const deleteUrl = "{{ url('billers') }}/" + billerId;
+                $('#deleteForm').attr('action', deleteUrl);
+                $('#deleteModal').modal('show');
+            });
+
+            $(document).on('click', '.deleteUserBtn', function() {
+                const userId = $(this).data('id');
+                const deleteUrl = "{{ url('billers/users') }}/" + userId + "/delete"; // match your route
+                $('#deleteForm').attr('action', deleteUrl);
+                $('#deleteModal').modal('show');
+            });
+
+            $('#deleteForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const action = form.attr('action');
+
+                $.ajax({
+                    url: action,
+                    type: 'DELETE',
+                    data: form.serialize(),
+                    success: function(response) {
+                        $('#deleteModal').modal('hide');
+                        $('#userListModal').modal('hide');
+                        table.ajax.reload();
+                        // location.reload();
+                        const successAlert = `
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ __('messages.biller_deleted_successfully') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>`;
-                $('#alertsContainer').html(successAlert);
-            },
-            error: function(xhr) {
-                alert('Failed to delete the biller. Please try again.');
-            }
+                        $('#alertsContainer').html(successAlert);
+                    },
+                    error: function(xhr) {
+                        alert('Failed to delete the biller. Please try again.');
+                    }
+                });
+            });
+
+
+
         });
-    });
-
-
-
-
-
-
-});
-</script>
+    </script>
 @endpush

@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 @section('title', $pageTitle)
 
 @section('content')
@@ -6,234 +6,269 @@
         $walkInCustomerId = 4;
         $selectedCustomerId = old('customer_id', $sale->customer_id ?? $walkInCustomerId);
     @endphp
-    <div class="container-fluid">
-        <div class="row">
-            {{-- <h1>{{ $pageTitle }}</h1> --}}
+    @if (is_mobile())
+        <!-- real phone -->
+        dasdsa
+    @else
+        <div class="container-fluid pos-wrapper h-100">
+            <div class="row h-100">
 
-            <div class="col-lg-1 col-md-1 border-end desktop-only">
-                <div class="d-flex flex-column align-items-center no-scrollbar"
-                    style="height: 760px; overflow-y: auto; overflow-x: hidden;">
+                {{-- <h1>{{ $pageTitle }}</h1> --}}
 
-                    <a href="#"
-                        class="card  h-100 border-primary shadow-sm mb-3 text-decoration-none filter-brand active-brand"
-                        data-brand-id="all">
-                        <img src="{{ asset('tool.png') }}" alt="All"
-                            style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                        <span class="text-center" style="font-size: 0.8rem;">All</span>
-                    </a>
-                    @foreach ($brands as $brand)
-                        <a href="#" class="card  h-100 border shadow-sm mb-3 text-decoration-none filter-brand"
-                            data-brand-id="{{ $brand->id }}">
-                            <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
+                <div class="col-lg-1 col-md-1 border-end desktop-only" style="max-height:100%; overflow-y:auto;">
+                    <div class="d-flex flex-column align-items-center no-scrollbar"
+                        style="height: 760px; overflow-y: auto; overflow-x: hidden;">
+
+                        <a href="#"
+                            class="card  h-100 border-primary shadow-sm mb-3 text-decoration-none filter-brand active-brand"
+                            data-brand-id="all">
+                            <img src="{{ asset('tool.png') }}" alt="All"
                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                            <h6 class="card-title mb-1 text-truncate text-center" style="font-size: 0.75rem;">
-                                {{ $brand->name }}
-                            </h6>
+                            <span class="text-center" style="font-size: 0.8rem;">All</span>
                         </a>
-                    @endforeach
-
-                </div>
-            </div>
-
-            <div class="col-lg-7 col-md-6">
-                <div class="p-3">
-                    <!-- Search, Sort & Offcanvas Category Toggle -->
-                    <div class="row mb-4 align-items-center">
-                        <div class="col-md-12 mb-2 desktop-only">
-                            <div class="input-group">
-                                <input type="text" class="form-control search-bar" id="searchInput"
-                                    placeholder="Search products...">
-                                <button class="btn btn-dark" type="button" id="clearSearch">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 text-end mb-2 d-lg-none">
-                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
-                                data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
-                                {{ __('messages.filters') }} <i class="bi bi-funnel"></i>
-                            </button>
-                        </div>
+                        @foreach ($brands as $brand)
+                            <a href="#" class="card  h-100 border shadow-sm mb-3 text-decoration-none filter-brand"
+                                data-brand-id="{{ $brand->id }}">
+                                <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
+                                    style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                {{-- <h6 class="card-title mb-1 text-truncate text-center" style="font-size: 0.75rem;">
+                                {{ $brand->name }}
+                            </h6> --}}
+                            </a>
+                        @endforeach
 
                     </div>
+                </div>
 
-                    <!-- Products Grid -->
-                    <div class="row" id="product-list">
-                        @forelse ($products as $product)
-                            <div class="col-6 col-md-3 col-lg-2 mb-3 product-item" data-brand="{{ $product['brand_id'] }}">
-                                <div class="card product-card h-100" data-id="{{ $product['id'] }}"
-                                    data-name="{{ $product['name'] }}" data-price="{{ $product['selling_price'] }}"
-                                    data-stock="{{ $product['stock_quantity'] }}"
-                                    style="background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); cursor: pointer; transition: transform var(--transition-speed), background var(--transition-speed);">
+                <div class="col-lg-7 col-md-5">
+                    <div class="p-3">
+                        <!-- Search, Sort & Offcanvas Category Toggle -->
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-md-4 mb-2 desktop-only text-start">
+                                <h1 class="modal-title fs-5" id="discountModalLabel">
+                                    {{ __('messages.welcome') }},{{ Auth::user()->first_name }}
+                                </h1>
+                            </div>
+                            <div class="col-md-6 mb-2 desktop-only">
+                                <div class="input-group">
+                                    <input type="text" class="form-control search-bar" id="searchInput"
+                                        placeholder="Search products...">
+                                    <button class="btn btn-dark" type="button" id="clearSearch">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2 mb-2 text-start desktop-only">
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
+                                    data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
+                                    <i class="bi bi-tag"></i> {{ __('messages.brand') }}
+                                </button>
+                            </div>
 
-                                    <div class="d-flex justify-content-center p-2">
-                                        <img src="{{ $product['image'] ? asset('storage/' . $product['image']) : asset('noimage.png') }}"
-                                            alt="{{ $product['name'] }}"
-                                            style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
-                                    </div>
+                            <div class="col-md-4 text-end mb-2 d-lg-none">
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
+                                    data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
+                                    {{ __('messages.filters') }} <i class="bi bi-funnel"></i>
+                                </button>
+                            </div>
 
-                                    <div class="card-body p-2 text-center">
-                                        <h6 class="card-title mb-1 text-truncate fw-bold" title="{{ $product['name'] }}">
-                                            {{ $product['name'] }}
-                                        </h6>
-                                        <p class="mb-1 fw-bold" style="color: var(--primary-color);">
-                                            ${{ number_format($product['selling_price'], 2) }}
-                                        </p>
-                                        <p class="mb-0" style="color: var(--text-muted); font-size: 0.8rem;">
+                        </div>
+
+                        <!-- Products Grid -->
+                        <div class="row" id="product-list" style="max-height:500px; overflow-y:auto;">
+                            @forelse ($products as $product)
+                                <div class="col-6 col-md-3 col-lg-4 mb-3 product-item"
+                                    data-brand="{{ $product['brand_id'] }}">
+                                    <div class="card product-card h-100" data-id="{{ $product['id'] }}"
+                                        data-name="{{ $product['name'] }}" data-price="{{ $product['selling_price'] }}"
+                                        data-stock="{{ $product['stock_quantity'] }}"
+                                        style="background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); cursor: pointer; transition: transform var(--transition-speed), background var(--transition-speed);">
+
+                                        <div class="d-flex justify-content-center p-2">
+                                            <div style="position: relative;">
+                                                <img src="{{ $product['image'] ? asset('storage/' . $product['image']) : asset('noimage.png') }}"
+                                                    alt="{{ $product['name'] }}"
+                                                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+
+                                                @if ($product['stock_quantity'] <= 0)
+                                                    <span
+                                                        class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger text-white px-2 py-1 me-1"
+                                                        style="font-size: 0.75rem; z-index: 2;">
+                                                        {{ __('messages.sold_out') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body p-2 text-center">
+                                            <h6 class="card-title mb-1 text-truncate fw-bold {{ $product['stock_quantity'] <= 0 ? 'text-danger' : '' }}"
+                                                title="{{ $product['name'] }}">
+                                                {{ $product['name'] }}
+                                            </h6>
+                                            <p class="mb-1 fw-bold " style="color: var(--primary-color);">
+                                                ${{ number_format($product['selling_price'], 2) }}
+                                            </p>
+                                            {{-- <p class="mb-0" style="color: var(--text-muted); font-size: 0.8rem;">
                                             {{ __('messages.stock') }}:
                                             <span class="{{ $product['stock_quantity'] <= 0 ? 'text-danger' : '' }}">
                                                 {{ $product['stock_quantity'] }}
                                             </span>
-                                        </p>
+                                        </p> --}}
+                                        </div>
                                     </div>
                                 </div>
+                            @empty
+                                <div class="col-12 text-center mt-5">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
+                                        style="max-width: 150px; opacity: 0.5; filter: grayscale(1);">
+                                    <h3 class="fw-bold mt-3" style="color: var(--text-muted);">{{ __('messages.oops') }}
+                                    </h3>
+                                </div>
+                            @endforelse
+                            <div class="col-12 text-center mt-4 no-results-message d-none">
+                                <img src="{{ asset('noimage.png') }}" style="max-width:120px; opacity:.4;">
+                                <h6 class="mt-3 text-muted">
+                                    No products found
+                                </h6>
                             </div>
-                        @empty
-                            <div class="col-12 text-center mt-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
-                                    style="max-width: 150px; opacity: 0.5; filter: grayscale(1);">
-                                <h3 class="fw-bold mt-3" style="color: var(--text-muted);">{{ __('messages.oops') }}</h3>
-                            </div>
-                        @endforelse
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Cart Section (unchanged) -->
-            <div class="col-lg-4 col-md-5">
-                <div class="cart-sidebar p-3 card mb-2">
-                    <div class="row">
-                        <div class="col-sm-9 text-start">
-                            <b>{{ __('messages.order_list') }}</b>
+                <!-- Cart Section (unchanged) -->
+                <div class="col-lg-4 col-md-6" style="max-height:100%; overflow-y:auto;">
+                    <div class="cart-sidebar p-3 card mb-2">
+                        <div class="row">
+                            <div class="col-sm-9 text-start">
+                                <b>{{ __('messages.order_list') }}</b>
+                            </div>
+                            <div class="col-sm-3 text-end">
+                                <InvoiceNo->#POS{{ $records->id }}</InvoiceNo->
+                            </div>
+                            <hr>
+                            <div class="col-sm-9">
+                                <select name="customer_id" class="form-select" aria-label="Select customer">
+                                    <option value="">-- {{ __('messages.select_customer') }} --</option>
+
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}"
+                                            {{ (string) $customer->id === (string) $selectedCustomerId ? 'selected' : '' }}>
+                                            {{ $customer->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3 text-end d-flex gap-1 justify-content-end">
+                                <a class="btn btn-outline-success d-flex align-items-center justify-content-center p-2"
+                                    data-bs-toggle="modal" data-bs-target="#eModal">
+                                    <i class="bi bi-person-add"></i>
+                                </a>
+                                <a class="btn btn-outline-primary d-flex align-items-center justify-content-center p-2"
+                                    data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <i class="bi bi-upc-scan"></i>
+                                </a>
+                            </div>
                         </div>
-                        <div class="col-sm-3 text-end">
-                            <InvoiceNo->#POS{{ $records->id }}</InvoiceNo->
+                    </div>
+                    <div class="cart-sidebar p-3 card">
+                        <div class="row">
+                            <div class="col-sm-9 text-start">
+                                <h4>
+                                    <i class="bi bi-cart3"></i>{{ __('messages.current_order') }}
+                                    {{-- <span class="badge bg-primary ms-2" id="cartCount">0</span> --}}
+                                </h4>
+                            </div>
+                            <div class="col-sm-3 text-end">
+                                <button id="clearCartBtn" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#clearCartModal">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-2 text-center">#</div>
+                            <div class="col-sm-4 text-start">{{ __('messages.products') }}</div>
+                            <div class="col-sm-3 text-end">{{ __('messages.quality') }}</div>
+                            <div class="col-sm-3 text-center">{{ __('total') }}</div>
+                        </div>
+                        <div id="cartItems">
+                            <div class="text-center text-muted py-20">
+                                <i class="bi bi-cart-x display-4"></i>
+                                <p class="mt-2">{{ __('messages.No_items_in_cart') }}</p>
+                            </div>
+                        </div>
+                        {{-- <h5 class="mt-4">{{ __('messages.payment_summary') }}</h5> --}}
+                        <div class="total-section mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ __('messages.items') }}:</span>
+                                <span class="badge bg-primary ms-2" id="cartCount">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ __('messages.shipping') }}
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ __('messages.tax') }}(8%)</span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>
+                                    {{ __('messages.discount') }}:
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </span>
+                                <span id="discount">$0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ __('messages.subtotal') }}:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+
+                            <hr>
+                            <div class="d-flex justify-content-between fs-4 fw-bold">
+                                <span>{{ __('messages.total_payable') }}:</span>
+                                <span id="total" oninput="document.getElementById('paying-amount').value = this.value">$0.00</span>
+                            </div>
                         </div>
                         <hr>
-                        <div class="col-sm-9">
-                            <select name="customer_id" class="form-select" aria-label="Select customer">
-                                <option value="">-- {{ __('messages.select_customer') }} --</option>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                <i class="bi bi-x-circle me-1"></i> {{ __('messages.cancel') }}
+                            </button>
 
-                                @foreach ($customers as $customer)
-                                    <option value="{{ $customer->id }}"
-                                        {{ (string) $customer->id === (string) $selectedCustomerId ? 'selected' : '' }}>
-                                        {{ $customer->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-sm-3 text-end d-flex gap-1 justify-content-end">
-                            <a class="btn btn-outline-success d-flex align-items-center justify-content-center p-2"
-                                data-bs-toggle="modal" data-bs-target="#eModal">
-                                <i class="bi bi-person-add"></i>
-                            </a>
-                            <a class="btn btn-outline-primary d-flex align-items-center justify-content-center p-2"
-                                data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                <i class="bi bi-upc-scan"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="cart-sidebar p-3 card">
-                    <div class="row">
-                        <div class="col-sm-9 text-start">
-                            <h4>
-                                <i class="bi bi-cart3"></i>{{ __('messages.current_order') }}
-                                <span class="badge bg-primary ms-2" id="cartCount">0</span>
-                            </h4>
-                        </div>
-                        <div class="col-sm-3 text-end">
-                            <button id="clearCartBtn" class="btn btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#clearCartModal">
-                                <i class="bi bi-trash"></i>
+                            <button id="checkoutBtn" class="btn btn-primary w-100" data-bs-toggle="modal"
+                                data-bs-target="#paymentModal">
+                                <i class="bi bi-cart me-1"></i> {{ __('messages.payment') }}
                             </button>
                         </div>
                     </div>
 
-                    <hr>
-                    <div id="cartItems">
-                        <div class="text-center text-muted py-5">
-                            <i class="bi bi-cart-x display-4"></i>
-                            <p class="mt-2">{{ __('messages.No_items_in_cart') }}</p>
-                        </div>
-                    </div>
-                    <h5 class="mt-4">{{ __('messages.payment_summary') }}</h5>
-                    <div class="total-section mt-3">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ __('messages.subtotal') }}:</span>
-                            <span id="subtotal">$0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ __('messages.tax') }} (8%):</span>
-                            <span id="tax">$0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ __('messages.discount') }}:
-                                <a type="button" data-bs-toggle="modal" data-bs-target="#discountModal">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </span>
-                            <span id="discount">$0.00</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between fs-4 fw-bold">
-                            <span>{{ __('messages.total') }}:</span>
-                            <span id="total">$0.00</span>
-                        </div>
-                    </div>
-
-                </div>
-                <div id="paymentBox" class="cart-sidebar p-3 card mt-2 d-none">
-                    <div class="fw-semibold mb-3">Total Payment</div>
-                    <input type="text" class="form-control search-bar" id="InputValue" placeholder="">
-                </div>
-                <div id="alertsContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
-                <div class="cart-sidebar p-3 card mt-2">
+                    <div id="alertsContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
+                    {{-- <div class="cart-sidebar p-3 card mt-2">
 
                     <div class="fw-semibold mb-3">Select Payment</div>
-
-                    <!-- Payment Methods -->
-                    <div class="row g-2 mb-3">
-
-                        <div class="col-4">
-                            <button id="btnCash"
-                                class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
-                                💵 <span>Cash</span>
-                            </button>
-                        </div>
-
-                        <div class="col-4">
-                            <button class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
-                                💳 <span>Card</span>
-                            </button>
-                        </div>
-
-                        <div class="col-4">
-                            <button class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
-                                ⭐ <span>Points</span>
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <!-- Action Buttons -->
                     <div class="d-flex gap-2">
                         <button class="btn btn-dark w-100">
-                            <i class="bi bi-printer me-1"></i> Print Order
+                            <i class="bi bi-printer me-1"></i>{{ __('messages.cancel') }}
                         </button>
                         <button class="btn btn-dark w-100" data-bs-toggle="offcanvas" data-bs-target="#actionBar">
-                            <i class="bi bi-cart me-1"></i> Place Order
+                            <i class="bi bi-cart me-1"></i> {{ __('messages.payment') }}
                         </button>
                     </div>
 
+                </div> --}}
                 </div>
             </div>
         </div>
-    </div>
-
-
+    @endif
     <!-- Clear Cart Confirmation Modal -->
     <div class="modal fade" id="clearCartModal" tabindex="-1" aria-labelledby="clearCartModalLabel">
         <div class="modal-dialog modal-dialog-centered">
@@ -251,7 +286,8 @@
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-secondary px-4"
-                        data-bs-dismiss="modal">{{ __('messages.no') }}, {{ __('messages.cancel') }}</button>
+                        data-bs-dismiss="modal">{{ __('messages.no') }},
+                        {{ __('messages.cancel') }}</button>
                     <button type="button" class="btn btn-danger px-4" id="confirmClearCart">{{ __('messages.yes') }},
                         {{ __('messages.clear_cart') }}</button>
                 </div>
@@ -407,27 +443,6 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">{{ __('messages.barcode') }}</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                    <button type="button" class="btn btn-primary">{{ __('messages.add_item') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
     <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="filterOffcanvasLabel">{{ __('messages.brands') }}</h5>
@@ -456,10 +471,9 @@
                                 <div class="card-body d-flex flex-column align-items-center p-2">
                                     <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                                    <h6 class="card-title mb-0 mt-1 text-truncate text-center"
-                                        style="font-size: 0.75rem;">
+                                    {{-- <h6 class="card-title mb-0 mt-1 text-truncate text-center" style="font-size: 0.75rem;">
                                         {{ $brand->name }}
-                                    </h6>
+                                    </h6> --}}
                                 </div>
                             </a>
                         </div>
@@ -470,32 +484,213 @@
         </div>
 
     </div>
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
 
-    <!-- All your modals and offcanvas remain exactly the same -->
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                        Cancel Order
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    Are you sure you want to cancel this order?
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        No
+                    </button>
+
+                    <button type="button" class="btn btn-danger" onclick="confirmCancel()">
+                        Yes, Cancel
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="endScreenLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Finalize Sale</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-10">
+
+
+                            <div class="row g-3">
+                                <div class="col-md-4 col-12">
+                                    <label class="form-label">Received Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control text-end" placeholder="0.00"
+                                            inputmode="decimal" aria-label="Received amount" id="received-amount">
+                                    </div>
+                                </div>
+
+                                <!-- Paying Amount -->
+                                <div class="col-md-4 col-12">
+                                    <label class="form-label">Paying Amount</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control text-end" placeholder="0.00" id="paying-amount">
+                                    </div>
+                                </div>
+
+                                <!-- Change (readonly or calculated) -->
+                                <div class="col-md-4 col-12">
+                                    <label class="form-label">Change</label>
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control text-end " placeholder="0.00" readonly
+                                            aria-label="Change amount" id="change-amount">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 col-12">
+                                    <label class="form-label fw-bold">{{ __('Payment Note') }}</label>
+                                    <div class="input-group mb-2">
+                                        <textarea class="form-control" id="transaction-description" rows="3"
+                                            placeholder="Add payment notes or details here..." aria-label="Description">
+                                        </textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-2 text-end">
+                            <div class="fw-bold pb-2 text-uppercase text-center small">Quick Cash</div>
+
+                            <button class="btn btn-info w-100 mb-1 position-relative quick-cash" data-value="60">
+                                60
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none cash-count">
+                                    1
+                                </span>
+                            </button>
+
+                            <button class="btn btn-info w-100 mb-1 position-relative quick-cash" data-value="120">
+                                120
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none cash-count">
+                                    0
+                                </span>
+                            </button>
+
+                            <button class="btn btn-primary w-100 mb-1 position-relative quick-cash" data-value="500">
+                                500
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none cash-count">
+                                    0
+                                </span>
+                            </button>
+
+                            <button class="btn btn-primary w-100 mb-1 position-relative quick-cash" data-value="1000">
+                                1000
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none cash-count">
+                                    0
+                                </span>
+                            </button>
+
+                            <button id="clearCash" class="btn btn-danger w-100 mb-1">
+                                {{ __('messages.clear') }}
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 flex-fill">
+                            {{ __('messages.submit') }}
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 @endsection
+@push('style')
+    <style>
+        #total {
+            outline: none;
+            box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.5);
+            /* A cyan glow effect */
+            border: 2px solid #000;
+        }
 
+        .pos-wrapper {
+            height: 100%;
+        }
 
-
+        .scroll-y {
+            overflow-y: auto;
+        }
+    </style>
+@endpush
 @push('scripts')
     <script>
+
+    const totalEl = document.getElementById('total');
+    const payingEl = document.getElementById('paying-amount');
+
+    function syncPayingWithTotal() {
+        const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
+        payingEl.value = total.toFixed(2);
+    }
+    document.getElementById('paymentModal').addEventListener('shown.bs.modal', () => {
+        syncPayingWithTotal();
+    });
+
+// Quick-cash buttons
+document.querySelectorAll('.quick-cash').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Use the current total from the span
+        const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
+
+        // Set the paying amount input
+        payingEl.value = total.toFixed(2);
+    });
+});
+
+
+
+        let discountType = "fixed";
+        let discountValue = 0;
+
         let cart = [];
         const $paymentBox = $('#paymentBox');
 
         function applyDiscount() {
             const type = document.getElementById("discountType").value;
-            const val = document.getElementById("discountValue").value;
-            const displayElement = document.getElementById("discount");
+            const val = document.getElementById("discountValue").value.trim();
 
-            if (val === "" || isNaN(val)) {
-                alert("Please enter a valid number");
+            if (val === "" || isNaN(val) || Number(val) < 0) {
+                alert("Please enter a valid non-negative number");
                 return;
             }
-            let formattedText = type === "percentage" ? `${val}%` : `$${val}`;
-            displayElement.innerText = formattedText;
+            discountType = type;
+            discountValue = Number(val);
+
+            let displayText = type === "percentage" ? `${val}%` : `$${val}`;
+            document.getElementById("discount").innerText = displayText;
             const modalElement = document.getElementById('discountModal');
             const modalInstance = bootstrap.Modal.getInstance(modalElement);
             modalInstance.hide();
+            updateCart();
         }
 
 
@@ -520,7 +715,6 @@
                 const brand_id = $item.data('brand');
 
                 const btnSearch = product_name.includes(searchKeyword);
-
                 const btnBrand = (selectedbrand_id === 'all' || selectedbrand_id == brand_id);
 
                 if (btnSearch && btnBrand) {
@@ -531,13 +725,13 @@
                 }
             });
 
-            // Show/hide "No products found" message
             if (visibleCount === 0) {
-                $('#product-list .no-results-message').removeClass('d-none');
+                $('.no-results-message').removeClass('d-none');
             } else {
-                $('#product-list .no-results-message').addClass('d-none');
+                $('.no-results-message').addClass('d-none');
             }
         }
+
 
         $(document).ready(function() {
             // Brand filter click
@@ -567,12 +761,6 @@
 
             // Initial filter on page load
             filterProducts();
-        });
-
-        $('#btnCash').on('click', function(e) {
-            e.preventDefault();
-            $paymentBox.removeClass('d-none').addClass('d-block');
-            $('#InputValue').trigger('focus');
         });
 
         $(document).on('click', '.product-card', function() {
@@ -617,7 +805,7 @@
 
             if (cart.length === 0) {
                 cartItems.html(
-                    '<div class="text-center text-muted py-5"><i class="bi bi-cart-x display-4"></i><p class="mt-2">No items in cart</p></div>'
+                    '<div class="text-center text-muted py-10"><i class="bi bi-cart-x display-4"></i><p class="mt-2">No items in cart</p></div>'
                 );
                 $('#cartCount').text(0);
                 $('#subtotal').text('$0.00');
@@ -631,30 +819,64 @@
                 cart.forEach(item => {
                     const itemTotal = item.price * item.quantity;
                     subtotal += itemTotal;
-                    cartItems.append(`
-                <div class="cart-item d-flex align-items-center py-2 border-bottom">
-                    <div class="cart-item-name d-flex align-items-center flex-grow-1">
-                        <button class="btn btn-sm text-danger me-2" onclick="removeItem(${item.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        <span class="fw-medium">${item.name}</span>
-                    </div>
-                    <div class="cart-item-qty d-flex align-items-center justify-content-center">
-                        <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
-                        <input type="number" class="qty-input" min="1" value="${item.quantity}" onchange="setQuantity(${item.id}, this.value)">
-                        <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
-                    </div>
-                    <div class="cart-item-price text-end fw-semibold">$${(item.price * item.quantity).toFixed(2)}</div>
-                </div>`);
+                    cartItems.append(`<div class="cart-item d-flex align-items-center py-10 border-bottom">
+                            <div class="cart-item-name d-flex align-items-center flex-grow-1">
+                                <button class="btn btn-sm text-danger me-2" onclick="removeItem(${item.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <div>
+                                    <div class="fw-medium">${item.name}</div>
+                                    <small class="text-muted">
+                                        $${item.price.toFixed(2)} each
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="cart-item-qty d-flex align-items-center justify-content-center">
+                                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                <input type="number" class="qty-input" min="1" value="${item.quantity}"
+                                    onchange="setQuantity(${item.id}, this.value)">
+                                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            </div>
+                            <div class="cart-item-price text-start fw-semibold ms-3">
+                                $${(item.price * item.quantity).toFixed(2)}
+                            </div>
+                        </div>`);
                 });
 
-                const tax = subtotal * 0.08;
-                const discount = val;
-                const total = subtotal + tax + discount;
+                let discountAmount = 0;
+
+                if (discountValue > 0) {
+                    if (discountType === "percentage") {
+                        discountAmount = subtotal * (discountValue / 100);
+                    } else { // fixed
+                        discountAmount = discountValue;
+                    }
+                    if (discountAmount > subtotal) {
+                        showAlert('Discount cannot be greater than the subtotal', 'danger');
+                        $('#discount').val(0);
+                        discountAmount = 0;
+                        $('#checkoutBtn').prop('disabled', true).addClass('opacity-50');
+                        return;
+                    } else {
+                        $('#checkoutBtn').prop('disabled', false).removeClass('opacity-50');
+                    }
+                }
+                const taxableAmount = subtotal - discountAmount;
+                const tax = taxableAmount * 0.0;
+                const total = taxableAmount + tax;
 
                 $('#cartCount').text(cart.length);
                 $('#subtotal').text(`$${subtotal.toFixed(2)}`);
                 $('#tax').text(`$${tax.toFixed(2)}`);
+
+                if (discountValue > 0) {
+                    let displayText = discountType === "percentage" ?
+                        `${discountValue}%` :
+                        `$${discountValue.toFixed(2)}`;
+                    $('#discount').text(displayText);
+                } else {
+                    $('#discount').text('$0.00');
+                }
                 $('#total').text(`$${total.toFixed(2)}`);
             }
             toggleClearCartButton();
@@ -694,33 +916,11 @@
             updateCart();
         }
 
-        $('#confirmClearCart').on('click', function() {
-            cart = [];
-            updateCart();
-            $('#clearCartModal').modal('hide');
-            $('#alertsContainer').html(`
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ __('messages.product_removed_from_cart') }}
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close"></button>
-                </div>
-            `);
-
-        });
-
         function printAnyModal(modalId) {
             const modal = document.getElementById(modalId);
             if (!modal) return;
-
-            // Clone modal content
             const modalClone = modal.querySelector('.modal-content').cloneNode(true);
-
-            // REMOVE all buttons from clone
             modalClone.querySelectorAll('button').forEach(btn => btn.remove());
-
-            // OPTIONAL: remove inputs border (looks cleaner on print)
             modalClone.querySelectorAll('input').forEach(input => {
                 input.setAttribute('readonly', true);
                 input.classList.remove('form-control-sm');
@@ -728,19 +928,19 @@
 
             const printWindow = window.open('', '', 'width=900,height=650');
             printWindow.document.write(`
-        <html>
-            <head>
-                <title>Print</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                <style>
-                    body { padding: 20px; }
-                </style>
-            </head>
-            <body>
-                ${modalClone.outerHTML}
-            </body>
-        </html>
-    `);
+                <html>
+                    <head>
+                        <title>Print</title>
+                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <style>
+                            body { padding: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        ${modalClone.outerHTML}
+                    </body>
+                </html>
+            `);
 
             printWindow.document.close();
             printWindow.focus();
@@ -753,17 +953,110 @@
 
         function showAlert(message, type = 'danger') {
             $('#alertsContainer').html(`
-                <div class="alert alert-${type} alert-dismissible fade show shadow" role="alert">
-                    ${message}
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close"></button>
-                </div>
-            `);
+                        <div class="alert alert-${type} alert-dismissible fade show shadow" role="alert">
+                            ${message}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    `);
             setTimeout(() => {
                 $('.alert').alert('close');
             }, 3000);
         }
+
+        function confirmCancel() {
+            $('#searchInput').val('');
+            $('.filter-brand').removeClass('active-brand border-primary').addClass('border shadow-sm');
+            $('.filter-brand[data-brand-id="all"]').addClass('active-brand border-primary').removeClass('border shadow-sm');
+            filterProducts();
+            cart = [];
+            updateCart();
+            const modal = bootstrap.Modal.getInstance(
+                document.getElementById('cancelModal')
+            );
+            modal.hide();
+
+            showAlert('Order cancelled successfully', 'warning');
+
+            // location.reload();
+        }
+
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    const quickButtons = document.querySelectorAll('.quick-cash');
+    const receivedInput = document.getElementById('received-amount');
+    const payingInput = document.getElementById('paying-amount');
+    const changeInput = document.getElementById('change-amount');
+    const clearBtn = document.getElementById('clearCash');
+    const paymentModal = document.getElementById('paymentModal');
+
+    function calculateChange() {
+        let received = parseFloat(receivedInput.value) || 0;
+        let paying = parseFloat(payingInput.value) || 0;
+        changeInput.value = (received - paying).toFixed(2);
+    }
+
+    function resetButtons() {
+        quickButtons.forEach(btn => {
+            let badge = btn.querySelector('.cash-count');
+            badge.textContent = 0;
+            badge.classList.add('d-none');
+            btn.classList.remove('btn-info');
+            btn.classList.add('btn-primary');
+        });
+    }
+
+    quickButtons.forEach(button => {
+
+        button.addEventListener('click', function() {
+
+            const value = parseFloat(this.dataset.value);
+            const badge = this.querySelector('.cash-count');
+
+            /* ✅ CLEAR OTHER BUTTONS FIRST */
+            resetButtons();
+
+            /* ✅ ACTIVATE ONLY THIS BUTTON */
+            badge.textContent = 1;
+            badge.classList.remove('d-none');
+
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-info');
+
+            /* ✅ REPLACE RECEIVED VALUE (NOT ADD) */
+            receivedInput.value = value.toFixed(2);
+
+            calculateChange();
+        });
+
+    });
+
+    clearBtn.addEventListener('click', function() {
+        receivedInput.value = "0.00";
+        resetButtons();
+        calculateChange();
+    });
+
+    payingInput.addEventListener('input', calculateChange);
+
+    /* ✅ DEFAULT BUTTON WHEN MODAL OPENS */
+    paymentModal.addEventListener('shown.bs.modal', function () {
+
+        receivedInput.value = "0.00";
+        resetButtons();
+
+        const defaultBtn = document.querySelector('.quick-cash[data-value="60"]');
+
+        if (defaultBtn) {
+            defaultBtn.click();
+        }
+    });
+
+});
+
+
     </script>
 @endpush

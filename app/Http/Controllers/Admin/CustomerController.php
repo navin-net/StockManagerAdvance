@@ -34,6 +34,11 @@ class CustomerController extends Controller
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row->id . '">
                             <li>
+                                    <a class="dropdown-item" href="' . route('customers.edit', $row->id) . '" title="' . __('messages.edit') . '">
+                                    <i class="bi bi-pencil-square me-2"></i>' . __('messages.edit') . '
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="' . route('customers.users.add', $row->id) . '" title="' . __('messages.add_user') . '">
                                     <i class="bi bi-person-plus me-2"></i>' . __('messages.add_user') . '
                                 </a>
@@ -41,11 +46,6 @@ class CustomerController extends Controller
                             <li>
                                 <a class="dropdown-item listUser" href="#" data-id="' . $row->id . '" title="' . __('messages.list_user') . '">
                                     <i class="bi bi-people me-2"></i>' . __('messages.list_user') . '
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="' . url('customers/edit/'. $row->id) . '" title="' . __('messages.edit') . '">
-                                    <i class="bi bi-pencil-square me-2"></i>' . __('messages.edit') . '
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -70,6 +70,30 @@ class CustomerController extends Controller
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '#', 'active' => false],
                 ['label' => __('messages.customers'), 'url' => '', 'active' => true],
+            ]
+        ]);
+    }
+
+    public function create()
+    {
+        return view('admin.customers.create', [
+            'pageTitle' => __('messages.create'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
+                ['label' => __('messages.customers'), 'url' => '/admin/customers', 'active' => false],
+                ['label' => __('messages.create'),'url' => '', 'active' => true],
+            ]
+        ]);
+    }
+
+    public function edit($id)
+    {
+        return view('admin.customers.edit', [
+            'pageTitle' => __('messages.edit'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
+                ['label' => __('messages.customers'), 'url' => '/admin/customers', 'active' => false],
+                ['label' => __('messages.edit'),'url' => '', 'active' => true],
             ]
         ]);
     }

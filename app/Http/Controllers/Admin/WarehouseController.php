@@ -40,7 +40,7 @@ class WarehouseController extends Controller
             'description' => __('messages.dashboard_welcome'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
-                
+
                 ['label' => __('messages.warehouse'), 'url' => '', 'active' => true],
             ]
         ]);
@@ -87,7 +87,8 @@ class WarehouseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $warehouse = Warehouses::findOrFail($id);
+        return response()->json(['warehouse' => $warehouse]);
     }
 
     /**
@@ -95,7 +96,22 @@ class WarehouseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $warehouse = Warehouses::findOrFail($id);
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'note'     => 'nullable|string|max:255',
+        ]);
+
+        $warehouse->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'warehouse updated successfully',
+            'warehouse'   => $warehouse
+        ]);
+
     }
 
     /**
@@ -103,6 +119,12 @@ class WarehouseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $warehouse = Warehouses::findOrFail($id);
+        $warehouse->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'warehouse deleted successfully'
+        ]);
     }
 }

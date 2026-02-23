@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.brands_list'))
 
@@ -161,7 +161,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-3 border-0 shadow">
                     <div class="modal-body text-center">
-                        <img id="modalImage" src="/placeholder.svg" alt="Brand Image" class="img-fluid rounded-3">
+                        <img id="modalImage" src="" alt="Brand Image" class="img-fluid rounded-3">
                     </div>
                 </div>
             </div>
@@ -217,7 +217,7 @@
                             <div id="currentImageContainer" class="mb-3 d-none">
                                 <label class="form-label fw-medium">{{ __('messages.current_image') }}</label>
                                 <div class="border p-2 rounded-3">
-                                    <img id="currentImage" src="/placeholder.svg" alt="Current Brand Image"
+                                    <img id="currentImage" src="" alt="Current Brand Image"
                                         class="img-thumbnail rounded-3" style="max-height: 150px;">
                                 </div>
                             </div>
@@ -326,8 +326,8 @@
                 var isUpdate = brandId ? true : false;
 
                 var url = isUpdate ?
-                    "/admin/system_settings/brands/" + brandId :
-                    "/admin/system_settings/brands";
+                    window.APP_PATH + "/admin/system_settings/brands/" + brandId :
+                    window.APP_PATH + "/admin/system_settings/brands";
 
                 if (isUpdate) {
                     formData.append('_method', 'PUT');

@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.my_account'))
 
@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- ABOUT ME -->
-                {{-- <div class="card mt-4 shadow-sm">
+                <div class="card mt-4 shadow-sm">
                     <div class="card-header  text-white fw-bold">
                         About Me
                     </div>
@@ -94,7 +94,7 @@
                         <p><i class="bi bi-geo-alt"></i> Phnom Penh, Cambodia</p>
                         <p><i class="bi bi-briefcase"></i> 5+ Years Experience</p>
                     </div>
-                </div> --}}
+                </div>
             </div>
             <!-- RIGHT SIDE CONTENT -->
             <div class="col-lg-8">
@@ -105,19 +105,22 @@
                         <!-- TABS -->
                         <ul class="nav nav-tabs mb-4" role="tablist">
                             <li class="nav-item">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#information">
+                                <button class="nav-link {{ request('tab') ? '' : 'active' }}" data-bs-toggle="tab"
+                                    data-bs-target="#information">
                                     {{ __('messages.personal_information') }}
                                 </button>
                             </li>
-                            @unless(auth()->user()->group_id == 1)
+
+                            @if (auth()->user()->group_id != 1)
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#address">
+                                        {{ __('messages.address') }}
+                                    </button>
+                                </li>
+                            @endif
                             <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#address">
-                                    {{ __('messages.address') }}
-                                </button>
-                            </li>
-                            @endunless
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#change_password">
+                                <button class="nav-link {{ request('tab') === 'change_password' ? 'active' : '' }}"
+                                    data-bs-toggle="tab" data-bs-target="#change_password">
                                     {{ __('messages.change_password') }}
                                 </button>
                             </li>
@@ -132,7 +135,7 @@
                         <div class="tab-content">
 
                             <!-- information -->
-                            <div class="tab-pane fade show active" id="information">
+                            <div class="tab-pane fade {{ request('tab') ? '' : 'show active' }}" id="information">
                                 <div class="card-body py-4">
                                     <div class="row align-items-center">
                                         <div class="col">
@@ -171,7 +174,7 @@
                                                 <div class="info-label">{{ __('messages.phone') }}</div>
                                                 <div class="info-value">{{ $user->phone }}</div>
                                             </div>
-                                                <div class="col-md-12">
+                                            <div class="col-md-12">
                                                 <div class="info-label">{{ __('messages.username') }}</div>
                                                 <div class="info-value">{{ $user->name }}</div>
                                             </div>
@@ -180,7 +183,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- </div> --}}
                             </div>
 
                             <!-- address -->
@@ -228,7 +230,8 @@
                             </div>
 
                             <!-- change_password -->
-                            <div class="tab-pane fade " id="change_password">
+                            <div class="tab-pane fade {{ request('tab') === 'change_password' ? 'show active' : '' }}"
+                                id="change_password">
                                 <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-body py-4">
                                         <div class="row align-items-center">
@@ -484,19 +487,26 @@
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('messages.number_of_houses') }}</label>
-                                <input type="text" name="number_of_houses" class="form-control" value="{{ $company->number_of_houses }}">
+                                <input type="text" name="number_of_houses" class="form-control"
+                                    value="{{ $company->number_of_houses ?? 'null' }}">
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('messages.street') }}</label>
-                                <input type="text" name="street" class="form-control" value="{{ $company->street }}">
+                                <input type="text" name="street" class="form-control"
+                                    value="{{ $company->street ?? 'null' }}">
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('messages.city') }}</label>
-                                <input type="text" name="city" class="form-control" value="{{ $company->city }}">
+                                <input type="text" name="city" class="form-control"
+                                    value="{{ $company->city ?? 'null' }}">
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('messages.country') }}</label>
-                                <input type="text" name="country" class="form-control" value="{{ $company->country }}">
+                                <input type="text" name="country" class="form-control"
+                                    value="{{ $company->country ?? 'null' }}">
                             </div>
                         </div>
 

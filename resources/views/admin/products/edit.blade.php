@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 @section('title', $pageTitle)
 @section('content')
     <div class="container-fluid">
@@ -39,8 +39,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div id="formError" class="alert alert-danger d-none" role="alert"></div>
-                        <form id="editProductForm" enctype="multipart/form-data">
+                        <form action="{{ route('products.update', $product) }}" method="POST">
                             @csrf
+                            @method('PUT')
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label">{{ __('messages.name') }}</label>
@@ -58,7 +59,8 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="second_name" class="form-label">{{ __('messages.second_name') }}</label>
-                                    <input type="text" name="second_name" id="second_name" value="{{ $product->second_name }}" class="form-control" required>
+                                    <input type="text" name="second_name" id="second_name"
+                                        value="{{ $product->second_name }}" class="form-control" required>
                                     <div class="invalid-feedback" id="second_name_error"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -66,8 +68,7 @@
                                     <select name="brand_id" id="brand_id" class="form-select" required>
                                         <option value="">{{ __('messages.select_brand') }}</option>
                                         @foreach ($brands as $brand)
-                                            <option value="{{ $brand->id }}"
-                                                @selected(old('brand_id', $product->brand_id ?? null) == $brand->id)>
+                                            <option value="{{ $brand->id }}" @selected(old('brand_id', $product->brand_id ?? null) == $brand->id)>
                                                 {{ $brand->name }}
                                             </option>
                                         @endforeach
@@ -110,9 +111,7 @@
                                     <select name="quality_id" id="quality_id" class="form-select" required>
                                         <option value="">{{ __('messages.select_quality') }}</option>
                                         @foreach ($qualities as $quality)
-                                            <option value="{{ $quality->id }}"
-                                                @selected(old('brand_id',
-                                                $product->quality_id ?? null) == $quality->id)>
+                                            <option value="{{ $quality->id }}" @selected(old('brand_id', $product->quality_id ?? null) == $quality->id)>
                                                 {{ $quality->name }}
                                             </option>
                                         @endforeach
@@ -124,9 +123,7 @@
                                     <select name="unit_id" id="unit_id" class="form-select" required>
                                         <option value="">{{ __('messages.select_unit') }}</option>
                                         @foreach ($units as $unit)
-                                            <option value="{{ $unit->id }}"
-                                                @selected(old('brand_id',
-                                                $product->unit_id ?? null) == $unit->id)>
+                                            <option value="{{ $unit->id }}" @selected(old('brand_id', $product->unit_id ?? null) == $unit->id)>
                                                 {{ $unit->name }}
                                             </option>
                                         @endforeach
@@ -135,14 +132,16 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="cost_price" class="form-label">{{ __('messages.cost_price') }}</label>
-                                    <input type="number" name="cost_price" id="cost_price" value="{{ $product->cost_price ?? 'N/A' }}" class="form-control"
-                                        step="0.01" min="0" required>
+                                    <input type="number" name="cost_price" id="cost_price"
+                                        value="{{ $product->cost_price ?? 'N/A' }}" class="form-control" step="0.01"
+                                        min="0" required>
                                     <div class="invalid-feedback" id="cost_price_error"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="selling_price"
                                         class="form-label">{{ __('messages.selling_price') }}</label>
-                                    <input type="number" name="selling_price" id="selling_price"  value="{{ $product->selling_price ?? 'N/A' }}" class="form-control"
+                                    <input type="number" name="selling_price" id="selling_price"
+                                        value="{{ $product->selling_price ?? 'N/A' }}" class="form-control"
                                         step="0.01" min="0" required>
                                     <div class="invalid-feedback" id="selling_price_error"></div>
                                 </div>
@@ -161,10 +160,11 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label for="description" class="form-label">{{ __('messages.description') }}</label>
-                                <textarea name="description" id="description" class="form-control" value="{{ $product->description ?? 'N/A' }}" rows="5"></textarea>
-                                <div class="invalid-feedback" id="description_error"></div>
+                                <label class="form-label fw-semibold">Description</label>
+
+                                <textarea name="description" id="description" class="form-control" rows="5">{{ old('description', $product->description ?? '') }}</textarea>
                             </div>
+
                             <div class="mb-3 text-md-end">
                                 <a href="{{ url()->previous() }}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left"></i> Back
@@ -182,7 +182,24 @@
 @endsection
 
 @push('scripts')
-    <script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
+<script>
+ClassicEditor.create(document.querySelector('#description'), {
+    toolbar: [
+        'heading', '|',
+        'bold', 'italic', '|',
+        'link', 'bulletedList', 'numberedList', '|',
+        'blockQuote', 'insertTable', '|',
+        'undo', 'redo'
+    ],
+    table: {
+        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+    }
+}).catch(error => {
+    console.error(error);
+});
+
         $(document).ready(function() {
 
             $('#category_id').on('change', function() {
@@ -194,7 +211,8 @@
 
                 if (!categoryId) {
                     subcategorySelect.html(
-                        '<option value="">{{ __('messages.select_subcategory') }}</option>');
+                        '<option value="">{{ __('messages.select_subcategory') }}</option>'
+                    );
                     return;
                 }
 
@@ -206,6 +224,7 @@
                         subcategorySelect.html(
                             '<option value="">{{ __('messages.select_sub_categories') }}</option>'
                         );
+
                         $.each(data, function(key, subcategory) {
                             subcategorySelect.append(
                                 `<option value="${subcategory.id}">${subcategory.name}</option>`
@@ -214,7 +233,6 @@
                     }
                 });
             });
-
         });
     </script>
 @endpush

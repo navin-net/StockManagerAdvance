@@ -9,7 +9,7 @@
 
     <title>Page 404 Black Box</title>
     <!-- Style -->
-    <link rel="stylesheet" href="{{ asset('assets/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('backend/style.css') }}">
 </head>
 <body>
 <!-- card -->
@@ -126,17 +126,17 @@
         <a class="back-btn" href="/">Back To Home</a>
     </div>
     <!-- image -->
-    <div class="image"><img id="big_image" src="{{ asset('assets/image/astronaut.png') }}" alt="#"></div>
+    <div class="image"><img id="big_image" src="{{ asset('backend/image/astronaut.png') }}" alt="#"></div>
 </main>
 <!-- start ----- image-box (Delete this) ----- -->
 <div id="image-box" class="image-box">
     <div id="close_ImageBox">X</div>
-    <img class="small_image active" src="{{ asset('assets/image/astronaut.png') }}" style="max-width: 50%;animation-delay: 800ms;" alt="#">
-    <img class="small_image" src="{{ asset('assets/image/cute-ghost.png') }}" style="max-width: 80%;animation-delay: 900ms;" alt="#">
-    <img class="small_image" src="{{ asset('assets/image/female.png') }}" style="max-width: 50%;animation-delay: 1000ms" alt="#">
-    <img class="small_image" src="{{ asset('assets/image/sad-boy.png') }}" style="max-width: 70%;animation-delay: 1100ms;" alt="#">
-    <img class="small_image" src="{{ asset('assets/image/Searcher.png') }}" style="max-width: 80%;animation-delay: 1200ms" alt="#">
-    <img class="small_image" src="{{ asset('assets/image/cherry.png') }}" style="max-width: 60%;animation-delay: 1300ms" alt="#">
+    <img class="small_image active" src="{{ asset('backend/image/astronaut.png') }}" style="max-width: 50%;animation-delay: 800ms;" alt="#">
+    <img class="small_image" src="{{ asset('backend/image/cute-ghost.png') }}" style="max-width: 80%;animation-delay: 900ms;" alt="#">
+    <img class="small_image" src="{{ asset('backend/image/female.png') }}" style="max-width: 50%;animation-delay: 1000ms" alt="#">
+    <img class="small_image" src="{{ asset('backend/image/sad-boy.png') }}" style="max-width: 70%;animation-delay: 1100ms;" alt="#">
+    <img class="small_image" src="{{ asset('backend/image/Searcher.png') }}" style="max-width: 80%;animation-delay: 1200ms" alt="#">
+    <img class="small_image" src="{{ asset('backend/image/cherry.png') }}" style="max-width: 60%;animation-delay: 1300ms" alt="#">
 </div>
 <!-- ----- image-box (Delete this) ----- end -->
 </body>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PortfolioController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\{
     AuthController,
@@ -20,8 +21,9 @@ use App\Http\Controllers\Admin\{
     ShopController,
     UnitController
 };
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
-Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->group(function () {
+// Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
         Route::get('/', [AuthController::class,'dashboard'])->name('admin.dashboard');
 
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
         Route::get('/products/subcategories/{category}', [ProductController::class, 'getSubCategories'])->name('products.subcategories');
         Route::delete('/products/images/{id}', [ProductController::class, 'removeImage'])->name('products.images.remove');
         Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
+        Route::get('products/import',[ProductController::class, 'import'])->name('products.import');
+        Route::get('products/code-label',[ProductController::class, 'barcodelabel'])->name('products.barcodelabel');
+        Route::get('products/adjustment',[ProductController::class, 'adjustment'])->name('products.adjustment');
 
         //SALES
         Route::resource('sales', SalesController::class)->except(['show']);
@@ -46,8 +51,8 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
         Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
         Route::get('/sales/detail/{id}', [SalesController::class, 'show'])->name('sales.show');
         Route::get('/sales/payments/{id}', [SalesController::class, 'payments'])->name('sales.payments');
-        Route::post('/sales/payment/store', [SalesController::class, 'storePayment'])->name('sales.payment.store');
-
+        Route::post('/sales/payment/store', [SalesController::class, 'storePayment'])->name('sales.storePayment');
+        Route::get('/sales/listPayments/{id}', [SalesController::class, 'listPayments'])->name('sales.listPayments');
         //Purchases
         Route::resource('purchases', PurchasesController::class)->except(['show']);
         Route::prefix('purchases')->group(function () {
@@ -58,16 +63,8 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
         });
         // Megement Permission
         Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('billers', BillerController::class)->except(methods: ['show']);
         Route::prefix('billers')->group(function () {
-            Route::resource('/', BillerController::class)->except(['show'])
-                ->names([
-                    'index' => 'billers.index',
-                    'create' => 'billers.create',
-                    'store' => 'billers.store',
-                    'edit' => 'billers.edit',
-                    'update' => 'billers.update',
-                    'destroy' => 'billers.destroy'
-                ]);
             Route::get('/{id}/users', [BillerController::class, 'listUsers'])->name('billers.users');
             Route::get('/{id}/users/add', [BillerController::class, 'addUser'])
                 ->name('billers.users.add');
@@ -75,6 +72,9 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
                 ->name('billers.users.store');
             Route::get('/{id}/users/edit', [BillerController::class, 'editUser'])
                 ->name('billers.users.edit');
+            Route::put('/{id}/users/update', [BillerController::class, 'updateUser'])
+                ->name('billers.users.update');
+
             Route::delete('/users/{id}/delete', [BillerController::class, 'deleteUser'])->name('billers.users.delete');
         });
 
@@ -107,6 +107,7 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
             Route::resource('/categories', CategoriesController::class)->except(['show']);
             Route::resource('/sub_category', SubCategoryController::class)->except(['show']);
             Route::resource('/units', UnitController::class)->except(['show']);
+            Route::post('units/bulk_delete',[UnitController::class, 'bulkDelete'])->name('units.bulkDelete');
             Route::resource('/warehouse', WarehouseController::class)->except(['show']);
             Route::resource('/qualitys', QualitysController::class)->except(['show']);
         });
@@ -117,7 +118,7 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
             Route::get('banners', [ShopController::class, 'banners'])->name('banners');
             Route::post('/banners/update', [ShopController::class, 'bannersUpdate'])
                 ->name('banners.update');
-
+            Route::resource('portfolio', PortfolioController::class)->except(['show']);
         });
 
         Route::prefix('pos')->name('pos.')->group(function () {
@@ -133,7 +134,6 @@ Route::middleware(['auth', 'admin', 'remember.admin.cookie'])->prefix('admin')->
                 Route::get('/', [PosController::class, 'index'])
                     ->name('index');
             });
-
         });
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

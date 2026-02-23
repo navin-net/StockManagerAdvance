@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.groups_list'))
 
@@ -363,13 +363,6 @@
                 }
             });
 
-            $(document).on('click','.payment-sale',function(){
-                let id = $(this).data('id');
-                $.get('/sales/' + id + '/payments', function(res){
-                    $("#paymentsContent").html(res);
-                    $("#paymentsModal").modal('show');
-                });
-            });
 
 
 

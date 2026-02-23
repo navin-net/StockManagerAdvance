@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.add_sale'))
 
@@ -104,9 +104,9 @@
 
                                 <div class="mt-3">
                                     <button type="submit"
-                                        class="btn btn-primary btn-sm rounded-3">{{ __('messages.submit') }}</button>
+                                        class="btn btn-primary rounded-3">{{ __('messages.submit') }}</button>
                                     <a href="{{ route('sales.index') }}"
-                                        class="btn btn-secondary btn-sm rounded-3">{{ __('messages.cancel') }}</a>
+                                        class="btn btn-secondary rounded-3">{{ __('messages.cancel') }}</a>
                                 </div>
                             </form>
                         </div>
@@ -129,9 +129,9 @@
                         <p id="confirmMessage">{{ __('messages.confirm_sale_submission') }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm"
+                        <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">{{ __('messages.no') }}</button>
-                        <button type="button" class="btn btn-primary btn-sm"
+                        <button type="button" class="btn btn-primary"
                             id="confirmSubmitBtn">{{ __('messages.yes') }}</button>
                     </div>
                 </div>
@@ -152,9 +152,9 @@
                         <p id="addProductMessage"></p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm"
+                        <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">{{ __('messages.no') }}</button>
-                        <button type="button" class="btn btn-primary btn-sm"
+                        <button type="button" class="btn btn-primary"
                             id="confirmAddProductBtn">{{ __('messages.yes') }}</button>
                     </div>
                 </div>
@@ -190,25 +190,20 @@
                     const isSelected = existingRow.length > 0;
                     const currentQty = isSelected ? existingRow.find('.quantity').val() : 0;
 
-                    html += `
-                    <div class="card suggestion-item cursor-pointer ${isSelected ? 'border-primary border-2' : ''}"
-                        data-id="${p.id}" data-name="${p.name}" data-price="${p.selling_price}" data-stock="${p.stock_quantity}">
-                        <div class="card-body p-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="card-title mb-1 fw-semibold">${p.name}</h6>
-                                    <p class="text-muted small mb-0">code: ${p.code}</p>
-                                    <p class="text-muted small mb-0">Stock: ${p.stock_quantity}</p>
-                                </div>
-                                ${isSelected ? `
-                                        <div class="text-end">
-                                            <small class="text-primary fw-medium">In cart: ${currentQty}</small>
-                                            <div><small class="text-muted">Click to add +1</small></div>
-                                        </div>` : ''}
-                            </div>
-                        </div>
-                    </div>`;
-                });
+                        html += `<div class="suggestion-item px-3 py-2 border-bottom"
+                            data-id="${p.id}"
+                            data-name="${p.name}"
+                            data-code="${p.code}"
+                            data-price="${p.selling_price}"
+                            data-stock="${p.stock_quantity}"
+                            style="cursor:pointer; color: var(--text-color); border-color: var(--border-color) !important;">
+                            <div class="fw-bold" style="color: var(--text-color);">${p.name}</div>
+                            <small style="color: var(--text-muted);">
+                                Code: <span style="color: var(--primary-color);">${p.code}</span> |
+                                Stock: <span class="${p.stock_quantity <= 0 ? 'text-danger' : ''}">${p.stock_quantity}</span>
+                            </small>
+                        </div>`;
+                    });
                 container.html(html).show();
             }
 
@@ -260,7 +255,7 @@
                             price,
                             stock
                         };
-                        $('#addProductMessage').text(`"${name}" is out of stock. Add anyway?`);
+                        $('#addProductMessage').text(`"${name}" {{ __('messages.is_out_of_stock_Add_anyway') }}`);
                         new bootstrap.Modal('#confirmAddProductModal').show();
                         return;
                     }
@@ -286,7 +281,7 @@
                     </td>
                     <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control quantity" value="${qty}" min="1"></td>
                     <td><input type="number" step="0.01" name="items[${itemIndex}][sale_price]" class="form-control sale_price" value="${salePrice}"></td>
-                    <td><button type="button" class="btn btn-danger btn-sm remove-item"><i class="bi bi-trash"></i> Remove</button></td>
+                    <td><button type="button" class="btn btn-danger remove-item"><i class="bi bi-trash"></i> Remove</button></td>
                 </tr>
             `);
                 itemIndex++;
@@ -353,12 +348,12 @@
                         stock = $(this).find('.stock-quantity').val(),
                         name = $(this).find('.fw-medium').text();
                     if (qty > stock) {
-                        warn += `⚠ "${name}" exceeds stock (${stock})<br>`;
+                        warn += `⚠ "${name}" {{ __('messages.exceeds_stock') }} (${stock})<br>`;
                     }
                 });
 
                 $('#stockIssues').html(warn);
-                $('#confirmMessage').text(warn ? 'Stock issues detected' : 'Confirm submit?');
+                $('#confirmMessage').text(warn ? '{{ __('messages.stock_issues_detected') }}' : 'Confirm submit?');
 
                 new bootstrap.Modal('#confirmSubmitModal').show();
             });

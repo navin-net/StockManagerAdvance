@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 @section('title', __('messages.add_products'))
 @section('content')
     <div class="container-fluid">
@@ -227,9 +227,6 @@
                     processData: false,
                     success: function(response) {
                         $('#createProductForm')[0].reset();
-                        // $('#subcategory_id').prop('disabled', true).html(
-                        //     '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                        // );
                         window.location.href = response.redirect;
                     },
                     error: function(xhr) {

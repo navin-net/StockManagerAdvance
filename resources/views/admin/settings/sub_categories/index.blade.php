@@ -1,59 +1,41 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', 'Subcategory List')
 
 @section('content')
     <div class="container-fluid py-4">
-        <div class="pagetitle mb-4">
-            <h1 class="display-6 fw-bold">{{ $pageTitle }}</h1>
-            <nav>
-                <ol class="breadcrumb rounded-3 p-2">
-                    @foreach ($breadcrumbs as $breadcrumb)
-                        <li class="breadcrumb-item {{ $breadcrumb['active'] ? 'active text-muted' : '' }}">
-                            @if (!$breadcrumb['active'])
-                                <a href="{{ $breadcrumb['url'] }}"
-                                    class="text-primary text-decoration-none">{{ $breadcrumb['label'] }}</a>
-                            @else
-                                {{ $breadcrumb['label'] }}
-                            @endif
-                        </li>
-                    @endforeach
-                </ol>
-            </nav>
-        </div>
-
-        {{-- <div class="card border-0 shadow-sm rounded-3">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between mb-3">
-                    <h5 class="fw-semibold"></h5>
-                    <div class="dropdown">
-                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear-fill me-1"></i> Actions
-                        </button>
-                        <ul class="dropdown-menu shadow-sm">
-                            <li><a class="dropdown-item" id="addSubCategoryBtn">{{ __('messages.add') }}</a></li>
-                            <li><a class="dropdown-item" id="bulkDeleteBtn" disabled>{{ __('messages.delete') }} </a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="alertsContainer"></div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="subCategoriesTable">
-                        <thead class="table-primary">
-                            <tr>
-                                <th scope="col" ><input type="checkbox" id="selectAll"></th>
-                                <th>{{ __('messages.category') }}</th>
-                                <th>{{ __('messages.name') }}</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <div class="pagetitle">
+                    <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            @foreach ($breadcrumbs as $breadcrumb)
+                                @if (!$breadcrumb['active'])
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
+                                            {{ $breadcrumb['label'] }}
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="breadcrumb-item active text-muted" aria-current="page">
+                                        {{ $breadcrumb['label'] }}
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ol>
+                    </nav>
                 </div>
             </div>
-        </div> --}}
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <small class="text-muted fw-semibold">
+                    {{ __('messages.ip_address') }}:
+                </small>
+                <span class="fw-semibold text-primary">
+                    {{ auth()->user()->ip_address }}
+                </span>
+            </div>
+        </div>
         <section class="section">
             <div class="row">
                 <div class="col-lg-12">
@@ -68,13 +50,12 @@
                                         <div class="dropdown">
                                             <button class="btn btn-primary btn-sm dropdown-toggle rounded-3" type="button"
                                                 id="actionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                {{ __('messages.actions') }}
+                                                <i class="bi bi-gear-fill me-1"></i> {{ __('messages.actions') }}
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3"
                                                 aria-labelledby="actionDropdown">
 
-                                                <li><a class="dropdown-item" href="#"
-                                                        id="addSubCategoryBtn">
+                                                <li><a class="dropdown-item" href="#" id="addSubCategoryBtn">
                                                         <i class="bi bi-plus-circle me-2"></i>{{ __('messages.add') }}</a>
                                                 </li>
                                                 <li><a class="dropdown-item" href="#" id="exportProducts">
@@ -91,120 +72,139 @@
                                 </div>
                             </div>
 
-                            <div id="alertsContainer" class="mb-4">
-                                @if (session('success'))
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        {{ session('success') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                            aria-label="Close"></button>
-                                    </div>
-                                @endif
-                                @if (session('error'))
-                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                        {{ session('error') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                            aria-label="Close"></button>
-                                    </div>
-                                @endif
-                            </div>
+                            <div id="alertsContainer" class="mb-4"></div>
+
+
 
                             <div class="table-responsive">
-                                <table id="subCategoriesTable" class="table table-striped table-bordered rounded-3 align-middle">
+                                <table id="subCategoriesTable"
+                                    class="table table-striped table-bordered rounded-3 align-middle">
                                     <thead class="table-primary">
                                         <tr>
-                                            <th><input type="checkbox" id="selectAll"></th>
+                                            <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                                            <th>{{ __('messages.category') }}</th>
                                             <th>{{ __('messages.name') }}</th>
-                                            <th>{{ __('messages.code') }}</th>
-                                            <th class="text-center">{{ __('messages.actions') }}</th>
+                                            <th scope="col" class="py-3 text-center" width="120">
+                                                {{ __('messages.actions') }}
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
+
+
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        {{-- CREATE MODAL --}}
         <div class="modal fade" id="addSubCategoryModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content border-0 shadow">
                     <form id="createSubCategoryForm">
                         @csrf
                         <div class="modal-header">
-                            <h5 class="modal-title">Create Subcategory</h5>
+                            <h5 class="modal-title">{{ __('messages.create') }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="name" class="form-label">Subcategory Name</label>
+                                <label class="form-label">{{ __('messages.name') }}</label>
                                 <input type="text" class="form-control" name="name" id="name" required>
-                                <div class="invalid-feedback" id="name_error"></div>
                             </div>
                             <div class="mb-3">
-                                <label for="category_id" class="form-label">Category</label>
-                                <select class="form-select" name="category_id" id="category_id" required>
-                                    <option value="">-- Select Category --</option>
+                                <label class="form-label">{{ __('messages.category') }}</label>
+                                <select name="category_id" class="form-select" required>
+                                    <option value="">-- {{ __('messages.select_category') }} --</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
-                                <div class="invalid-feedback" id="category_id_error"></div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                            <button type="submit" class="btn btn-primary btn-sm">{{ __('messages.save') }}</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
+        {{-- EDIT MODAL --}}
         <div class="modal fade" id="editSubCategoryModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content border-0 shadow">
                     <form id="editSubCategoryForm">
                         @csrf
-                        <input type="hidden" id="edit_id" name="id">
+                        @method('PUT')
+                        <input type="hidden" id="edit_id">
+
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Subcategory</h5>
+                            <h5 class="modal-title">{{ __('messages.edit') }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
+
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="edit_name" class="form-label">Subcategory Name</label>
-                                <input type="text" class="form-control" name="name" id="edit_name" required>
-                                <div class="invalid-feedback" id="edit_name_error"></div>
+                                <label class="form-label">{{ __('messages.name') }}</label>
+                                <input type="text" id="edit_name" name="name" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label for="edit_category_id" class="form-label">Category</label>
-                                <select class="form-select" name="category_id" id="edit_category_id" required>
-                                    <option value="">-- Select Category --</option>
+                                <label class="form-label">{{ __('messages.category') }}</label>
+                                <select id="edit_category_id" name="category_id" class="form-select" required>
+                                    <option value="">-- {{ __('messages.select_category') }} --</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
-                                <div class="invalid-feedback" id="edit_category_id_error"></div>
                             </div>
                         </div>
+
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-sm"
-                                data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                            <button type="submit" class="btn btn-primary btn-sm">{{ __('messages.update') }}</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+
+
+        <div class="modal fade" id="deleteSubCategoryModal" tabindex="-1" aria-labelledby="deleteSubCategoryModalLabel"
+            aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0  rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="deleteSubCategoryModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this SubCategory
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteSubCategoryForm" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm rounded-3">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        const imageBaseUrl = "{{ asset('/storage/images/') }}";
-        const noimage = "{{ asset('noimage.png') }}";
-        $(document).ready(function() {
+        const BaseUrl = "/admin/system_settings/sub_category/";
+
+        $(document).ready(function () {
             var table = $('#subCategoriesTable').DataTable({
                 pageLength: 10,
                 lengthMenu: [
@@ -218,28 +218,28 @@
                 ajax: "{{ route('sub_category.index') }}",
 
                 columns: [{
-                        data: 'id',
-                        name: 'id',
-                        render: function(data) {
-                            return `<input type="checkbox" class="Checkbox" value="${data}">`;
-                        },
-                        orderable: false,
-                        searchable: false
+                    data: 'id',
+                    name: 'id',
+                    render: function (data) {
+                        return `<input type="checkbox" class="Checkbox" value="${data}">`;
                     },
-                    {
-                        data: 'category_name',
-                        name: 'category_name'
-                    },
-                    {
-                        data: 'sub_category_name',
-                        name: 'sub_category_name'
-                    },
-                    {
-                        data: 'action',
-                        orderable: false,
-                        searchable: false,
-                        className: 'text-center'
-                    }
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'category_name',
+                    name: 'category_name'
+                },
+                {
+                    data: 'sub_category_name',
+                    name: 'sub_category_name'
+                },
+                {
+                    data: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center'
+                }
                 ],
                 language: {
                     paginate: {
@@ -258,13 +258,97 @@
             });
 
 
+            $('#addSubCategoryBtn').click(function () {
+                $('#addSubCategoryModal').modal('show');
+            });
+
+            $('#createSubCategoryForm').submit(function (e) {
+                e.preventDefault();
+                $.post(BaseUrl, $(this).serialize(), function (res) {
+                    $('#addSubCategoryModal').modal('hide');
+                    table.ajax.reload();
+                });
+            });
+
+            // EDIT
+            $(document).on('click', '.editSubCategorybtn', function () {
+                let id = $(this).data('id');
+
+                $.get(BaseUrl + id + '/edit', function (data) {
+                    $('#edit_id').val(data.id);
+                    $('#edit_name').val(data.name);
+                    $('#edit_category_id').val(data.category_id);
+
+                    $('#editSubCategoryModal').modal('show');
+                });
+            });
+
+            $('#editSubCategoryForm').submit(function (e) {
+                e.preventDefault();
+                let id = $('#edit_id').val();
+
+                $.ajax({
+                    url: BaseUrl + id,
+                    method: 'PUT',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        $('#editSubCategoryModal').modal('hide');
+                        table.ajax.reload();
+
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseJSON);
+
+                    }
+                });
+            });
+
+
+            $(document).on('click', '.deleteSubCategory', function () {
+                var id = $(this).data('id');
+                $('#deleteSubCategoryModal').modal('show');
+                $('#deleteSubCategoryForm').data('id', id); // store id
+            });
+            $('#deleteSubCategoryForm').submit(function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+
+                $.ajax({
+                    url: '/admin/system_settings/sub_category/' + id,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        $('#deleteSubCategoryModal').modal('hide');
+                        table.ajax.reload();
+                        const successAlert = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            ${response.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                        $('#alertsContainer').html(successAlert);
+                    },
+                    error: function (xhr) {
+                        $('#deleteSubCategoryModal').modal('hide');
+                        table.ajax.reload();
+                        const message = xhr.responseJSON?.message || 'Something went wrong';
+                        const errorAlert = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                ${message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        $('#alertsContainer').html(errorAlert);
+                    }
+                });
+
+            });
 
 
 
 
-
-            $('#bulkDeleteBtn').on('click', function() {
-                var selectedIds = $('.Checkbox:checked').map(function() { return $(this).val(); }).get();
+            $('#bulkDeleteBtn').on('click', function () {
+                var selectedIds = $('.Checkbox:checked').map(function () { return $(this).val(); }).get();
 
                 if (selectedIds.length > 0) {
                     $('#bulkDeleteModal .modal-body').text(
@@ -272,38 +356,33 @@
                     );
                     $('#bulkDeleteModal').modal('show');
 
-                    $('#confirmBulkDeleteBtn').off('click').on('click', function() {
+                    $('#confirmBulkDeleteBtn').off('click').on('click', function () {
                         $.ajax({
                             url: "{{ route('groups.bulkDelete') }}",
                             method: 'POST',
                             data: { ids: selectedIds },
-                            success: function(response) {
+                            success: function (response) {
                                 $('#bulkDeleteModal').modal('hide');
                                 table.ajax.reload();
                                 $('#alertsContainer').html(`
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        ${response.success || 'Selected group(s) deleted successfully!'}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                `);
+                                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                ${response.success || 'Selected group(s) deleted successfully!'}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            </div>
+                                        `);
                             },
-                            error: function(response) {
-                                alert('Error: ' + (response.responseJSON?.message || 'Unable to delete'));
-                            }
                         });
                     });
                 } else {
-                    // alert('Please select at least one group.');
+
                     $('#alertsContainer').html(`
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            Please select at least one group.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    `);
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    Please select at least one group.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `);
                 }
             });
-
-
         });
     </script>
 @endpush

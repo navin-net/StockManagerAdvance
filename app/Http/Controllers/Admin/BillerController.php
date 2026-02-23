@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\{Companies, User};
+use App\Models\{Companies, Groups, User};
+use PHPUnit\Framework\Attributes\Group;
 use Yajra\DataTables\DataTables;
 
 class BillerController extends Controller
@@ -30,42 +31,46 @@ class BillerController extends Controller
                 )->where('companies.group_id', 2);
             return DataTables::of($query)
                 ->addColumn('action', function ($row) {
-                    return '
-                    <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton' . $row->id . '" data-bs-toggle="dropdown" aria-expanded="false">
-                        ' . __('messages.action') . '
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row->id . '">
-                            <li>
-                                <a class="dropdown-item" href="' . route('billers.users.add', $row->id) . '" title="' . __('messages.add_user') . '">
-                                    <i class="bi bi-person-plus me-2"></i>' . __('messages.add_user') . '
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item listUser" href="#" data-id="' . $row->id . '" title="' . __('messages.list_user') . '">
-                                    <i class="bi bi-people me-2"></i>' . __('messages.list_user') . '
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="' . url('billers/' . $row->id . '/edit') . '" title="' . __('messages.edit') . '">
-                                    <i class="bi bi-pencil-square me-2"></i>' . __('messages.edit') . '
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger deleteBillerBtn" href="#" data-id="' . $row->id . '" title="' . __('messages.delete') . '">
-                                    <i class="bi bi-trash me-2"></i>' . __('messages.delete') . '
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    ';
+                    return '<div class="dropdown">
+                                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton' . $row->id . '" data-bs-toggle="dropdown" aria-expanded="false">
+                                    ' . __("messages.action") . '
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row->id . '">
+
+                                    <li>
+                                        <a class="dropdown-item" href="' . route("billers.users.add", $row->id) . '" title="' . __("messages.add_user") . '">
+                                            <i class="bi bi-person-plus me-2"></i>' . __("messages.add_user") . '
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item listUser" href="#" data-id="' . $row->id . '" title="' . __("messages.list_user") . '">
+                                            <i class="bi bi-people me-2"></i>' . __("messages.list_user") . '
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item" href="' . route("billers.edit", $row->id) . '" title="' . __("messages.edit") . '">
+                                            <i class="bi bi-pencil-square me-2"></i>' . __("messages.edit") . '
+                                        </a>
+                                    </li>
+
+                                    <li><hr class="dropdown-divider"></li>
+
+                                    <li>
+                                        <a class="dropdown-item text-danger deleteBillerBtn" href="#" data-id="' . $row->id . '" title="' . __("messages.delete") . '">
+                                            <i class="bi bi-trash me-2"></i>' . __("messages.delete") . '
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>';
+
                 })
-                ->filterColumn('group_name', function($query,$keyword){
-                    $query->where('groups.name','like',"%$keyword%");
+                ->filterColumn('group_name', function ($query, $keyword) {
+                    $query->where('groups.name', 'like', "%$keyword%");
                 })
-                ->filterColumn('warehouse_name', function($query,$keyword){
-                    $query->where('warehouses.name','like',"%$keyword%");
+                ->filterColumn('warehouse_name', function ($query, $keyword) {
+                    $query->where('warehouses.name', 'like', "%$keyword%");
                 })
 
 
@@ -96,6 +101,7 @@ class BillerController extends Controller
             'companies' => $companies,
             'pageTitle' => __('messages.list_billers'),
             'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
                 ['label' => __('messages.billers'), 'url' => '#', 'active' => false],
                 ['label' => __('messages.add'), 'url' => '', 'active' => true],
             ]
@@ -141,9 +147,8 @@ class BillerController extends Controller
             'warehouse' => $warehouses,
             'pageTitle' => __('messages.edit_biller'),
             'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => '#', 'active' => false],
-                ['label' => __('messages.settings'), 'url' => '#', 'active' => false],
-                ['label' => __('messages.billers'), 'url' => '', 'active' => true],
+                ['label' => __('messages.billers'), 'url' => '#', 'active' => false],
+                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
             ]
         ]);
     }
@@ -183,10 +188,11 @@ class BillerController extends Controller
         return response()->json(['success' => __('messages.selected_billers_deleted_successfully')]);
     }
 
-    // User of Controller
+    // User of Billers
     public function listUsers($id)
     {
         $biller = Companies::with('users')->findOrFail($id);
+
 
         $biller->users->transform(function ($user) {
             $user->action = '
@@ -204,7 +210,15 @@ class BillerController extends Controller
     public function addUser($id)
     {
         $biller = Companies::findOrFail($id);
-        return view('admin.billers.partials.add_user', compact('biller'));
+        // die($biller);
+        return view('admin.billers.partials.add_user', [
+            'biller' => $biller,
+            'pageTitle' => __('messages.add_user'),
+            'breadcrumbs' => [
+                ['label' => __('messages.billers'), 'url' => '#', 'active' => false],
+                ['label' => __('messages.add_user'), 'url' => '', 'active' => true],
+            ]
+        ]);
     }
 
     public function storeUser(Request $request, $id)
@@ -230,8 +244,17 @@ class BillerController extends Controller
     public function editUser($id)
     {
         $user = User::findOrFail($id);
+        $groups = Groups::get();
         // die($user);
-        return view('admin.billers.partials.edit_user', compact('user'));
+        return view('admin.billers.partials.edit_user', [
+            'user' => $user,
+            'groups' => $groups,
+            'pageTitle' => __('messages.edit_user'),
+            'breadcrumbs' => [
+                ['label' => __('messages.billers'), 'url' => '#', 'active' => false],
+                ['label' => __('messages.edit_user') . ' - ' . $user->name, 'url' => '', 'active' => true],
+            ]
+        ]);
     }
 
     public function updateUser(Request $request, $id)
@@ -239,14 +262,14 @@ class BillerController extends Controller
         $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:6|confirmed',
+            'password' => 'nullable|min:6',
         ]);
 
         $user = User::findOrFail($id);
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password ? bcrypt($request->password) : $user->password,
+            'password' => $request->password,
         ]);
 
         return redirect()

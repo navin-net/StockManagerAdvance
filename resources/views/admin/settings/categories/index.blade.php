@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.categories_list'))
 
@@ -68,32 +68,20 @@
                                 </div>
                             </div>
 
-                            <div id="alertsContainer" class="mb-4">
-                                @if (session('success'))
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        {{ session('success') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                            aria-label="Close"></button>
-                                    </div>
-                                @endif
-                                @if (session('error'))
-                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                        {{ session('error') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                            aria-label="Close"></button>
-                                    </div>
-                                @endif
-                            </div>
+                            <div id="alertsContainer" class="mb-4"></div>
+
 
                             <div class="table-responsive">
-                                <table id="categoriesTable" class="table table-striped table-bordered rounded-3 align-middle">
+                                <table id="categoriesTable"
+                                    class="table table-striped table-bordered rounded-3 align-middle">
                                     <thead class="table-primary">
                                         <tr>
                                             <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
                                             <th>{{ __('messages.name') }}</th>
                                             <th>{{ __('messages.slug') }}</th>
                                             <th scope="col" class="py-3 text-center" width="120">
-                                                {{ __('messages.actions') }}</th>
+                                                {{ __('messages.actions') }}
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -105,14 +93,115 @@
             </div>
         </section>
 
+        <!-- Add Categories Modal -->
+        <div class="modal fade" id="addCategoriesModal" tabindex="-1" aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0 rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="addCategoriesModalLabel">{{ __('messages.create') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="createCategoriesForm">
+                        @csrf
+                        <input type="hidden" name="category_id" id="category_id">
+                        <input type="hidden" name="_method" id="method" value="POST">
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">{{ __('messages.name') }}</label>
+                                <input type="text" class="form-control rounded-3" name="name" id="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">{{ __('messages.slug') }}</label>
+                                <input type="text" class="form-control rounded-3" name="slug" id="slug" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                            <button type="submit" id="saveBtn"
+                                class="btn btn-primary btn-sm rounded-3">{{ __('messages.save') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Edit Categories Modal --}}
+        <div class="modal fade" id="editCategoriesModal" tabindex="-1" aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-semibold">{{ __('messages.edit') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editCategoriesForm">
+                        @csrf
+                        @method('PUT') <input type="hidden" name="category_id" id="category_id">
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">{{ __('messages.name') }}</label>
+                                <input type="text" class="form-control" name="name" id="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">{{ __('messages.slug') }}</label>
+                                <input type="text" class="form-control" name="slug" id="slug" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                            <button type="submit" class="btn btn-primary btn-sm">{{ __('messages.update') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteCategoriesModal" tabindex="-1" aria-labelledby="deleteCategoriesModalLabel"
+            aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0  rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="deleteCategoriesModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this Categories?
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteCategoriesForm" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm rounded-3">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 @endsection
 @push('scripts')
     <script>
-        const imageBaseUrl = "{{ asset('/storage/images/') }}";
-        const noimage = "{{ asset('noimage.png') }}";
-        $(document).ready(function() {
+        const BaseUrl = "/admin/system_settings/categories/";
+
+        document.getElementById('name').addEventListener('input', function () {
+            let nameValue = this.value;
+
+            let slug = nameValue.toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            document.getElementById('slug').value = slug;
+        });
+        $(document).ready(function () {
             var table = $('#categoriesTable').DataTable({
                 pageLength: 10,
                 lengthMenu: [
@@ -125,28 +214,28 @@
                 serverSide: true,
                 ajax: "{{ route('categories.index') }}",
                 columns: [{
-                        data: 'id',
-                        name: 'id',
-                        render: function(data) {
-                            return `<input type="checkbox" class="brandCheckbox" value="${data}">`;
-                        },
-                        orderable: false,
-                        searchable: false
+                    data: 'id',
+                    name: 'id',
+                    render: function (data) {
+                        return `<input type="checkbox" class="Checkbox" value="${data}">`;
                     },
-                    {
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'slug',
-                        name: 'slug'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'name',
+                    name: 'name'
+                },
+                {
+                    data: 'slug',
+                    name: 'slug'
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                }
                 ],
                 language: {
                     paginate: {
@@ -163,6 +252,131 @@
                     infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
+
+            $('#addCategoriesBtn').click(function () {
+                $('#createCategoriesForm')[0].reset();
+                $('#addCategoriesModal').modal('show');
+            });
+            // Create Categories
+            $('#createCategoriesForm').submit(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{{ route('categories.store') }}",
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $('#addCategoriesModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>`);
+                    },
+                    error: function (response) {
+                        alert('Error: ' + (response.responseJSON?.message || 'Unable to create'));
+                    }
+                });
+            });
+
+            $(document).on('click', '.editCategoryBtn', function () {
+                let id = $(this).data('id');
+                let editUrl = BaseUrl + id + "/edit";
+
+                $.get(editUrl, function (data) {
+
+                    $('#category_id').val(data.id);
+
+                    $('#editCategoriesModal #name').val(data.name);
+                    $('#editCategoriesModal #slug').val(data.slug);
+
+                    $('#editCategoriesModal').modal('show');
+                }).fail(function () {
+                    alert("Could not fetch data. Please check the console.");
+                });
+            });
+
+            $('#editCategoriesModal #name').on('input', function () {
+                let slug = $(this).val().toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/[\s_-]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                $('#editCategoriesModal #slug').val(slug);
+            });
+
+            $('#editCategoriesForm').on('submit', function (e) {
+                e.preventDefault();
+                let id = $('#category_id').val();
+
+                let updateUrl = BaseUrl + id;
+
+                $.ajax({
+                    url: updateUrl,
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $('#editCategoriesModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>`);
+                    },
+                    error: function (xhr) {
+                        let errors = xhr.responseJSON.errors;
+                        console.log(errors);
+                        alert('Update failed. Check console for details.');
+                    }
+                });
+            });
+
+            $(document).on('click', '.deleteCategories', function () {
+                var id = $(this).data('id');
+                $('#deleteCategoriesModal').modal('show');
+                $('#deleteCategoriesForm').data('id', id); // store id
+            });
+
+            $('#deleteCategoriesForm').submit(function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+
+                $.ajax({
+                    url: '/admin/system_settings/categories/' + id,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        $('#deleteCategoriesModal').modal('hide');
+                        table.ajax.reload();
+                        const successAlert = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            ${response.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                        $('#alertsContainer').html(successAlert);
+                    },
+                    error: function (xhr) {
+                        $('#deleteCategoriesModal').modal('hide');
+                        table.ajax.reload();
+                        const message = xhr.responseJSON?.message || 'Something went wrong';
+                        const errorAlert = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                ${message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        $('#alertsContainer').html(errorAlert);
+                    }
+                });
+
+            });
+
+
+
+
+
         });
     </script>
 @endpush

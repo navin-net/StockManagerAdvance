@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('Banners Management'))
 
@@ -52,12 +52,8 @@
                 @csrf
 
                 <div class="card-body">
-
-                    <!-- Banner Item -->
                     <div id="bannerContainer">
-
                         @foreach ($banners as $index => $banner)
-                            <!-- Banner Item -->
                             <div class="banner-card mb-4" data-index="{{ $index }}">
 
                                 <input type="hidden" name="banners[{{ $index }}][id]" value="{{ $banner->id }}">
@@ -111,9 +107,6 @@
                         @endforeach
 
                     </div>
-
-
-                    <!-- Add Banner Button -->
                     <div class="text-end">
                         <button type="button" class="btn btn-outline-primary" id="addBanner">
                             <i class="bi bi-plus-circle"></i> Add Banner
@@ -121,9 +114,8 @@
                     </div>
                 </div>
                 <div class="card-footer text-end">
-
                     <button class="btn btn-primary">
-                        <i class="bi bi-save"></i> Save Changes
+                        <i class="bi bi-save"></i> {{ __('messages.save') }}
                     </button>
                 </div>
             </form>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mobile Style POS Keyboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
+
+<style>
+body {
+    background: #f2f2f2;
+}
+
+/* Mobile style keyboard */
+.simple-keyboard {
+    max-width: 100%;
+}
+
+.simple-keyboard .hg-button {
+    height: 55px !important;
+    font-size: 18px;
+    border-radius: 12px !important;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.simple-keyboard .hg-button.hg-standardBtn {
+    margin: 4px;
+}
+
+.simple-keyboard .hg-button:active {
+    background: #e9ecef;
+}
+
+.simple-keyboard .hg-button.hg-functionBtn {
+    background: #dee2e6;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container text-center mt-5">
+    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#endScreenModal">
+        Open Finalize Sale
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="endScreenModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Finalize Sale</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="text" id="posInput" class="form-control form-control-lg mb-3 text-center"
+                       placeholder="Type here...">
+
+                <div class="simple-keyboard"></div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const Keyboard = window.SimpleKeyboard.default;
+
+    const keyboard = new Keyboard(".simple-keyboard", {
+        theme: "hg-theme-default mobile-theme",
+        layout: {
+            default: [
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "1 2 3 4 5 6 7 8 9 0",
+                "{space} {enter}"
+            ],
+            shift: [
+                "Q W E R T Y U I O P",
+                "A S D F G H J K L",
+                "{shift} Z X C V B N M {bksp}",
+                "! @ # $ % ^ & * ( )",
+                "{space} {enter}"
+            ]
+        },
+        display: {
+            "{bksp}": "⌫",
+            "{enter}": "Enter",
+            "{shift}": "Shift",
+            "{space}": "Space"
+        },
+        onChange: input => {
+            document.getElementById("posInput").value = input;
+        },
+        onKeyPress: button => {
+            if (button === "{shift}") toggleShift();
+        }
+    });
+
+    function toggleShift() {
+        let currentLayout = keyboard.options.layoutName;
+        let shiftToggle = currentLayout === "default" ? "shift" : "default";
+        keyboard.setOptions({
+            layoutName: shiftToggle
+        });
+    }
+
+});
+</script>
+
+</body>
+</html>

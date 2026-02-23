@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('admin.layouts.master')
 
 @section('title', __('messages.purchases_list'))
 
@@ -35,9 +35,7 @@
                     {{ auth()->user()->ip_address }}
                 </span>
             </div>
-
         </div>
-
 
         <section class="section">
             <div class="row">
@@ -87,18 +85,19 @@
                                     </div>
                                 @endif
                             </div>
-
                             <div class="table-responsive">
                                 <table class="table table-striped table-bordered rounded-3 align-middle" id="purchasesTable">
                                     <thead class="table-primary">
                                         <tr>
                                             <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
-                                            <th>{{ __('messages.total_amount') }}</th>
-                                            <th>{{ __('messages.date') }}</th>
-                                            <th>{{ __('messages.item_count') }}</th>
-                                            <th>{{ __('messages.total_quantity') }}</th>
-                                            <th scope="col" class="py-3 text-center" width="120">
-                                                {{ __('messages.actions') }}</th>
+                                            <th>{{ __('messages.date') }}</th> <!-- 2 -->
+                                            <th>{{ __('messages.reference') }}</th> <!-- 3 -->
+                                            <th>{{ __('messages.supplier') }}</th> <!-- 4 -->
+                                            <th>{{ __('messages.status') }}</th> <!-- 5 -->
+                                            <th>{{ __('messages.grand_total') }}</th> <!-- 6 -->
+                                            <th>{{ __('messages.paid') }}</th> <!-- 7 -->
+                                            <th>{{ __('messages.balance') }}</th> <!-- 8 -->
+                                            <th>{{ __('messages.actions') }}</th> <!-- 9 -->
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -113,57 +112,90 @@
 @endsection
 @push('scripts')
     <script>
+        const StatusMapper = {
+            renderBadge: function (data) {
+                // Define your mapping for cleaner logic
+                const config = {
+                    'completed': { class: 'bg-success', label: "{{ __('messages.completed') }}" },
+                    'cancelled': { class: 'bg-danger', label: "{{ __('messages.cancelled') }}" },
+                    'pending':   { class: 'bg-warning text-dark', label: "{{ __('messages.pending') }}" }
+                };
+
+                const status = config[data] || config['pending'];
+
+                return `<span class="badge rounded-pill ${status.class}">${status.label}</span>`;
+            }
+        };
+
+
         $(document).ready(function() {
-            var table = $('#purchasesTable').DataTable({
+            $('#purchasesTable').DataTable({
                 pageLength: 10,
                 lengthMenu: [
                     [10, 20, 30, 50, -1],
                     [10, 20, 30, 50, "{{ __('messages.all') }}"]
                 ],
-                buttons: [],
                 responsive: true,
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('purchases.index') }}",
+                ajax: "{{ route('purchases.getData') }}",
+
                 columns: [{
                         data: 'id',
-                        name: 'id',
+                        orderable: false,
+                        searchable: false,
                         render: function(data) {
                             return `<input type="checkbox" class="purchaseCheckbox" value="${data}">`;
-                        },
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'total_amount',
-                        name: 'purchases.total_amount',
-                        render: $.fn.dataTable.render.number(',', '.', 2)
+                        }
                     },
                     {
                         data: 'date',
                         name: 'purchases.date'
                     },
                     {
-                        data: 'item_count',
-                        name: 'item_count',
+                        data: 'reference',
+                        name: 'purchases.reference'
+                    },
+                    {
+                        data: 'supplier',
+                        name: 'companies.name'
+                    },
+                    {
+                        data: 'status',
+                        name: 'purchases.status',
+                        render: StatusMapper.renderBadge
+
+                    },
+                    {
+                        data: 'grand_total',
+                        name: 'purchases.total_amount'
+                    },
+                    {
+                        data: 'paid',
                         searchable: false
                     },
                     {
-                        data: 'total_quantity',
-                        name: 'total_quantity',
+                        data: 'balance',
                         searchable: false
                     },
                     {
                         data: 'action',
-                        name: 'action',
                         orderable: false,
                         searchable: false
                     }
                 ],
-             language: {
+                language: {
                     paginate: {
-                        previous: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>',
-                        next: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>'
+                        previous: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                            d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                    </svg>`,
+                        next: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                            d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                    </svg>`
                     },
                     lengthMenu: '{{ __('messages.show') }} _MENU_ {{ __('messages.entries') }}',
                     search: '{{ __('messages.search') }}',
@@ -174,6 +206,9 @@
                     infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
+
+
+
 
         });
     </script>

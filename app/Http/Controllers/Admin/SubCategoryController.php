@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use App\Models\{Categories, SubCategory};
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\{Categories, SubCategory};
 use Yajra\DataTables\Facades\DataTables;
 
 class SubCategoryController extends Controller
@@ -15,7 +16,6 @@ class SubCategoryController extends Controller
     public function index(Request $request)
     {
         $categories = Categories::all();
-
         if ($request->ajax()) {
             $data = SubCategory::select([
                     'sub_categories.id',
@@ -29,13 +29,13 @@ class SubCategoryController extends Controller
                     return '
                         <div class="d-flex gap-2">
                             <button type="button"
-                                    class="btn btn-sm btn-outline-primary editSubCategory"
+                                    class="btn btn-sm btn-primary editSubCategorybtn"
                                     data-id="' . $row->id . '"
                                     title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button type="button"
-                                    class="btn btn-sm btn-outline-danger deleteSubCategory"
+                                    class="btn btn-sm btn-danger deleteSubCategory"
                                     data-id="' . $row->id . '"
                                     title="Delete">
                                 <i class="bi bi-trash"></i>
@@ -53,7 +53,6 @@ class SubCategoryController extends Controller
                 ->make(true);
         }
 
-        // return view('admin.sub_category.index', compact('categories'));
         return view('admin.settings.sub_categories.index', [
             'categories'  => $categories,
             'pageTitle'   => __('messages.sub_categories'),
@@ -67,51 +66,70 @@ class SubCategoryController extends Controller
 
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|string|max:255',
+        ]);
+
+        $categories = SubCategory::create($validated);
+
+        return response()->json(['success' => __('messages.brand_added_successfully')]);
+
+    }
+    public function edit($id)
+    {
+        $subcategory = SubCategory::findOrFail($id);
+
+        return response()->json([
+            'id' => $subcategory->id,
+            'name' => $subcategory->name,
+            'category_id' => $subcategory->category_id,
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+
+
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:255',
+        ]);
+
+        $subcategory = SubCategory::findOrFail($id);
+        $subcategory->update($request->only('name', 'category_id'));
+
+        return response()->json(['success' => __('messages.brand_added_successfully')]);
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy($id)
     {
-        //
+        $sub_category = SubCategory::findOrFail($id);
+
+
+        $sub_category->delete();
+
+        return response()->json(['success' => __('messages.brand_added_successfully')]);
+
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

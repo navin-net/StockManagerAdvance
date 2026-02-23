@@ -38,6 +38,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\LanguageMiddleware::class,
+            \App\Http\Middleware\LastVisitedUrl::class,
         ],
 
         'api' => [
@@ -56,8 +57,9 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'remember.admin.cookie' => \App\Http\Middleware\RememberAdminCookie::class,
-        'register.open' => \App\Http\Middleware\EnsureRegisterIsOpen::class,
+        // 'register.open' => \App\Http\Middleware\EnsureRegisterIsOpen::class,
+        'register.open' => \App\Http\Middleware\RegisterOpen::class,
+
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
