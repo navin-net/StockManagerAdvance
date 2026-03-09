@@ -67,6 +67,8 @@
 <script src="{{ asset('backend/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('backend/DataTables/datatables.min.js') }}"></script>
 <script src="{{ asset('backend/js/chart.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
@@ -78,7 +80,7 @@
 <script>
 
     var projectName = "{{ config('app.name') }}";
-console.log("Welcome to " + projectName);
+// console.log("Welcome to " + projectName);
 
     $.ajaxSetup({
         headers: {
@@ -305,45 +307,6 @@ console.log("Welcome to " + projectName);
             calcDisplay += value;
         }
         displayElement.value = calcDisplay;
-    }
-
-    window.addEventListener('load', function () {
-        setTimeout(function () {
-            const bar = document.getElementById('loadingBar');
-            bar.classList.add('complete');
-
-            setTimeout(function () {
-                bar.style.display = 'none';
-            }, 500);
-        }, 2000);
-    });
-
-
-    function showLoadingBar() {
-        const bar = document.getElementById('loadingBar');
-        const progress = document.getElementById('loadingProgress');
-
-
-        bar.style.display = 'block';
-        bar.classList.remove('complete');
-        progress.style.animation = 'none';
-        progress.offsetHeight; // Trigger reflow
-        progress.style.animation = 'loading 2s ease-in-out forwards, shimmer 1.5s infinite';
-
-        setTimeout(() => {
-            bar.classList.add('complete');
-            setTimeout(() => {
-                bar.style.display = 'none';
-            }, 500);
-        }, 2000);
-    }
-
-    function hideLoadingBar() {
-        const bar = document.getElementById('loadingBar');
-        bar.classList.add('complete');
-        setTimeout(() => {
-            bar.style.display = 'none';
-        }, 500);
     }
 
 </script>

@@ -47,6 +47,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         //SALES
         Route::resource('sales', SalesController::class)->except(['show']);
         Route::get('/sales/getData', [SalesController::class, 'getData'])->name('sales.getData');
+        Route::get('/sales/pos', [SalesController::class, 'pos'])->name('sales.pos');
+
         Route::post('/sales/bulk-delete', [SalesController::class, 'bulkDelete'])->name('sales.bulkDelete');
         Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
         Route::get('/sales/detail/{id}', [SalesController::class, 'show'])->name('sales.show');

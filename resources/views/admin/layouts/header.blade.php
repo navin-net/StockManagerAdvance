@@ -2,7 +2,7 @@
     <div class="container-fluid d-flex align-items-center justify-content-between h-100 px-3">
         <div class="d-flex align-items-center gap-3">
 
-            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none ">
+            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none  desktop-only">
                 <span class="fw-bold fs-4" style="color: #0ea5e9;">
                     {{ $shopInfo->name_shop ?? 'Stock Management System' }}
                 </span>
@@ -12,7 +12,7 @@
             </button>
         </div>
         @if (!Request::is('admin/pos*'))
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 ">
 
             <!-- 🌐 Language Switch -->
             <div class="btn-group">
@@ -129,7 +129,7 @@
         </div>
         @endunless
         @if (request()->is('admin/pos*'))
-            <div class="d-flex gap-1 align-items-center">
+            <div class="d-flex gap-1 align-items-center desktop-only">
                     <div class="dropdown">
                         <button
                             class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"

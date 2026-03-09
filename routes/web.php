@@ -23,6 +23,11 @@ use App\Http\Controllers\Admin\{
 |
 */
 
+
+// Route::get('/',function(){
+//     return view('admin-v2.dashbord.index');
+// });
+
 Route::get('/users/import', [BaseController::class, 'showImportForm'])
     ->name('users.import.form');
 Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');

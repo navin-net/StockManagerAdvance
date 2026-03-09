@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Hash};
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Yajra\DataTables\DataTables;
@@ -21,7 +20,8 @@ class UserController extends Controller
                     'groups.name as group_name'
                 ])
                 ->leftJoin('groups', 'users.group_id', '=', 'groups.id')
-                ->where('users.company_id', NULL);
+                ->where('users.company_id', NULL)
+                ->where('users.id', '!=', Auth::id());
 
             return DataTables::of($data)
                 ->addColumn('action', function ($row) {

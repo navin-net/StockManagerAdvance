@@ -82,9 +82,9 @@
                     </div>
 
                     <!-- Site Name -->
-                    <div class="bg-color p-3 border rounded mb-3">
-                        <h5 class="mb-3"><i class="bi bi-shop me-2"></i>Store Information</h5>
-                        <label class="form-label fw-bold">Site/Store Name</label>
+                    <div class="bg-color p-3 border rounded mb-3 d-none">
+                        {{-- <h5 class="mb-3"><i class="bi bi-shop me-2"></i>Store Information</h5>
+                        <label class="form-label fw-bold">Site/Store Name</label> --}}
                         <input type="text" class="form-control border-dark" id="siteName" value="My Store"
                             placeholder="Enter store name">
                     </div>
@@ -134,6 +134,7 @@
         let selectedProducts = [];
         let currentStyle = '1';
         const msgSelectProduct = @json(__('messages.please_select_product_you_want_print'));
+        const msgSelectProductFrist = @json(__('messages.select_product_frist'));
 
         /* ===== STYLE SELECTION ===== */
         document.querySelectorAll('.style-option').forEach(option => {
@@ -228,7 +229,12 @@
         /* ================= GENERATE LABELS ================= */
         document.getElementById('generateLabelsBtn').addEventListener('click', () => {
             if (!selectedProducts.length) {
-                alert('Please select product');
+                const errorAlert = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${msgSelectProductFrist}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`;
+                $('#alertsContainer').html(errorAlert);
                 return;
             }
 
@@ -243,37 +249,52 @@
                 let colClass = 'col-6 mb-3';
                 let innerHtml = '';
 
-                if (currentStyle === '1') {
-                    colClass = 'col-12 mb-3';
-                    innerHtml = `
-                                <div class="label-box text-center">
-                                    <svg id="${barcodeId}"></svg>
-                                </div>`;
-                }
-                if (currentStyle === '2') {
-                    innerHtml = `
-                                <div class="label-box">
-                                    <div class="label-title text-center">${p.name}</div>
-                                    <div class="text-center my-1">
-                                        <svg id="${barcodeId}"></svg>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="label-price">
-                                            $${parseFloat(p.selling_price || 0).toFixed(2)}
-                                        </span>
-                                        <span class="label-store">${siteName}</span>
-                                    </div>
-                                </div>`;
-                }
+if (currentStyle === '1') {
+    colClass = 'col-12 mb-3';
+    innerHtml = `
+        <div class="label-box label-box-s1">
+            <div class="s1-left">
+                <div class="s1-name">${p.name}</div>
+                <div class="s1-price">$${parseFloat(p.selling_price || 0).toFixed(2)}</div>
+                <div class="s1-store">${siteName}</div>
+            </div>
+            <div class="s1-right">
+                <svg id="${barcodeId}"></svg>
+                <div class="s1-code">${p.code || ''}</div>
+            </div>
+        </div>`;
+}
 
-                if (currentStyle === '3') {
-                    innerHtml = `
-                                <div class="label-box text-center p-2">
-                                    <svg id="${barcodeId}"></svg>
-                                    <div class="label-code mt-1">${p.name}</div>
-                                </div>`;
-                }
+if (currentStyle === '2') {
+    colClass = 'col-6 mb-3';
+    innerHtml = `
+        <div class="label-box label-box-s2">
+            <div class="s2-top">
+                <span class="s2-name">${p.name}</span>
+                <span class="s2-price">$${parseFloat(p.selling_price || 0).toFixed(2)}</span>
+            </div>
+            <div class="s2-barcode">
+                <svg id="${barcodeId}"></svg>
+            </div>
+            <div class="s2-bottom">
+                <span class="s2-store">${siteName}</span>
+                <span class="s2-code">${p.code || ''}</span>
+            </div>
+        </div>`;
+}
 
+if (currentStyle === '3') {
+    colClass = 'col-4 mb-3';
+    innerHtml = `
+        <div class="label-box label-box-s3">
+            <div class="s3-header">${siteName}</div>
+            <div class="s3-barcode">
+                <svg id="${barcodeId}"></svg>
+            </div>
+            <div class="s3-name">${p.name}</div>
+            <div class="s3-price">$${parseFloat(p.selling_price || 0).toFixed(2)}</div>
+        </div>`;
+}
                 const colDiv = document.createElement('div');
                 colDiv.className = colClass;
                 colDiv.innerHTML = innerHtml;

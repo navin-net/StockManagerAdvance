@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\{Products, Purchase};
+use Illuminate\Support\Facades\{DB, Validator};
+use App\Models\{Companies, Products, Purchase, PurchaseItem};
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -52,6 +52,7 @@ class PurchasesController extends Controller
                 'purchases.id',
                 'purchases.supplier_id',
                 'purchases.reference',
+                'purchases.payment_status',
                 'purchases.date',
                 'purchases.status',
                 'purchases.total_amount AS grand_total',
@@ -67,8 +68,8 @@ class PurchasesController extends Controller
                 'purchases.reference',
                 'purchases.date',
                 'purchases.total_amount',
+                'purchases.payment_status',
                 'companies.name',
-                // 'purchases.status',
             ]);
 
         return DataTables::of($data)
@@ -98,9 +99,12 @@ class PurchasesController extends Controller
     public function create()
     {
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'cost_price')->get();
+        $suppliers = Companies::select('*')->where('group_id', 5)->get();
 
+        // die($suppliers);
         return view('admin.purchases.create', [
             'products' => $products,
+            'suppliers' => $suppliers,
             'pageTitle' => __('messages.add_purchase'),
             'heading' => __('messages.add_purchase'),
             'breadcrumbs' => [
@@ -111,10 +115,14 @@ class PurchasesController extends Controller
         ]);
     }
 
+
+
     public function edit($id)
     {
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'cost_price')->get();
+        $suppliers = Companies::select('*');
 
+        // die($suppliers);
         return view('admin.purchases.edit', [
             'products' => $products,
             'pageTitle' => __('messages.edit_purchase'),
@@ -125,6 +133,66 @@ class PurchasesController extends Controller
                 ['label' => __('messages.edit'), 'url' => '', 'active' => true],
             ]
         ]);
+    }
+
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'supplier_id' => 'required',
+            'total_amount' => 'required|numeric|min:0',
+            'payment_status' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+            'date' => 'required|date',
+            'note' => 'nullable|string',
+            'attachments' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.cost_price' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $attachmentPath = null;
+
+        if ($request->hasFile('attachments')) {
+            $attachmentPath = $request->file('attachments')
+                ->store('purchases', 'public');
+        }
+
+        DB::transaction(function () use ($request, $attachmentPath) {
+
+            $purchase = Purchase::create([
+                'supplier_id' => $request->supplier_id,
+                'total_amount' => $request->total_amount,
+                'payment_status' => $request->payment_status,
+                'status' => $request->status,
+                'reference' => 'PUR-' . strtoupper(uniqid()),
+                'date' => $request->date,
+                'note' => $request->note,
+                'attachments' => $attachmentPath,
+            ]);
+
+            foreach ($request->items as $item) {
+
+                PurchaseItem::create([
+                    'purchase_id' => $purchase->id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'cost_price' => $item['cost_price'],
+                ]);
+
+                Products::where('id', $item['product_id'])
+                    ->increment('stock_quantity', $item['quantity']);
+            }
+        });
+
+        return redirect()
+            ->route('purchases.index')
+            ->with('success', __('messages.purchase_created_successfully'));
     }
 
 }

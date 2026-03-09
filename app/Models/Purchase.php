@@ -11,6 +11,10 @@ class Purchase extends Model
         'supplier_id',
         'total_amount',
         'date',
+        'payment_status',
+        'attachments',
+        'note',
+        'reference',
         'status'
     ];
 

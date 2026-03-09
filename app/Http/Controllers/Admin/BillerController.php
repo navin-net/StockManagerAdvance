@@ -28,7 +28,7 @@ class BillerController extends Controller
                     'companies.phone',
                     'groups.name as group_name',
                     'warehouses.name as warehouse_name'
-                )->where('companies.group_id', 2);
+                )->where('companies.group_id', 3);
             return DataTables::of($query)
                 ->addColumn('action', function ($row) {
                     return '<div class="dropdown">

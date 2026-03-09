@@ -10,14 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('password_otps', function (Blueprint $table) {
-            $table->id();
-            $table->string('email')->index();
-            $table->string('otp');
-            $table->timestamp('expires_at');
-            $table->timestamp('last_sent_at')->nullable();
-
-            $table->timestamps();
+        Schema::table('sales', function (Blueprint $table) {
+            $table->tinyInteger('sale_type')
+                ->default(0)
+                ->comment('0=SALE, 1=POS')
+                ->after('attachments');
         });
     }
 
@@ -26,6 +23,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('password_otps');
+        Schema::dropIfExists('purchases');
     }
 };

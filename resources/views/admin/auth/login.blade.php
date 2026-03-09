@@ -60,9 +60,9 @@
                                     <input class="form-check-input" type="checkbox" name="remember">
                                     <label class="form-check-label">{{ __('messages.remember_me') }}</label>
                                 </div>
-                                {{-- @if (Route::has('password.request'))
+                                @if (Route::has('password.request'))
                                     <a class="text-warning" href="{{ route('password.request') }}">Forgot password?</a>
-                                @endif --}}
+                                @endif
                             </div>
 
                             <button type="submit" class="btn btn-warning w-100 text-dark fw-bold">Log In</button>

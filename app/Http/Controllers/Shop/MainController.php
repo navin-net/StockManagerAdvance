@@ -28,7 +28,7 @@ class MainController extends Controller
 
     public function store(Request $request)
     {
-        // Validate
+
         $data = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email',
@@ -36,7 +36,7 @@ class MainController extends Controller
             'message' => 'required|string',
         ]);
 
-        // Example: save JSON file
+
         $json = json_encode($data, JSON_PRETTY_PRINT);
 
         file_put_contents(

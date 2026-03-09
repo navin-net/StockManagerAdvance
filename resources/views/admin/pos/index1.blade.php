@@ -6,16 +6,16 @@
         $walkInCustomerId = 4;
         $selectedCustomerId = old('customer_id', $sale->customer_id ?? $walkInCustomerId);
     @endphp
-    @if (is_mobile())
-        <!-- real phone -->
-        dasdsa
-    @else
-        <div class="container-fluid pos-wrapper h-100">
-            <div class="row h-100">
+    {{-- @if (is_mobile())
 
-                {{-- <h1>{{ $pageTitle }}</h1> --}}
+    @else --}}
 
-                <div class="col-lg-1 col-md-1 border-end desktop-only" style="max-height:100%; overflow-y:auto;">
+    <div class="container-fluid pos-wrapper h-100">
+        <div class="row h-100">
+
+            {{-- <h1>{{ $pageTitle }}</h1> --}}
+
+            {{-- <div class="col-lg-1 col-md-1 border-end desktop-only" style="max-height:100%; overflow-y:auto;">
                     <div class="d-flex flex-column align-items-center no-scrollbar"
                         style="height: 760px; overflow-y: auto; overflow-x: hidden;">
 
@@ -31,228 +31,244 @@
                                 data-brand-id="{{ $brand->id }}">
                                 <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                                {{-- <h6 class="card-title mb-1 text-truncate text-center" style="font-size: 0.75rem;">
+                                <h6 class="card-title mb-1 text-truncate text-center" style="font-size: 0.75rem;">
                                 {{ $brand->name }}
-                            </h6> --}}
+                            </h6>
                             </a>
                         @endforeach
 
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="col-lg-7 col-md-5">
-                    <div class="p-3">
-                        <!-- Search, Sort & Offcanvas Category Toggle -->
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-md-4 mb-2 desktop-only text-start">
-                                <h1 class="modal-title fs-5" id="discountModalLabel">
-                                    {{ __('messages.welcome') }},{{ Auth::user()->first_name }}
-                                </h1>
-                            </div>
-                            <div class="col-md-6 mb-2 desktop-only">
-                                <div class="input-group">
-                                    <input type="text" class="form-control search-bar" id="searchInput"
-                                        placeholder="Search products...">
-                                    <button class="btn btn-dark" type="button" id="clearSearch">
-                                        <i class="bi bi-x"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-2 mb-2 text-start desktop-only">
-                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
-                                    data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
-                                    <i class="bi bi-tag"></i> {{ __('messages.brand') }}
+            <div class="col-lg-8 col-md-6">
+                <div class="p-3">
+                    <!-- Search, Sort & Offcanvas Category Toggle -->
+                    <div class="row align-items-center">
+                        <div class="col-md-12 mb-2 desktop-only">
+                            <div class="input-group">
+                                <input type="text" class="form-control search-bar" id="searchInput"
+                                    placeholder="Search products...">
+                                <button class="btn btn-dark" type="button" id="clearSearch">
+                                    <i class="bi bi-x"></i>
                                 </button>
                             </div>
-
-                            <div class="col-md-4 text-end mb-2 d-lg-none">
-                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
-                                    data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
-                                    {{ __('messages.filters') }} <i class="bi bi-funnel"></i>
-                                </button>
-                            </div>
-
                         </div>
+                        <div class="cat-pills-wrapper" style="position: relative;">
+                            <!-- Left arrow -->
+                            <div class="scroll-arrow scroll-left" onclick="scrollPills(-150)">
+                                <i class="bi bi-arrow-left"></i>
+                            </div>
 
-                        <!-- Products Grid -->
-                        <div class="row" id="product-list" style="max-height:500px; overflow-y:auto;">
-                            @forelse ($products as $product)
-                                <div class="col-6 col-md-3 col-lg-4 mb-3 product-item"
-                                    data-brand="{{ $product['brand_id'] }}">
-                                    <div class="card product-card h-100" data-id="{{ $product['id'] }}"
-                                        data-name="{{ $product['name'] }}" data-price="{{ $product['selling_price'] }}"
-                                        data-stock="{{ $product['stock_quantity'] }}"
-                                        style="background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); cursor: pointer; transition: transform var(--transition-speed), background var(--transition-speed);">
+                            <!-- Pills container -->
+                            <div class="cat-pills">
+                                <!-- "All" button -->
+                                <button class="pill active" data-brand-id="all" onclick="filterBrand(this,'all')">
+                                    {{-- <i class="bi bi-three-dots"></i> --}}
+                                    <span>{{ __('messages.all') }}</span>
+                                </button>
 
-                                        <div class="d-flex justify-content-center p-2">
-                                            <div style="position: relative;">
-                                                <img src="{{ $product['image'] ? asset('storage/' . $product['image']) : asset('noimage.png') }}"
-                                                    alt="{{ $product['name'] }}"
-                                                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <!-- Loop through brands -->
+                                @foreach ($brands as $brand)
+                                    <button class="pill" data-brand-id="{{ $brand->id }}"
+                                        onclick="filterBrand(this,'{{ $brand->id }}')">
+                                        <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
+                                            alt="{{ $brand->name }}"
+                                            style="width:24px;height:24px;object-fit:cover;border-radius:4px;">
+                                        <span>{{ $brand->name }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
 
-                                                @if ($product['stock_quantity'] <= 0)
-                                                    <span
-                                                        class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger text-white px-2 py-1 me-1"
-                                                        style="font-size: 0.75rem; z-index: 2;">
-                                                        {{ __('messages.sold_out') }}
-                                                    </span>
-                                                @endif
-                                            </div>
+                            <!-- Right arrow -->
+                            <div class="scroll-arrow scroll-right" onclick="scrollPills(150)">
+                                <i class="bi bi-arrow-right"></i>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="row mb-2">
+
+                    </div>
+                    {{-- <hr> --}}
+                    <!-- Products Grid -->
+                    <div class="row" id="product-list" style="max-height:500px; overflow-y:auto; desktop-only">
+                        @forelse ($products as $product)
+                            <div class="col-6 col-md-3 col-lg-2 mb-3 product-item" data-brand="{{ $product['brand_id'] }}">
+                                <div class="card product-card h-100" data-id="{{ $product['id'] }}"
+                                    data-name="{{ $product['name'] }}" data-price="{{ $product['selling_price'] }}"
+                                    data-stock="{{ $product['stock_quantity'] }}"
+                                    style="background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); cursor: pointer; transition: transform var(--transition-speed), background var(--transition-speed);">
+
+                                    <div class="d-flex justify-content-center p-2">
+                                        <div style="position: relative;">
+                                            <img src="{{ $product['image'] ? asset('storage/' . $product['image']) : asset('noimage.png') }}"
+                                                alt="{{ $product['name'] }}"
+                                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+
+                                            @if ($product['stock_quantity'] <= 0)
+                                                <span
+                                                    class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger text-white px-2 py-1 me-1"
+                                                    style="font-size: 0.75rem; z-index: 2;">
+                                                    {{ __('messages.sold_out') }}
+                                                </span>
+                                            @endif
                                         </div>
+                                    </div>
 
-                                        <div class="card-body p-2 text-center">
-                                            <h6 class="card-title mb-1 text-truncate fw-bold {{ $product['stock_quantity'] <= 0 ? 'text-danger' : '' }}"
-                                                title="{{ $product['name'] }}">
-                                                {{ $product['name'] }}
-                                            </h6>
-                                            <p class="mb-1 fw-bold " style="color: var(--primary-color);">
-                                                ${{ number_format($product['selling_price'], 2) }}
-                                            </p>
-                                            {{-- <p class="mb-0" style="color: var(--text-muted); font-size: 0.8rem;">
+                                    <div class="card-body p-2 text-center">
+                                        <h6 class="card-title mb-1 text-truncate fw-bold {{ $product['stock_quantity'] <= 0 ? 'text-danger' : '' }}"
+                                            title="{{ $product['name'] }}">
+                                            {{ $product['name'] }}
+                                        </h6>
+                                        <p class="mb-1 fw-bold " style="color: var(--primary-color);">
+                                            ${{ number_format($product['selling_price'], 2) }}
+                                        </p>
+                                        {{-- <p class="mb-0" style="color: var(--text-muted); font-size: 0.8rem;">
                                             {{ __('messages.stock') }}:
                                             <span class="{{ $product['stock_quantity'] <= 0 ? 'text-danger' : '' }}">
                                                 {{ $product['stock_quantity'] }}
                                             </span>
                                         </p> --}}
-                                        </div>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="col-12 text-center mt-5">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
-                                        style="max-width: 150px; opacity: 0.5; filter: grayscale(1);">
-                                    <h3 class="fw-bold mt-3" style="color: var(--text-muted);">{{ __('messages.oops') }}
-                                    </h3>
-                                </div>
-                            @endforelse
-                            <div class="col-12 text-center mt-4 no-results-message d-none">
-                                <img src="{{ asset('noimage.png') }}" style="max-width:120px; opacity:.4;">
-                                <h6 class="mt-3 text-muted">
-                                    No products found
-                                </h6>
                             </div>
+                        @empty
+                            <div class="col-12 text-center mt-5">
+                                <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="Not Found"
+                                    style="max-width: 150px; opacity: 0.5; filter: grayscale(1);">
+                                <h3 class="fw-bold mt-3" style="color: var(--text-muted);">{{ __('messages.oops') }}
+                                </h3>
+                            </div>
+                        @endforelse
+                        <div class="col-12 text-center mt-4 no-results-message d-none">
+                            <img src="{{ asset('noimage.png') }}" style="max-width:120px;  opacity:.4;">
+                            <h6 class="mt-3 text-muted">
+                                No products found
+                            </h6>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Cart Section (unchanged) -->
-                <div class="col-lg-4 col-md-6" style="max-height:100%; overflow-y:auto;">
-                    <div class="cart-sidebar p-3 card mb-2">
-                        <div class="row">
-                            <div class="col-sm-9 text-start">
-                                <b>{{ __('messages.order_list') }}</b>
-                            </div>
-                            <div class="col-sm-3 text-end">
-                                <InvoiceNo->#POS{{ $records->id }}</InvoiceNo->
-                            </div>
-                            <hr>
-                            <div class="col-sm-9">
-                                <select name="customer_id" class="form-select" aria-label="Select customer">
-                                    <option value="">-- {{ __('messages.select_customer') }} --</option>
+            <!-- Cart Section (unchanged) -->
+            <div class="col-lg-4 col-md-6" style="max-height:100%; overflow-y:auto;">
+                <div class="cart-sidebar p-3 card mb-2 desktop-only">
+                    <div class="row">
+                        <div class="col-sm-9 text-start">
+                            <b>{{ __('messages.order_list') }}</b>
+                        </div>
+                        <div class="col-sm-3 text-end">
+                            <InvoiceNo->#POS{{ $records->id }}</InvoiceNo->
+                        </div>
+                        <hr>
+                        <div class="col-sm-9">
+                            <select name="customer_id" class="form-select" aria-label="Select customer">
+                                <option value="">-- {{ __('messages.select_customer') }} --</option>
 
-                                    @foreach ($customers as $customer)
-                                        <option value="{{ $customer->id }}"
-                                            {{ (string) $customer->id === (string) $selectedCustomerId ? 'selected' : '' }}>
-                                            {{ $customer->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}"
+                                        {{ $customer->id === $selectedCustomerId ? 'selected' : '' }}>
+                                        {{ $customer->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                            <div class="col-sm-3 text-end d-flex gap-1 justify-content-end">
-                                <a class="btn btn-outline-success d-flex align-items-center justify-content-center p-2"
-                                    data-bs-toggle="modal" data-bs-target="#eModal">
-                                    <i class="bi bi-person-add"></i>
-                                </a>
-                                <a class="btn btn-outline-primary d-flex align-items-center justify-content-center p-2"
-                                    data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    <i class="bi bi-upc-scan"></i>
-                                </a>
-                            </div>
+                        <div class="col-sm-3 text-end d-flex gap-1 justify-content-end">
+                            <a class="btn btn-outline-success d-flex align-items-center justify-content-center p-2"
+                                data-bs-toggle="modal" data-bs-target="#eModal">
+                                <i class="bi bi-person-add"></i>
+                            </a>
+                            <a class="btn btn-outline-primary d-flex align-items-center justify-content-center p-2"
+                                data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
                         </div>
                     </div>
-                    <div class="cart-sidebar p-3 card">
-                        <div class="row">
-                            <div class="col-sm-9 text-start">
-                                <h4>
-                                    <i class="bi bi-cart3"></i>{{ __('messages.current_order') }}
-                                    {{-- <span class="badge bg-primary ms-2" id="cartCount">0</span> --}}
-                                </h4>
-                            </div>
-                            <div class="col-sm-3 text-end">
-                                <button id="clearCartBtn" class="btn btn-outline-danger" data-bs-toggle="modal"
+                </div>
+                <div class="cart-sidebar p-3 card desktop-only">
+                    <div class="row">
+                        <div class="col-sm-9 text-start">
+                            <h4>
+                                <i class="bi bi-cart3"></i>{{ __('messages.current_order') }}
+                                {{-- <span class="badge bg-primary ms-2" id="cartCount">0</span> --}}
+                            </h4>
+                        </div>
+                        <div class="col-sm-3 text-end">
+                            {{-- <button id="clearCartBtn" class="btn btn-outline-danger" data-bs-toggle="modal"
                                     data-bs-target="#clearCartModal">
                                     <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-2 text-center">#</div>
-                            <div class="col-sm-4 text-start">{{ __('messages.products') }}</div>
-                            <div class="col-sm-3 text-end">{{ __('messages.quality') }}</div>
-                            <div class="col-sm-3 text-center">{{ __('total') }}</div>
-                        </div>
-                        <div id="cartItems">
-                            <div class="text-center text-muted py-20">
-                                <i class="bi bi-cart-x display-4"></i>
-                                <p class="mt-2">{{ __('messages.No_items_in_cart') }}</p>
-                            </div>
-                        </div>
-                        {{-- <h5 class="mt-4">{{ __('messages.payment_summary') }}</h5> --}}
-                        <div class="total-section mt-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>{{ __('messages.items') }}:</span>
-                                <span class="badge bg-primary ms-2" id="cartCount">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>{{ __('messages.shipping') }}
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                </span>
-                                <span id="tax">$0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>{{ __('messages.tax') }}(8%)</span>
-                                <span id="tax">$0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>
-                                    {{ __('messages.discount') }}:
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                </span>
-                                <span id="discount">$0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>{{ __('messages.subtotal') }}:</span>
-                                <span id="subtotal">$0.00</span>
-                            </div>
-
-                            <hr>
-                            <div class="d-flex justify-content-between fs-4 fw-bold">
-                                <span>{{ __('messages.total_payable') }}:</span>
-                                <span id="total" oninput="document.getElementById('paying-amount').value = this.value">$0.00</span>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelModal">
-                                <i class="bi bi-x-circle me-1"></i> {{ __('messages.cancel') }}
-                            </button>
-
-                            <button id="checkoutBtn" class="btn btn-primary w-100" data-bs-toggle="modal"
-                                data-bs-target="#paymentModal">
-                                <i class="bi bi-cart me-1"></i> {{ __('messages.payment') }}
-                            </button>
+                                </button> --}}
                         </div>
                     </div>
 
-                    <div id="alertsContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
-                    {{-- <div class="cart-sidebar p-3 card mt-2">
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-2 text-center">#</div>
+                        <div class="col-sm-4 text-start">{{ __('messages.products') }}</div>
+                        <div class="col-sm-3 text-end">{{ __('messages.quality') }}</div>
+                        <div class="col-sm-3 text-center">{{ __('total') }}</div>
+                    </div>
+                    <div id="cartItems">
+                        <div class="text-center text-muted py-20">
+                            <i class="bi bi-cart-x display-4"></i>
+                            <p class="mt-2">{{ __('messages.No_items_in_cart') }}</p>
+                        </div>
+                    </div>
+                    {{-- <h5 class="mt-4">{{ __('messages.payment_summary') }}</h5> --}}
+                    <div class="total-section mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ __('messages.items') }}:</span>
+                            <span class="badge bg-primary ms-2" id="cartCount">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ __('messages.shipping') }}
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ __('messages.tax') }}(8%)</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>
+                                {{ __('messages.discount') }}:
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#discountModal">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </span>
+                            <span id="discount">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ __('messages.subtotal') }}:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between fs-4 fw-bold">
+                            <span>{{ __('messages.total_payable') }}:</span>
+                            <span id="total"
+                                oninput="document.getElementById('paying-amount').value = this.value">$0.00</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                            <i class="bi bi-x-circle me-1"></i> {{ __('messages.cancel') }}
+                        </button>
+
+                        <button id="checkoutBtn" class="btn btn-primary w-100" data-bs-toggle="modal"
+                            data-bs-target="#paymentModal">
+                            <i class="bi bi-cart me-1"></i> {{ __('messages.payment') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div id="alertsContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
+                {{-- <div class="cart-sidebar p-3 card mt-2">
 
                     <div class="fw-semibold mb-3">Select Payment</div>
                     <div class="d-flex gap-2">
@@ -265,10 +281,12 @@
                     </div>
 
                 </div> --}}
-                </div>
             </div>
         </div>
-    @endif
+    </div>
+    {{-- @endif --}}
+
+
     <!-- Clear Cart Confirmation Modal -->
     <div class="modal fade" id="clearCartModal" tabindex="-1" aria-labelledby="clearCartModalLabel">
         <div class="modal-dialog modal-dialog-centered">
@@ -443,47 +461,7 @@
             </div>
         </div>
     </div>
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="filterOffcanvasLabel">{{ __('messages.brands') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body p-2">
-            <div class="container-fluid">
-                <div class="row g-2 no-scrollbar" style="height: 760px; overflow-y: auto; overflow-x: hidden;">
 
-                    <div class="col-6">
-                        <a href="#"
-                            class="card h-100 border-primary shadow-sm text-decoration-none filter-brand active-brand"
-                            data-brand-id="all">
-                            <div class="card-body d-flex flex-column align-items-center p-2">
-                                <img src="{{ asset('tool.png') }}"
-                                    style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                                <span class="text-center mt-1" style="font-size: 0.8rem;">All</span>
-                            </div>
-                        </a>
-                    </div>
-
-                    @foreach ($brands as $brand)
-                        <div class="col-6">
-                            <a href="#" class="card h-100 border shadow-sm text-decoration-none filter-brand"
-                                data-brand-id="{{ $brand->id }}">
-                                <div class="card-body d-flex flex-column align-items-center p-2">
-                                    <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
-                                        style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
-                                    {{-- <h6 class="card-title mb-0 mt-1 text-truncate text-center" style="font-size: 0.75rem;">
-                                        {{ $brand->name }}
-                                    </h6> --}}
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-
-                </div>
-            </div>
-        </div>
-
-    </div>
     <div class="modal fade" id="cancelModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -543,7 +521,8 @@
                                     <label class="form-label">Paying Amount</label>
                                     <div class="input-group mb-2">
                                         <span class="input-group-text">$</span>
-                                        <input type="text" class="form-control text-end" placeholder="0.00" id="paying-amount">
+                                        <input type="text" class="form-control text-end" placeholder="0.00"
+                                            id="paying-amount">
                                     </div>
                                 </div>
 
@@ -643,28 +622,27 @@
 @endpush
 @push('scripts')
     <script>
+        const totalEl = document.getElementById('total');
+        const payingEl = document.getElementById('paying-amount');
 
-    const totalEl = document.getElementById('total');
-    const payingEl = document.getElementById('paying-amount');
+        function syncPayingWithTotal() {
+            const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
+            payingEl.value = total.toFixed(2);
+        }
+        document.getElementById('paymentModal').addEventListener('shown.bs.modal', () => {
+            syncPayingWithTotal();
+        });
 
-    function syncPayingWithTotal() {
-        const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
-        payingEl.value = total.toFixed(2);
-    }
-    document.getElementById('paymentModal').addEventListener('shown.bs.modal', () => {
-        syncPayingWithTotal();
-    });
+        // Quick-cash buttons
+        document.querySelectorAll('.quick-cash').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Use the current total from the span
+                const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
 
-// Quick-cash buttons
-document.querySelectorAll('.quick-cash').forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Use the current total from the span
-        const total = parseFloat(totalEl.textContent.replace('$', '')) || 0;
-
-        // Set the paying amount input
-        payingEl.value = total.toFixed(2);
-    });
-});
+                // Set the paying amount input
+                payingEl.value = total.toFixed(2);
+            });
+        });
 
 
 
@@ -696,16 +674,36 @@ document.querySelectorAll('.quick-cash').forEach(btn => {
 
         function toggleClearCartButton() {
             const cartItems = document.querySelector('#cartItems');
-            const clearBtn = document.querySelector('#clearCartBtn');
-
             const hasItems = cartItems.querySelectorAll('.cart-item').length > 0;
-
-            clearBtn.disabled = !hasItems;
         }
+
+        function filterBrand(el, brandId) {
+            // Remove 'active' class from all pills
+            $('.cat-pills .pill').removeClass('active');
+
+            // Add 'active' to clicked pill
+            $(el).addClass('active');
+
+            // Update brand filter on product items
+            $('.filter-brand').removeClass('active-brand'); // optional if using on cards
+            $(el).addClass('active-brand'); // store active-brand on pill
+
+            // Set data attribute for filtering (optional)
+            $(el).data('brand-id', brandId);
+
+            // Trigger the product filter
+            filterProducts();
+        }
+
+        // Optional: filter products as you type in search
+        $('#searchInput').on('input', filterProducts);
+
 
         function filterProducts() {
             const searchKeyword = $('#searchInput').val().toLowerCase().trim();
-            const selectedbrand_id = $('.filter-brand.active-brand').data('brand-id');
+
+            // Get the selected brand from the active pill
+            const selectedbrand_id = $('.cat-pills .pill.active').data('brand-id');
 
             let visibleCount = 0;
 
@@ -734,32 +732,20 @@ document.querySelectorAll('.quick-cash').forEach(btn => {
 
 
         $(document).ready(function() {
-            // Brand filter click
             $('.filter-brand').on('click', function(e) {
                 e.preventDefault();
-
                 const brand_id = $(this).data('brand-id');
-
-                // Update active state
                 $('.filter-brand').removeClass('border-primary active-brand').addClass('border shadow-sm');
                 $(this).addClass('border-primary active-brand').removeClass('border shadow-sm');
-
-                // Trigger unified filter
                 filterProducts();
             });
-
-            // Search input
             $('#searchInput').on('keyup', function() {
                 filterProducts();
             });
-
-            // Clear search button
             $('#clearSearch').on('click', function() {
                 $('#searchInput').val('');
                 filterProducts();
             });
-
-            // Initial filter on page load
             filterProducts();
         });
 
@@ -984,79 +970,79 @@ document.querySelectorAll('.quick-cash').forEach(btn => {
         }
 
 
-document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
 
-    const quickButtons = document.querySelectorAll('.quick-cash');
-    const receivedInput = document.getElementById('received-amount');
-    const payingInput = document.getElementById('paying-amount');
-    const changeInput = document.getElementById('change-amount');
-    const clearBtn = document.getElementById('clearCash');
-    const paymentModal = document.getElementById('paymentModal');
+            const quickButtons = document.querySelectorAll('.quick-cash');
+            const receivedInput = document.getElementById('received-amount');
+            const payingInput = document.getElementById('paying-amount');
+            const changeInput = document.getElementById('change-amount');
+            const paymentModal = document.getElementById('paymentModal');
 
-    function calculateChange() {
-        let received = parseFloat(receivedInput.value) || 0;
-        let paying = parseFloat(payingInput.value) || 0;
-        changeInput.value = (received - paying).toFixed(2);
-    }
+            function calculateChange() {
+                let received = parseFloat(receivedInput.value) || 0;
+                let paying = parseFloat(payingInput.value) || 0;
+                changeInput.value = (received - paying).toFixed(2);
+            }
 
-    function resetButtons() {
-        quickButtons.forEach(btn => {
-            let badge = btn.querySelector('.cash-count');
-            badge.textContent = 0;
-            badge.classList.add('d-none');
-            btn.classList.remove('btn-info');
-            btn.classList.add('btn-primary');
+            function resetButtons() {
+                quickButtons.forEach(btn => {
+                    let badge = btn.querySelector('.cash-count');
+                    badge.textContent = 0;
+                    badge.classList.add('d-none');
+                    btn.classList.remove('btn-info');
+                    btn.classList.add('btn-primary');
+                });
+            }
+
+            quickButtons.forEach(button => {
+
+                button.addEventListener('click', function() {
+
+                    const value = parseFloat(this.dataset.value);
+                    const badge = this.querySelector('.cash-count');
+
+                    /* ✅ CLEAR OTHER BUTTONS FIRST */
+                    resetButtons();
+
+                    /* ✅ ACTIVATE ONLY THIS BUTTON */
+                    badge.textContent = 1;
+                    badge.classList.remove('d-none');
+
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-info');
+
+                    /* ✅ REPLACE RECEIVED VALUE (NOT ADD) */
+                    receivedInput.value = value.toFixed(2);
+
+                    calculateChange();
+                });
+
+            });
+
+
+            payingInput.addEventListener('input', calculateChange);
+
+
+            paymentModal.addEventListener('shown.bs.modal', function() {
+
+                receivedInput.value = "0.00";
+                resetButtons();
+
+                const defaultBtn = document.querySelector('.quick-cash[data-value="60"]');
+
+                if (defaultBtn) {
+                    defaultBtn.click();
+                }
+            });
+
         });
-    }
 
-    quickButtons.forEach(button => {
-
-        button.addEventListener('click', function() {
-
-            const value = parseFloat(this.dataset.value);
-            const badge = this.querySelector('.cash-count');
-
-            /* ✅ CLEAR OTHER BUTTONS FIRST */
-            resetButtons();
-
-            /* ✅ ACTIVATE ONLY THIS BUTTON */
-            badge.textContent = 1;
-            badge.classList.remove('d-none');
-
-            this.classList.remove('btn-primary');
-            this.classList.add('btn-info');
-
-            /* ✅ REPLACE RECEIVED VALUE (NOT ADD) */
-            receivedInput.value = value.toFixed(2);
-
-            calculateChange();
-        });
-
-    });
-
-    clearBtn.addEventListener('click', function() {
-        receivedInput.value = "0.00";
-        resetButtons();
-        calculateChange();
-    });
-
-    payingInput.addEventListener('input', calculateChange);
-
-    /* ✅ DEFAULT BUTTON WHEN MODAL OPENS */
-    paymentModal.addEventListener('shown.bs.modal', function () {
-
-        receivedInput.value = "0.00";
-        resetButtons();
-
-        const defaultBtn = document.querySelector('.quick-cash[data-value="60"]');
-
-        if (defaultBtn) {
-            defaultBtn.click();
+        function scrollPills(amount) {
+            const container = document.querySelector('.cat-pills');
+            container.scrollBy({
+                left: amount,
+                behavior: 'smooth'
+            });
         }
-    });
-
-});
-
-
     </script>
 @endpush

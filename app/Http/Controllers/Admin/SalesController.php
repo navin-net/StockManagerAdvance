@@ -43,6 +43,7 @@ class SalesController extends Controller
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
             ->leftJoin('companies as biller','sales.biiler_id','=','biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
+            ->where('sales.sale_type',0)
             ->groupBy([
                 'sales.id',
                 'sales.customer_id',
@@ -352,6 +353,15 @@ class SalesController extends Controller
         ]);
     }
 
+
+    public function pos()
+    {
+        $pageTitle = __('messages.pos_sales');
+        $breadcrumbs = [['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],['label' => __('messages.sales_list'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.pos_sales'), 'url' => '', 'active' => true]];
+        $warehouses = DB::table('warehouses')->select('id', 'name')->get();
+
+        return view('admin.sales.pos',compact('pageTitle', 'breadcrumbs','warehouses'));
+    }
 
 
 

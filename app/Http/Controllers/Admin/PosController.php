@@ -35,7 +35,15 @@ class PosController extends BaseController
             return redirect()->route('pos.index');
         }
 
-        return view('admin.pos.open-register');
+        return view('admin.pos.open-register', [
+            'pageTitle' => __('messages.open_register'),
+            'heading' => __('messages.open_register'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
+                ['label' => __('messages.open_register'), 'url' => '', 'active' => true],
+            ]
+        ]);
     }
 
 

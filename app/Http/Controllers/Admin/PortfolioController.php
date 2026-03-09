@@ -17,11 +17,11 @@ class PortfolioController extends Controller
         // dd($portfolio);
         return view('admin.shop.portfolio.index', [
             'portfolio' => $portfolio,
-            'pageTitle' => __('messages.portfolio'),
+            'pageTitle' => __('messages.portfolio_profile'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin', 'active' => false],
 
-                ['label' => __('messages.portfolio'), 'url' => '', 'active' => true],
+                ['label' => __('messages.portfolio_profile'), 'url' => '', 'active' => true],
             ]
         ]);
     }

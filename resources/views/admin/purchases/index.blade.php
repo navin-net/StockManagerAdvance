@@ -97,6 +97,7 @@
                                             <th>{{ __('messages.grand_total') }}</th> <!-- 6 -->
                                             <th>{{ __('messages.paid') }}</th> <!-- 7 -->
                                             <th>{{ __('messages.balance') }}</th> <!-- 8 -->
+                                            <th>{{ __('messages.payment_status') }}</th> <!-- 5 -->
                                             <th>{{ __('messages.actions') }}</th> <!-- 9 -->
                                         </tr>
                                     </thead>
@@ -166,6 +167,7 @@
                         render: StatusMapper.renderBadge
 
                     },
+
                     {
                         data: 'grand_total',
                         name: 'purchases.total_amount'
@@ -177,6 +179,10 @@
                     {
                         data: 'balance',
                         searchable: false
+                    },
+                    {
+                        data: 'payment_status',
+                        name: 'payment_status'
                     },
                     {
                         data: 'action',

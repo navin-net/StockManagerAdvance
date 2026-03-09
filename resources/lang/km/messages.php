@@ -13,6 +13,7 @@ return [
     'portfolio' => 'ផលប័ត្រ',
     'welcome_mart24h_users' => 'សូមស្វាគមន៍អ្នកប្រើប្រាស់ Mart24h',
     'dashboard' => 'ផ្ទាំងគ្រប់គ្រង',
+    'pos_sales' => 'ការលក់តាម POS',
     'dashboard_welcome' => 'សូមស្វាគមន៍មកកាន់ផ្ទាំងគ្រប់គ្រង',
     'home' => 'ទំព័រដើម',
     'stock_management_system' => 'ប្រព័ន្ធគ្រប់គ្រងស្តុក',

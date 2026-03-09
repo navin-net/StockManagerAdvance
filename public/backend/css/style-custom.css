@@ -4,6 +4,9 @@
     --primary-color: #0ea5e9;
     --transition-speed: 0.3s;
     --border-color: rgba(255, 255, 255, 0.1);
+    --accent: #0f0f1a;
+    --accent-glow: rgba(232,255,71,0.14);
+    --accent2: #3835ff;
 }
 
 [data-bs-theme="light"] {
@@ -660,52 +663,6 @@ table.dataTable.stripe tbody tr.odd {
 }
 
 
-/* Loading bar container - positioned right under navbar */
-#loadingBar {
-    position: fixed;
-    top: 56px; /* Adjust this to match your navbar height */
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background-color: rgba(0, 0, 0, 0.1);
-    z-index: 1050;
-    overflow: hidden;
-}
-
-/* The actual loading progress bar */
-#loadingProgress {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #0a0061 100%);
-    background-size: 200% 100%;
-    animation: loading 2s ease-in-out forwards, shimmer 1.5s infinite;
-    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-}
-
-@keyframes loading {
-    0% { width: 0%; }
-    50% { width: 70%; }
-    100% { width: 100%; }
-}
-
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* Fade out animation */
-#loadingBar.complete {
-    animation: fadeOut 0.5s ease-out forwards;
-}
-
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-}
-
-
 
 
 /* Floating Button Style */
@@ -944,4 +901,339 @@ table.dataTable.stripe tbody tr.odd {
 
 .ck.ck-list__item .ck-button:hover {
     background-color: var(--hover-bg) !important;
+}
+
+
+
+/* ── Select2 base container ────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-selection {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    color: var(--text-color) !important;
+    border-radius: 6px !important;
+    min-height: 42px !important;
+    padding: 4px 8px !important;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+/* ── Focus state ────────────────────────────────────────────────────────── */
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15) !important;
+}
+
+/* ── Placeholder text ───────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ── Selected tags / pills ──────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-selection__rendered {
+    color: var(--text-color) !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--primary-color) !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    margin: 3px 4px 3px 0 !important;
+}
+
+/* ── Tag remove × button ────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    display: inline-flex !important;
+    align-items: start !important;
+    justify-content: start !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    background: transparent !important;
+    border: none !important;
+    /* border-right: 1px solid rgba(255, 255, 255, 0.25) !important; */
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    margin-right: 5px !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 3px !important;
+}
+
+/* Make sure the × character itself is visible */
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove span {
+    display: inline !important;
+    visibility: visible !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+}
+
+/* ── Search input inside the box ────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-search--inline .select2-search__field {
+    color: var(--text-color) !important;
+    background: transparent !important;
+}
+
+.select2-container--bootstrap-5 .select2-search--inline .select2-search__field::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ── Dropdown panel ─────────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-dropdown {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 4px !important;
+}
+
+/* ── Dropdown search box ────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field {
+    background-color: var(--editor-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    border-radius: 5px !important;
+    color: var(--text-color) !important;
+    padding: 7px 10px !important;
+}
+
+.select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field:focus {
+    outline: none !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15) !important;
+}
+
+/* ── Optgroup label ─────────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-results__group {
+    color: var(--primary-color) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    padding: 8px 12px 4px !important;
+}
+
+/* ── Dropdown options ───────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-results__option {
+    color: var(--text-color) !important;
+    padding: 8px 14px !important;
+    font-size: 13.5px !important;
+    border-radius: 4px !important;
+    margin: 1px 4px !important;
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+.select2-container--bootstrap-5 .select2-results__option[aria-selected="true"] {
+    background-color: var(--hover-bg) !important;
+    color: var(--primary-color) !important;
+}
+
+/* ── Clear all × button ─────────────────────────────────────────────────── */
+.select2-container--bootstrap-5 .select2-selection__clear {
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection__clear:hover {
+    color: var(--text-color) !important;
+}
+
+
+
+/* Pills container scroll */
+.cat-pills-wrapper {
+    position: relative;
+}
+
+.cat-pills {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 12px 16px;
+    scrollbar-width: none;
+}
+
+.cat-pills::-webkit-scrollbar { display: none; }
+
+.pill {
+    flex: 0 0 auto; /* prevent shrinking */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+
+.pill.active,
+.pill:hover {
+    background: var(--accent2);
+    color: #ffffff;
+    border-color: var(--accent2);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Scroll arrows */
+.scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    /* background: rgba(255,255,255,0.9); */
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    /* box-shadow: 0 2px 6px rgba(0,0,0,0.2); */
+opacity: 0;                   /* hide by default */
+    pointer-events: none;         /* prevent clicking when hidden */
+    transition: all 0.3s ease;    /* smooth fade in/out */
+}
+
+.scroll-arrow:hover {
+    background: var(--accent2);
+    /* color: #fff; */
+    border-color: var(--accent2);
+}
+/* Show arrows on hover of the container */
+.cat-pills-wrapper:hover .scroll-arrow {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.scroll-left { left: 4px; }
+.scroll-right { right: 4px; }
+
+/* ── Style 1 : Horizontal split — info left | barcode right ── */
+.label-box-s1 {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #222;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    height: 80px;
+}
+.s1-left {
+    flex: 1;
+    padding: 8px 12px;
+    border-right: 1.5px dashed #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+.s1-name  { font-size: 12px; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: .5px; }
+.s1-price { font-size: 18px; font-weight: 800; color: #111; }
+.s1-store { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.s1-right {
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+.s1-code { font-size: 8px; color: #666; font-family: monospace; }
+
+/* ── Style 2 : Card — dark top bar + barcode + footer ── */
+.label-box-s2 {
+    border: 1.5px solid #333;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+.s2-top {
+    background: #333;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+}
+.s2-name  { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+.s2-price { font-size: 13px; font-weight: 800; white-space: nowrap; }
+.s2-barcode {
+    padding: 6px 4px 2px;
+    text-align: center;
+    background: #fafafa;
+}
+.s2-bottom {
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 8px;
+    background: #f5f5f5;
+}
+.s2-store { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: .5px; }
+.s2-code  { font-size: 9px; color: #888; font-family: monospace; }
+
+/* ── Style 3 : Compact stacked — store header + barcode + name + price ── */
+.label-box-s3 {
+    border: 1.5px solid #444;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    text-align: center;
+}
+.s3-header {
+    background: #444;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 3px 6px;
+}
+.s3-barcode {
+    padding: 6px 4px 0;
+    background: #fff;
+}
+.s3-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #111;
+    text-transform: uppercase;
+    padding: 2px 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.s3-price {
+    font-size: 14px;
+    font-weight: 800;
+    color: #111;
+    padding: 0 6px 4px;
 }

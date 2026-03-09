@@ -11,6 +11,8 @@ return [
     'portfolio' => 'Portfolio',
     'welcome_mart24h_users' => 'Welcome Mart24h Users',
     'dashboard' => 'Dashboard',
+    'portfolio_profile' => 'Portfolio Profile',
+    'pos_sales' => 'Pos Sales',
     'dashboard_welcome' => 'Welcome to Dashboard',
     'stock_management_system' => 'Stock Management System',
     'home' => 'Home',

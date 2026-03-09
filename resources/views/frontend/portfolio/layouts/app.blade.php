@@ -19,7 +19,7 @@
         window.APP_PATH = "/StockManagerAdvance";
     </script>
 
-    <title>@yield('title')-{{ $shopInfo->name_shop }}</title>
+    <title>Kevin - @yield('title')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
