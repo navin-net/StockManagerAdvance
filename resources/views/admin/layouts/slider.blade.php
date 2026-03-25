@@ -112,21 +112,21 @@
                 <i class="bi bi-plus-circle"></i>
                 <span>{{ __('messages.create') }}</span>
             </a>
-            {{-- <a href="{{ url($prefix . '/products/import') }}"
+            <a href="{{ url($prefix . '/products/import') }}"
                 class="nav-link d-flex align-items-center {{ request()->is($prefix . '/products/import') ? 'active' : '' }}">
                 <i class="bi bi-displayport-fill"></i>
                 <span>{{ __('messages.import') }}</span>
-            </a> --}}
+            </a>
             <a href="{{ url($prefix . '/products/code-label') }}"
                 class="nav-link d-flex align-items-center {{ request()->is($prefix . '/products/code-label') ? 'active' : '' }}">
                 <i class="bi bi-upc-scan"></i>
                 <span>{{ __('messages.barcode-label') }}</span>
             </a>
-            {{-- <a href="{{ url($prefix . '/products/adjustment') }}"
+            <a href="{{ url($prefix . '/products/adjustment') }}"
                 class="nav-link d-flex align-items-center {{ request()->is($prefix . '/products/adjustment') ? 'active' : '' }}">
                 <i class="bi bi-wrench-adjustable"></i>
                 <span>{{ __('messages.add_adjustment') }}</span>
-            </a> --}}
+            </a>
 
 
         </div>

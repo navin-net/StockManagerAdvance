@@ -17,6 +17,7 @@ class Payment extends Model
         'method',
         'amount',
         'paid_at',
+        'note',
         'attachment',
         'pos_paid',
         'pos_balance',

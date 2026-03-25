@@ -74,17 +74,17 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $registerId = session('cash_register_id');
+        // $registerId = session('cash_register_id');
 
-        if ($registerId) {
-            DB::table('cash_registers')->where('id', $registerId)->update([
-                'closing_balance' => 0,
-                'closed_at' => now(),
-                'status' => 'closed'
-            ]);
-        }
+        // if ($registerId) {
+        //     DB::table('cash_registers')->where('id', $registerId)->update([
+        //         'closing_balance' => 0,
+        //         'closed_at' => now(),
+        //         'status' => 'closed'
+        //     ]);
+        // }
 
-        session()->forget(['register_opened', 'cash_register_id', 'opened_at']);
+        // session()->forget(['register_opened', 'cash_register_id', 'opened_at']);
 
         Auth::logout();
         $request->session()->invalidate();

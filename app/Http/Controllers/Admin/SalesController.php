@@ -24,7 +24,7 @@ class SalesController extends Controller
         return view('admin.sales.index', compact('pageTitle', 'breadcrumbs', 'products'));
     }
 
-    public function getData()
+    public function getData(Request $request)
     {
         $data = Sale::query()
             ->select([
@@ -41,9 +41,9 @@ class SalesController extends Controller
                 'sales.payment_status',
             ])
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
-            ->leftJoin('companies as biller','sales.biiler_id','=','biller.id')
+            ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
-            ->where('sales.sale_type',0)
+            ->where('sales.sale_type', 1)
             ->groupBy([
                 'sales.id',
                 'sales.customer_id',
@@ -53,7 +53,9 @@ class SalesController extends Controller
                 'companies.name',
                 'sales.status',
             ]);
-
+        if ($request->filled('warehouse_id')) {
+            $data->where('sales.warehouse_id', $request->warehouse_id);
+        }
         return DataTables::of($data)
             ->addColumn('action', function ($data) {
                 return '<div class="dropdown">
@@ -83,10 +85,11 @@ class SalesController extends Controller
     {
         $pageTitle = __('messages.create');
         $breadcrumbs = [
-        ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
-        ['label' => __('messages.sales'), 'url' => route('sales.index'), 'active' => false],
+            ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
+            ['label' => __('messages.sales'), 'url' => route('sales.index'), 'active' => false],
 
-         ['label' => __('messages.add'), 'url' => '', 'active' => true]];
+            ['label' => __('messages.add'), 'url' => '', 'active' => true]
+        ];
         $products = Products::select('id', 'name', 'code', 'stock_quantity', 'selling_price')->get();
         return view('admin.sales.create', compact('pageTitle', 'breadcrumbs', 'products'));
     }
@@ -258,7 +261,7 @@ class SalesController extends Controller
             return redirect()->route('sales.index')
                 ->with('error', 'This sale is already fully paid. You cannot add more payments.');
         }
-        return view('admin.sales.add-payemts', compact('pageTitle', 'breadcrumbs', 'sale','totalPaid','balance'));
+        return view('admin.sales.add-payemts', compact('pageTitle', 'breadcrumbs', 'sale', 'totalPaid', 'balance'));
 
     }
 
@@ -309,14 +312,14 @@ class SalesController extends Controller
 
 
         $data = [
-            'sale_id'     => $sale_id,
-            'reference'   => $request->reference,
-            'method'      => $request->methods,
-            'amount'      => $request->amount,
-            'paid_at'        => $request->paid_at ?? now(),
+            'sale_id' => $sale_id,
+            'reference' => $request->reference,
+            'method' => $request->methods,
+            'amount' => $request->amount,
+            'paid_at' => $request->paid_at ?? now(),
             // 'pos_paid'    => $totalPaid + $request->amount,
             // 'pos_balance' => $remainingBalance - $request->amount,
-            'created_by'  => auth()->id(),
+            'created_by' => auth()->id(),
         ];
 
         $sale_data = [
@@ -334,9 +337,9 @@ class SalesController extends Controller
         Sale::where('id', $sale_id)->update($sale_data);
 
 
-    return redirect()
-        ->route('sales.index')
-        ->with('success', 'Payment saved successfully');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Payment saved successfully');
     }
 
 
@@ -357,10 +360,67 @@ class SalesController extends Controller
     public function pos()
     {
         $pageTitle = __('messages.pos_sales');
-        $breadcrumbs = [['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],['label' => __('messages.sales_list'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.pos_sales'), 'url' => '', 'active' => true]];
+        $breadcrumbs = [['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false], ['label' => __('messages.sales_list'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.pos_sales'), 'url' => '', 'active' => true]];
         $warehouses = DB::table('warehouses')->select('id', 'name')->get();
 
-        return view('admin.sales.pos',compact('pageTitle', 'breadcrumbs','warehouses'));
+        return view('admin.sales.pos', compact('pageTitle', 'breadcrumbs', 'warehouses'));
+    }
+
+    public function getDataPos(Request $request)
+    {
+        $data = Sale::query()
+            ->select([
+                'sales.id',
+                'sales.customer_id',
+                'sales.reference',
+                'sales.date',
+                'sales.total_amount AS grand_total',
+                DB::raw('COALESCE(SUM(sma_payments.amount), 0) AS paid'),
+                DB::raw('(sma_sales.total_amount - COALESCE(SUM(sma_payments.amount), 0)) AS balance'),
+                'companies.name AS customer',
+                'biller.name as biller',
+                'sales.status',
+                'sales.payment_status',
+            ])
+            ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
+            ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
+            ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
+            ->where('sales.sale_type', 0)
+            ->groupBy([
+                'sales.id',
+                'sales.customer_id',
+                'sales.reference',
+                'sales.date',
+                'sales.total_amount',
+                'companies.name',
+                'sales.status',
+            ]);
+        if ($request->filled('warehouse_id')) {
+            $data->where('sales.warehouse_id', $request->warehouse_id);
+        }
+        return DataTables::of($data)
+            ->addColumn('action', function ($data) {
+                return '<div class="dropdown">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        ' . __('messages.actions') . '
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="' . route('sales.show', $data->id) . '">
+                            <i class="bi bi-eye"></i> ' . __('messages.show') . '</a></li>
+                        <li><a class="dropdown-item" href="' . route('sales.edit', $data->id) . '">
+                            <i class="bi bi-pencil"></i> ' . __('messages.edit') . '</a></li>
+                        <li><a class="dropdown-item" href="' . route('sales.payments', $data->id) . '">
+                            <i class="bi bi-file-earmark-plus"></i> ' . __('messages.add_payments') . '</a></li>
+                        <li><a class="dropdown-item list-payment-sale" data-id="' . $data->id . '">
+                            <i class="bi bi-list-columns"></i> ' . __('messages.list_payment') . '</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item text-danger delete-sale" data-id="' . $data->id . '">
+                            <i class="bi bi-trash"></i> ' . __('messages.delete') . '</button></li>
+                    </ul>
+                </div>';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
 
 

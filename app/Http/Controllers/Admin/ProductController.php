@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Imports\UsersImport;
+use App\Models\{Brand, Categories, ProductImage, Products, Qualitys, SaleItem, SubCategory, Units};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage, Validator};
-use App\Http\Controllers\Controller;
-use App\Models\{Brand, Categories, ProductImage, Products, Qualitys, SaleItem, SubCategory, Units};
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class ProductController extends Controller
@@ -251,7 +253,7 @@ class ProductController extends Controller
         // ]);
 
         return redirect()->route('products.index')
-            ->with('success', __('messages.product_updated'). ' - ' . $product->name);
+            ->with('success', __('messages.product_updated') . ' - ' . $product->name);
 
 
 
@@ -310,17 +312,17 @@ class ProductController extends Controller
             ], 400);
         }
 
-            if (!empty($product->image)) {
-                Storage::disk('public')->delete($product->image);
+        if (!empty($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+        foreach ($product->images as $img) {
+            if (!empty($img->image)) {
+                Storage::disk('public')->delete($img->image);
             }
-            foreach ($product->images as $img) {
-                if (!empty($img->image)) {
-                    Storage::disk('public')->delete($img->image);
-                }
-            }
-            $product->images()->delete();
+        }
+        $product->images()->delete();
 
-            $product->delete();
+        $product->delete();
 
         return response()->json([
             'message' => __('messages.product_deleted_successfully'),
@@ -351,9 +353,8 @@ class ProductController extends Controller
         return response()->json($subCategories);
     }
 
-    public function import()
+    public function showImportForm()
     {
-
         return view('admin.products.imports', [
             'pageTitle' => __('messages.products_import'),
             'heading' => __('messages.products_import'),
@@ -362,6 +363,17 @@ class ProductController extends Controller
                 ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
                 ['label' => __('messages.products_import'), 'url' => '', 'active' => true],
             ]
+        ]);
+    }
+
+    public function import(Request $request)
+    {
+        $import = new UsersImport();
+        Excel::import($import, $request->file('file'));
+
+        return response()->json([
+            'success'  => true,
+            'messages' => $import->messages,
         ]);
     }
 
@@ -404,11 +416,11 @@ class ProductController extends Controller
             'heading' => __('messages.add_adjustment'),
             'description' => __('messages.dashboard_welcome'),
             'breadcrumbs' => [
-                        [
-            'label' => __('messages.home'),
-            'url' => route('admin.dashboard'), // or url('/admin')
-            'active' => false
-        ],
+                [
+                    'label' => __('messages.home'),
+                    'url' => route('admin.dashboard'), // or url('/admin')
+                    'active' => false
+                ],
                 ['label' => __('messages.products'), 'url' => url('admin/products'), 'active' => false],
                 ['label' => __('messages.adjustment'), 'url' => '', 'active' => true],
             ]

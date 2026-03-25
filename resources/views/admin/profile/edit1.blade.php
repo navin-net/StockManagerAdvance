@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- ABOUT ME -->
-                <div class="card mt-4 shadow-sm">
+                {{-- <div class="card mt-4 shadow-sm">
                     <div class="card-header  text-white fw-bold">
                         About Me
                     </div>
@@ -94,7 +94,7 @@
                         <p><i class="bi bi-geo-alt"></i> Phnom Penh, Cambodia</p>
                         <p><i class="bi bi-briefcase"></i> 5+ Years Experience</p>
                     </div>
-                </div>
+                </div> --}}
             </div>
             <!-- RIGHT SIDE CONTENT -->
             <div class="col-lg-8">

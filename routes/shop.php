@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Shop\MainController;
-use App\Http\Controllers\Shop\Auth\ForgotPasswordController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Shop\{MainController, ShopController};
+use App\Http\Controllers\Shop\Auth\ForgotPasswordController;
 
 
 
@@ -18,16 +18,17 @@ Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm']
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 
-Route::get('/', [MainController::class,'portfolio'])->name('shop.portfolio');
+Route::get('/portfolio', [MainController::class,'portfolio'])->name('shop.portfolio');
 
 
 Route::post('/contact', [MainController::class, 'store'])
     ->name('contact.store');
 
+
+Route::get('/', [ShopController::class,'index'])->name('shop.index');
 Route::prefix('shop')->group(function () {
 
 // Route::prefix('main')->group(function () {
-    // Route::get('/', [MainController::class,'index'])->name('shop.index');
     Route::get('register',[MainController::class, 'register'])->name('shop.register');
 
 });

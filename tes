@@ -1,0 +1,13 @@
+postgres=# ALTER USER postgres PASSWORD '123';
+ALTER ROLE
+postgres=# CREATE USER myuser WITH PASSWORD '123';
+CREATE ROLE
+postgres=# CREATE DATABASE mydb OWNER myuser;
+CREATE DATABASE
+postgres=# \q
+postgres@UbuntuS:~$ exit
+
+
+cd /var/www
+sudo composer create-project laravel/laravel myapp
+sudo chown -R www-data:www-data /var/www/myapp

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Models\Companies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
 class CustomerController extends Controller
@@ -24,7 +25,7 @@ class CustomerController extends Controller
                     'companies.address',
                     'companies.phone',
                     'groups.name as group_name'
-            )->where('companies.group_id', 4);
+                )->where('companies.group_id', 4);
             return DataTables::of($query)
                 ->addColumn('action', function ($row) {
                     return '
@@ -58,8 +59,8 @@ class CustomerController extends Controller
                     </div>
                     ';
                 })
-                ->filterColumn('group_name', function($query,$keyword){
-                    $query->where('groups.name','like',"%$keyword%");
+                ->filterColumn('group_name', function ($query, $keyword) {
+                    $query->where('groups.name', 'like', "%$keyword%");
                 })
 
                 ->rawColumns(['action'])
@@ -81,8 +82,48 @@ class CustomerController extends Controller
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
                 ['label' => __('messages.customers'), 'url' => '/admin/customers', 'active' => false],
-                ['label' => __('messages.create'),'url' => '', 'active' => true],
+                ['label' => __('messages.create'), 'url' => '', 'active' => true],
             ]
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|email|unique:companies,email',
+            'address' => 'required|max:255',
+            'phone' => 'required|max:20',
+            'warehouse_id' => 'required|exists:warehouses,id',
+
+            'city' => 'nullable|string|max:255',
+            'street' => 'nullable|string|max:255',
+            'number_of_houses' => 'nullable|string|max:50',
+            'logo' => 'nullable|image|max:2048',
+        ]);
+
+        $logoPath = null;
+
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('logos', 'public');
+        }
+
+        Companies::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'city' => $request->city,
+            'number_of_houses' => $request->number_of_houses,
+            'street' => $request->street,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'group_id' => 4,
+            'group_name' => 'Customer',
+            'logo' => $logoPath,
+            'warehouse_id' => $request->warehouse_id,
+        ]);
+
+        return response()->json([
+            'success' => __('messages.customer_created_successfully')
         ]);
     }
 
@@ -93,8 +134,11 @@ class CustomerController extends Controller
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
                 ['label' => __('messages.customers'), 'url' => '/admin/customers', 'active' => false],
-                ['label' => __('messages.edit'),'url' => '', 'active' => true],
+                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
             ]
         ]);
     }
+
+
+
 }

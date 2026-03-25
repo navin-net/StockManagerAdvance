@@ -36,6 +36,7 @@ class Products extends Model
         return $this->belongsTo(Units::class);
     }
 
+
     public function category()
     {
         // return $this->belongsTo(Categories::class);

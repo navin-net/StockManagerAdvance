@@ -16,8 +16,15 @@ class UsersImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithUpsert
 
     public function model(array $row)
     {
+        // If all columns are empty
+        if (empty(array_filter($row))) {
+            $this->messages[] = "Skipped: Data is null";
+            return null;
+        }
+
+        // Check email specifically
         if (empty($row['email'])) {
-            $this->messages[] = "Skipped: Empty row";
+            $this->messages[] = "Skipped: Email is empty";
             return null;
         }
 
@@ -37,7 +44,6 @@ class UsersImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithUpsert
 
         return null;
     }
-
     /**
      * Column used to detect existing records
      */

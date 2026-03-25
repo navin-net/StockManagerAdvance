@@ -325,9 +325,9 @@
                 var brandId = $('#brand_id').val();
                 var isUpdate = brandId ? true : false;
 
-                var url = isUpdate ?
-                    window.APP_PATH + "/admin/system_settings/brands/" + brandId :
-                    window.APP_PATH + "/admin/system_settings/brands";
+                var url = isUpdate
+                    ? "{{ route('brands.update', '') }}/" + brandId
+                    : "{{ route('brands.store') }}";
 
                 if (isUpdate) {
                     formData.append('_method', 'PUT');

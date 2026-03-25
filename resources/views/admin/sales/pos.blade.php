@@ -155,16 +155,129 @@
 @endsection
 @push('scripts')
     <script>
-        $(document).on('click', '[data-warehouse]', function (e) {
-            e.preventDefault();
-            $('[data-warehouse]').removeClass('active');
-            $(this).addClass('active');
-            const label = $(this).text().trim();
-            $('#warehouseDropdown').html(`<i class="bi bi-building me-1"></i> ${label}`);
-            $('#salesTable').DataTable().ajax.reload();
+        const StatusMapper = {
+            renderBadge: function (data) {
+                // Define your mapping for cleaner logic
+                const config = {
+                    'completed': { class: 'bg-success', label: "{{ __('messages.completed') }}" },
+                    'cancelled': { class: 'bg-danger', label: "{{ __('messages.cancelled') }}" },
+                    'pending':   { class: 'bg-warning text-dark', label: "{{ __('messages.pending') }}" }
+                };
+
+                const status = config[data] || config['pending'];
+
+                return `<span class="badge rounded-pill ${status.class}">${status.label}</span>`;
+            }
+        };
+        /* =========================
+         *  TABLE SALES
+         * ========================= */
+        $(document).ready(function () {
+            const table = $('#salesTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [
+                    [10, 20, 30, 50, -1],
+                    [10, 20, 30, 50, "{{ __('messages.all') }}"]
+                ],
+                responsive: true,
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('sales.getDataPos') }}",
+                    data: function (d) {
+                        d.warehouse_id = $('[data-warehouse].active').data('warehouse');
+                    }
+                },          // ← comma here
+                columns: [{
+                    data: 'id',
+                    name: 'id',
+                    orderable: false,
+                    searchable: false,
+                    render: data =>
+                        `<input type="checkbox" class="saleCheckbox" value="${data}">`
+                },
+                {
+                    data: 'date',
+                    name: 'date',
+                },
+                {
+                    data: 'reference',
+                    name: 'reference',
+                },
+                {
+                    data: 'customer',
+                    name: 'customer',
+
+                    defaultContent: 'N/A'
+                },
+                {
+                    data: 'biller',
+                    name: 'biller',
+                    defaultContent: 'N/A'
+                },
+                {
+                    data: 'status',
+                    name: 'status',
+                    className: 'text-center',
+                    render: StatusMapper.renderBadge
+                },
+                {
+                    data: 'grand_total',
+                    name: 'grand_total',
+
+                },
+                {
+                    data: 'paid',
+                    name: 'paid',
+                },
+                {
+                    data: 'balance',
+                    name: 'balance',
+                },
+                {
+                    data: 'payment_status',
+                    name: 'payment_status',
+                    className: 'text-center',
+                    render: StatusMapper.renderBadge
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                }
+                ],
+                language: {
+                    paginate: {
+                        previous: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                            class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd"
+                                                d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                        </svg>`,
+                        next: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                            class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd"
+                                                d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                        </svg>`
+                    },
+                    lengthMenu: '{{ __('messages.show') }} _MENU_ {{ __('messages.entries') }}',
+                    search: '{{ __('messages.search') }}',
+                    emptyTable: "{{ __('messages.no_data_available') }}",
+                    processing: "{{ __('messages.processing') }}",
+                    zeroRecords: "{{ __('messages.no_matching_records') }}",
+                    infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
+                    infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
+                }
+            });
+
+            $(document).on('click', '[data-warehouse]', function (e) {
+                e.preventDefault();
+                $('[data-warehouse]').removeClass('active');
+                $(this).addClass('active');
+                const label = $(this).text().trim();
+                $('#warehouseDropdown').html(`<i class="bi bi-building me-1"></i> ${label}`);
+                table.ajax.reload(); // ✅ use the `table` variable directly
+            });
         });
-        data: function (d) {
-            d.warehouse_id = $('[data-warehouse].active').data('warehouse');
-        }
     </script>
 @endpush

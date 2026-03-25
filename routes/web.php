@@ -32,6 +32,8 @@ Route::get('/users/import', [BaseController::class, 'showImportForm'])
     ->name('users.import.form');
 Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
 
+Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
+Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
 
 Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -44,6 +46,10 @@ Route::post('/cookie/accept', [CookieController::class, 'accept'])
     ->name('cookie.accept');
 Route::get('/lang/{lang}', [LanguageController::class, 'switch']);
 Route::get('/product-alerts', [BaseController::class, 'getAlerts']);
+
+Route::get('/customer-display', function () {
+    return view('customer-display');
+});
 
 
 Route::get('/test-mail', function () {

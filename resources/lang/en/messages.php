@@ -19,6 +19,7 @@ return [
     'sold_out' => 'Sold Out',
     'ip_address' => 'IP Address',
     'search' => 'Search',
+    'added' => 'Added',
     'show' => 'Show',
     'entries' => 'Entries',
     'from' => 'From',

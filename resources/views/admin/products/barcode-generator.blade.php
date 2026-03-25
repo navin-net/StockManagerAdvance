@@ -85,7 +85,7 @@
                     <div class="bg-color p-3 border rounded mb-3 d-none">
                         {{-- <h5 class="mb-3"><i class="bi bi-shop me-2"></i>Store Information</h5>
                         <label class="form-label fw-bold">Site/Store Name</label> --}}
-                        <input type="text" class="form-control border-dark" id="siteName" value="My Store"
+                        <input type="hidden" class="form-control border-dark" id="siteName" value="My Store"
                             placeholder="Enter store name">
                     </div>
 
