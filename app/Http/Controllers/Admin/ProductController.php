@@ -194,71 +194,85 @@ class ProductController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:191',
-            'code' => 'required|string|max:191|unique:products,code,' . $id,
+            'code' => 'required|string|max:191|unique:products,code,' . $product->id,
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'quality_id' => 'required|exists:qualitys,id',
+            'quality_id' => 'required|exists:qualitys,id', // change if table is "qualities"
             'cost_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'second_name' => 'nullable|string|max:191',
             'unit_id' => 'required|exists:units,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image_review' => 'nullable|array',
             'image_review.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        $data = $request->except('image', 'image_review');
-        if ($request->hasFile('image')) {
+        DB::beginTransaction();
 
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
+        try {
+            $data = $request->except('image', 'image_review');
 
-            $data['image'] = $request->file('image')
-                ->store('products', 'public');
-        }
-        $product->update($data);
+            // Main image upload
+            if ($request->hasFile('image')) {
+                $newMainImage = $request->file('image')->store('products', 'public');
 
-
-        if ($request->hasFile('image_review')) {
-            foreach ($product->images as $oldImage) {
-                if (Storage::disk('public')->exists($oldImage->image_review)) {
-                    Storage::disk('public')->delete($oldImage->image_review);
+                // delete old image after new upload success
+                if ($product->image && Storage::disk('public')->exists($product->image)) {
+                    Storage::disk('public')->delete($product->image);
                 }
-                $oldImage->delete();
-            }
-            foreach ($request->file('image_review') as $img) {
-                $path = $img->store('products/review', 'public');
 
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_review' => $path,
-                ]);
+                $data['image'] = $newMainImage;
             }
+
+            $product->update($data);
+
+            // Review images upload
+            if ($request->hasFile('image_review')) {
+
+                // delete old review images
+                foreach ($product->images as $oldImage) {
+                    if ($oldImage->image_review && Storage::disk('public')->exists($oldImage->image_review)) {
+                        Storage::disk('public')->delete($oldImage->image_review);
+                    }
+                    $oldImage->delete();
+                }
+
+                // store new review images
+                foreach ($request->file('image_review') as $img) {
+                    $path = $img->store('products/review', 'public');
+
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_review' => $path,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => __('messages.product_updated') . ' - ' . $product->name,
+                'redirect' => route('products.index')
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Update failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-
-        // return response()->json([
-        //     'changed' => $product->getChanges(),
-        //     'product' => $product
-        // ]);
-
-
-        // return response()->json([
-        //     'redirect' => route('products.index', ['status' => 'success', 'message' => __('messages.product_updated'). ' - ' . $product->name])
-        // ]);
-
-        return redirect()->route('products.index')
-            ->with('success', __('messages.product_updated') . ' - ' . $product->name);
-
-
-
     }
-
 
 
     public function show($id)
@@ -372,7 +386,7 @@ class ProductController extends Controller
         Excel::import($import, $request->file('file'));
 
         return response()->json([
-            'success'  => true,
+            'success' => true,
             'messages' => $import->messages,
         ]);
     }

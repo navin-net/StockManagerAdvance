@@ -20,7 +20,21 @@ class ProfileController extends BaseController
 
     public function index()
     {
-        echo "Profile index";
+        $user = Auth::user();
+        $id = $user->id;
+        $company = Companies::find($id);
+        // die($user);
+        return view('admin.profile.edit1', [
+            'pageTitle' => __('messages.my_account'),
+            'heading' => __('messages.my_account'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
+                ['label' => __('messages.my_account'), 'url' => '', 'active' => true],
+            ],
+            'user' => $user,
+            'company' => $company,
+        ]);
     }
     public function changePassword(Request $request)
     {
@@ -43,6 +57,20 @@ class ProfileController extends BaseController
         $user->save();
 
         return back()->with('success', 'Password updated successfully.');
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+        ]);
+
+        $user->update($request->only('name', 'email'));
+
+        return back()->with('success', 'Profile updated successfully');
     }
 
     public function uploadAvatar(Request $request)
@@ -68,6 +96,7 @@ class ProfileController extends BaseController
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'gender' => 'required',
+            'dob' => 'required|date|after:today',
             'phone' => 'nullable|string|max:20',
         ]);
 

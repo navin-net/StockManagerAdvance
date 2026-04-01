@@ -1,4 +1,4 @@
-<header class="app-header shadow-sm">
+<header class="app-header shadow-sm" id="site-header">
     <div class="container-fluid d-flex align-items-center justify-content-between h-100 px-3">
         <div class="d-flex align-items-center gap-3">
 
@@ -275,4 +275,7 @@
             </div>
         @endif
 </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="scroll-bar"></div>
+  </div>
 </header>

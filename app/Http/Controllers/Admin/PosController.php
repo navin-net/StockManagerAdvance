@@ -81,7 +81,6 @@ class PosController extends BaseController
         // Create sale
         $sale = Sale::create([
             'total_amount' => 0,
-            // 'reference' => 'reference',
             'customer_id' => 4, // default customer
             'cash_register_id' => $registerId,
             'user_id' => auth()->id(),

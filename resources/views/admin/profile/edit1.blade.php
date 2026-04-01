@@ -405,7 +405,7 @@
 
 
 
-        <div class="modal fade" id="personalModal" tabindex="-1" aria-hidden="false">
+        <div class="modal fade" id="personalModal">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-header border-0 pb-0">
@@ -472,7 +472,7 @@
 
 
 
-        <div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="false">
+        <div class="modal fade" id="addressModal">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-header border-0 pb-0">
@@ -526,7 +526,7 @@
 
 
 
-        <div class="modal fade" id="avatarModal" tabindex="-1" aria-hidden="false">
+        <div class="modal fade" id="avatarModal">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content bg-dark border-0">
                     <div class="modal-header border-0">

@@ -13,14 +13,28 @@ return new class extends Migration
      */
     public function up()
     {
-    Schema::create('sales', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('customer_id')->nullable();
-            $table->decimal('total_amount', 10, 2);
-            $table->string('status');
-            $table->date('date');
-            $table->timestamps();
-        });
+Schema::create('sales', function (Blueprint $table) {
+    $table->id();
+    $table->string('reference')->unique();
+
+    // Relationships (Foreign Keys)
+    $table->unsignedBigInteger('biller_id')->nullable();
+    $table->unsignedBigInteger('warehouse_id')->nullable(); // Added
+    $table->unsignedBigInteger('customer_id')->nullable();
+    $table->unsignedBigInteger('user_id')->nullable();      // Added
+    $table->unsignedBigInteger('cash_register_id')->nullable();
+
+    // Financials & Status
+    $table->decimal('total_amount', 10, 2);
+    $table->string('status');               // e.g., Completed, Pending
+    $table->string('payment_status')->nullable(); // Added (e.g., Paid, Partial, Due)
+
+    // Date & System
+    $table->date('date');
+    $table->timestamps();
+
+
+});
 
         Schema::create('sale_items', function (Blueprint $table) {
             $table->id();

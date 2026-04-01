@@ -15,7 +15,6 @@ return [
     'pos_sales' => 'Pos Sales',
     'dashboard_welcome' => 'Welcome to Dashboard',
     'stock_management_system' => 'Stock Management System',
-    'home' => 'Home',
     'sold_out' => 'Sold Out',
     'ip_address' => 'IP Address',
     'search' => 'Search',
@@ -344,5 +343,12 @@ return [
     'password_symbols' => 'Password must contain at least one special symbol.',
     'is_out_of_stock_Add_anyway' => 'is out of stock. Add anyway?',
     'please_select_someone_columns_first_if_you_want_to_export' => 'Please select at least one column before exporting.',
+
+
+///Front end
+    'home' => 'Home',
+    'shopping_cart' => 'Shopping Cart',
+    'about_us' => 'About Us',
+    'contact_us' => 'Contact Us',
 
 ];

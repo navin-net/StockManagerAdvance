@@ -61,6 +61,24 @@
     --chalk: #e2e8f0;
 }
 
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.progress-track {
+  height: 3px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.progress-fill {
+  height: 3px;
+  width: 0%;
+  background: #0ea5e9; /* matches your brand blue */
+  transition: width 0.08s linear;
+}
+
 body {
     min-height: 100vh;
     display: flex;
@@ -1324,29 +1342,29 @@ table.dataTable.stripe tbody tr.odd {
 
 .cbtn.num {
     background: var(--ink);
-    color: #ffffff;
-    border: #ffffff;
+    color: var(--text-color);
+    border-color: green;
 }
 
 .cbtn.func {
     background: var(--ink);
-    color: #ffffff;
+    color: var(--text-color);
 }
 
 .cbtn.op {
     background: var(--ink);
-    color: #ffffff;
+    color: var(--text-color);
     font-weight: 500;
 }
 
 .cbtn.op.active {
     background: #111;
-    color: #fff;
+    color: var(--text-color);
 }
 
 .cbtn.eq {
     background: #111;
-    color: #fff;
+    color: var(--text-color);
 }
 
 .cbtn.zero {

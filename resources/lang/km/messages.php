@@ -15,7 +15,6 @@ return [
     'dashboard' => 'ផ្ទាំងគ្រប់គ្រង',
     'pos_sales' => 'ការលក់តាម POS',
     'dashboard_welcome' => 'សូមស្វាគមន៍មកកាន់ផ្ទាំងគ្រប់គ្រង',
-    'home' => 'ទំព័រដើម',
     'stock_management_system' => 'ប្រព័ន្ធគ្រប់គ្រងស្តុក',
     'ip_address' => 'អាសយដ្ឋាន IP',
     'address' => 'អាសយដ្ឋាន',
@@ -49,8 +48,8 @@ return [
     'product_sold' => 'ផលិតផលដែលបានលក់',
     'update_password' => 'ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់គណនីរបស់អ្នកនៅខាងក្រោម។',
     'first_name' => 'នាមខ្លួន',
-    'last_name'  => 'នាមត្រកូល',
-    'phone'      => 'លេខទូរស័ព្ទ',
+    'last_name' => 'នាមត្រកូល',
+    'phone' => 'លេខទូរស័ព្ទ',
     'updated_password' => 'ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់',
     'sigout' => 'ចាកចេញ',
     'country' => 'ប្រទេស',
@@ -58,14 +57,14 @@ return [
     'number_of_houses' => 'លេខផ្ទះ',
     'city' => 'ក្រុង',
     'password_confirmation' => 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
-    'new_password'          => 'ពាក្យសម្ងាត់ថ្មី',
-    'current_password'      => 'ពាក្យសម្ងាត់បច្ចុប្បន្ន',
-    'enter_new_password'     => 'បញ្ចូលពាក្យសម្ងាត់ថ្មី',
+    'new_password' => 'ពាក្យសម្ងាត់ថ្មី',
+    'current_password' => 'ពាក្យសម្ងាត់បច្ចុប្បន្ន',
+    'enter_new_password' => 'បញ្ចូលពាក្យសម្ងាត់ថ្មី',
     'enter_current_password' => 'បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន',
     'no_file_chosen' => 'មិនមានឯកសារត្រូវបានជ្រើសរើសទេ',
     'choose_file' => 'ជ្រើសរើសឯកសារ',
     'edit_user' => 'កែសម្រួលអ្នកប្រើប្រាស់',
-    'gender'  => 'ភេទ',
+    'gender' => 'ភេទ',
     'select_gender' => 'ជ្រើសរើសភេទ',
     'street' => 'ផ្លូវ',
     'avatar_updated' => 'បានធ្វើបច្ចុប្បន្នភាពរូបតំណាងដោយជោគជ័យ។',
@@ -75,7 +74,7 @@ return [
     'view_orders' => 'មើលការបញ្ជាទិញ',
     'payment' => 'ការទូទាត់',
     'discount' => 'បញ្ចុះតម្លៃ',
-    'oops'  => 'អូហ៍! រកមិនឃើញផលិតផលទេ',
+    'oops' => 'អូហ៍! រកមិនឃើញផលិតផលទេ',
     'close' => 'បិទ',
     'order_discount_type' => 'ប្រភេទបញ្ចុះតម្លៃសម្រាប់ការបញ្ជាទិញ',
     'value' => 'តម្លៃ',
@@ -314,4 +313,18 @@ return [
     'password_symbols' => 'ពាក្យសម្ងាត់ត្រូវមានសញ្ញាពិសេសយ៉ាងហោចណាស់មួយ។',
     'is_out_of_stock_Add_anyway' => 'អស់ស្តុកហើយ!',
     'please_select_someone_columns_first_if_you_want_to_export' => 'សូមជ្រើសរើសយ៉ាងហោចណាស់ជួរឈរមួយមុនពេលនាំចេញ។',
-];
+
+    ///////Front end
+    'home' => 'ទំព័រដើម',
+    'shopping_cart' => 'រទេះទិញទំនិញ',
+    'about_us' => 'អំពីយើង',
+    'contact_us' => 'ទាក់ទងមកយើងខ្ញុំ',
+
+
+
+
+
+
+
+
+    ];

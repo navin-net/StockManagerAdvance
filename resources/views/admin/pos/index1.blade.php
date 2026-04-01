@@ -113,8 +113,8 @@
                         </div>
                     @empty
                         <div class="pos-empty">
-                            <i class="bi bi-box-seam"></i>
-                            <p>No products</p>
+                            {{-- <i class="bi bi-box-seam"></i> --}}
+                            {{-- <p>No products</p> --}}
                         </div>
                     @endforelse
 

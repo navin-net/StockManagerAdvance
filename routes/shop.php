@@ -18,17 +18,28 @@ Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm']
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 
-Route::get('/portfolio', [MainController::class,'portfolio'])->name('shop.portfolio');
+Route::get('/portfolio', [MainController::class, 'portfolio'])->name('shop.portfolio');
 
 
 Route::post('/contact', [MainController::class, 'store'])
     ->name('contact.store');
 
 
-Route::get('/', [ShopController::class,'index'])->name('shop.index');
-Route::prefix('shop')->group(function () {
+Route::get('/', [ShopController::class, 'index'])->name('shop.index');
 
-// Route::prefix('main')->group(function () {
-    Route::get('register',[MainController::class, 'register'])->name('shop.register');
+// Shop Routes Group
+Route::prefix('shop')->name('shop.')->group(function () {
+
+    Route::get('/', [ShopController::class, 'index'])->name('home');
+
+    Route::get('/products', [ShopController::class, 'products'])->name('products');
+    Route::get('/products/{code}', [ShopController::class, 'show']);
+    Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
+    Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
+    Route::get('/about-us',[ShopController::class, 'about_us'])->name('about_us');
+    Route::get('/contact-us', [ShopController::class, 'contact_us'])->name('contact_us');
+    Route::get('/wishlist',[ShopController::class, 'wishlist'])->named('wishlist');
+
+
 
 });

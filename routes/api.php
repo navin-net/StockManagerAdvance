@@ -17,8 +17,14 @@ use App\Http\Controllers\Api\{AuthController, MainController};
 |
 */
 
+Route::get('/getShops',[MainController::class, 'index']);
 Route::get('/getdata',[MainController::class, 'getdata']);
+Route::get('/getProducts',[MainController::class, 'getProducts']);
 Route::get('brands/{id}', [MainController::class, 'show']);
+Route::get('/getCategories', [MainController::class, 'getCategories']);
+Route::get('/getBrands', [MainController::class, 'getBrands']);
+Route::get('/slides', [MainController::class, 'slides']);
+Route::get('/getTrending',[MainController::class, 'getTrending']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

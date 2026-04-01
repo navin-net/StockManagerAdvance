@@ -39,9 +39,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div id="formError" class="alert alert-danger d-none" role="alert"></div>
-                        <form action="{{ route('products.update', $product) }}" method="POST">
-                            @csrf
-                            @method('PUT')
+<form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label">{{ __('messages.name') }}</label>
@@ -182,23 +182,23 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 
-<script>
-ClassicEditor.create(document.querySelector('#description'), {
-    toolbar: [
-        'heading', '|',
-        'bold', 'italic', '|',
-        'link', 'bulletedList', 'numberedList', '|',
-        'blockQuote', 'insertTable', '|',
-        'undo', 'redo'
-    ],
-    table: {
-        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-    }
-}).catch(error => {
-    console.error(error);
-});
+    <script>
+        ClassicEditor.create(document.querySelector('#description'), {
+            toolbar: [
+                'heading', '|',
+                'bold', 'italic', '|',
+                'link', 'bulletedList', 'numberedList', '|',
+                'blockQuote', 'insertTable', '|',
+                'undo', 'redo'
+            ],
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            }
+        }).catch(error => {
+            console.error(error);
+        });
 
         $(document).ready(function() {
 

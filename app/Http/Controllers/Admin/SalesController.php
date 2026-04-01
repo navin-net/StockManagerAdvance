@@ -44,6 +44,7 @@ class SalesController extends Controller
             ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', 1)
+            ->orWhereNull('sales.sale_type')
             ->groupBy([
                 'sales.id',
                 'sales.customer_id',
@@ -386,6 +387,7 @@ class SalesController extends Controller
             ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', 0)
+            ->orWhereNull('sales.sale_type')
             ->groupBy([
                 'sales.id',
                 'sales.customer_id',

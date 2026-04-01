@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('pos_registers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('sma_users');
+            $table->unsignedBigInteger('user_id')->nullable();
+            // $table->foreignId('user_id')->constrained('users');
             $table->decimal('cash_in_hand', 10, 2)->default(0);
             $table->decimal('total_cash', 10, 2)->nullable();
             $table->string('status')->default('open'); // open or closed

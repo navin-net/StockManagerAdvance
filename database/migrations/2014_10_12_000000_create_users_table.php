@@ -15,16 +15,31 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('group_id')->nullable();
-            $table->unsignedBigInteger('company_id')->nullable();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->ipAddress('ip_address')->nullable();
-            $table->string('password');
+// Core Identity
+    $table->string('name');
+    $table->string('first_name')->nullable();
+    $table->string('last_name')->nullable();
+    $table->string('email')->unique();
+    $table->string('password');
+
+    // Profile Details
+    $table->date('dob')->nullable();           // Date of Birth
+    $table->string('avatar')->nullable();      // Image path
+    $table->string('phone')->nullable();
+    $table->string('status')->default('active'); // active/inactive
+
+    // Relationships (Foreign Keys)
+    $table->unsignedBigInteger('group_id')->nullable();
+    $table->unsignedBigInteger('company_id')->nullable();
+
+    // System & Security
+    $table->ipAddress('ip_address')->nullable();
+    // $table->timestamp
             $table->rememberToken();
             $table->timestamps();
             // $table->foreign('role_id')->references('id')->on('role')->onDelete('set null'); // Add this line
+
+
 
         });
     }

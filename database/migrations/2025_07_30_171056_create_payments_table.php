@@ -30,7 +30,7 @@ return new class extends Migration {
             $table->string('attachment')->nullable();
             $table->decimal('pos_paid', 10, 2)->nullable();
             $table->decimal('pos_balance', 10, 2)->nullable();
-            $table->foreignId('created_by')->constrained()->onDelete('cascade');
+            $table->integer('created_by');
 
 
         });

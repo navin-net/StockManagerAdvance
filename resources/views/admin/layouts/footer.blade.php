@@ -465,7 +465,13 @@
         document.getElementById('calc-result').textContent = cur;
     }
 
-
+    window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight
+                    - document.documentElement.clientHeight;
+    const pct = (scrollTop / docHeight) * 100;
+    document.getElementById('scroll-bar').style.width = pct + '%';
+    });
 
 
 
