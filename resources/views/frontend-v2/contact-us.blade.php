@@ -30,8 +30,8 @@
                         <div class="info-icon"><i class="bi bi-telephone"></i></div>
                         <div>
                             <div class="info-card-title">Call Us</div>
-                            <div class="info-card-value">+1 (800) 589-LUXE</div>
-                            <div class="info-card-sub">Mon – Fri, 9am – 7pm EST</div>
+                            <div class="info-card-value">{{ $shopDetail->phone }}</div>
+                            <div class="info-card-sub">Mon – Fri, {{ $shopDetail->open_shop_time }} – {{ $shopDetail->close_shop }}</div>
                         </div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                         <div class="info-icon"><i class="bi bi-envelope"></i></div>
                         <div>
                             <div class="info-card-title">Email Us</div>
-                            <div class="info-card-value">hello@luxe.com</div>
+                            <div class="info-card-value">{{ $shopDetail->email }}</div>
                             <div class="info-card-sub">We reply within 4 business hours</div>
                         </div>
                     </div>
@@ -50,8 +50,8 @@
                         <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
                         <div>
                             <div class="info-card-title">Visit Us</div>
-                            <div class="info-card-value">14 Blvd Saint-Germain</div>
-                            <div class="info-card-sub">Paris, 75006, France</div>
+                            <div class="info-card-value">{{ $shopDetail->address }}</div>
+                            {{-- <div class="info-card-sub">Paris, 75006, France</div> --}}
                         </div>
                     </div>
                 </div>
@@ -274,77 +274,77 @@
     <!-- ============================================================
          MAP SECTION
     ============================================================ -->
-<section id="mapSection">
-  <div class="map-placeholder" style="position:relative; overflow:hidden;">
+    <section id="mapSection">
+    <div class="map-placeholder" style="position:relative; overflow:hidden;">
 
-    <!-- REAL MAP (BACKGROUND) -->
-    <iframe
-      src="https://www.google.com/maps?q=Phnom Penh Cambodia&output=embed"
-      style="
-        position:absolute;
-        top:0; left:0;
-        width:100%;
-        height:100%;
-        border:0;
-        filter: grayscale(100%) contrast(1.1) brightness(.9);
-        pointer-events:none;
-      "
-      loading="lazy">
-    </iframe>
+        <!-- REAL MAP (BACKGROUND) -->
+        <iframe
+        src="https://www.google.com/maps?q=Phnom Penh Cambodia&output=embed"
+        style="
+            position:absolute;
+            top:0; left:0;
+            width:100%;
+            height:100%;
+            border:0;
+            filter: grayscale(100%) contrast(1.1) brightness(.9);
+            pointer-events:none;
+        "
+        loading="lazy">
+        </iframe>
 
-    <!-- KEEP YOUR GRID OVERLAY -->
-    <div class="map-grid"></div>
+        <!-- KEEP YOUR GRID OVERLAY -->
+        <div class="map-grid"></div>
 
-    <!-- STORE CARD (UNCHANGED STYLE) -->
-    <div class="map-store-card">
-      <h6>Luxé Phnom Penh — Flagship Store</h6>
+        <!-- STORE CARD (UNCHANGED STYLE) -->
+        <div class="map-store-card">
+        <h6>Luxé Phnom Penh — Flagship Store</h6>
 
-      <div class="map-store-row">
-        <i class="bi bi-geo-alt-fill"></i>
-        <span>Phnom Penh, Cambodia</span>
-      </div>
+        <div class="map-store-row">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>Phnom Penh, Cambodia</span>
+        </div>
 
-      <div class="map-store-row">
-        <i class="bi bi-telephone-fill"></i>
-        <span>+855 12 345 678</span>
-      </div>
+        <div class="map-store-row">
+            <i class="bi bi-telephone-fill"></i>
+            <span>+855 12 345 678</span>
+        </div>
 
-      <div class="map-store-row">
-        <i class="bi bi-clock-fill"></i>
-        <span>Mon–Sun: 10:00–21:00</span>
-      </div>
+        <div class="map-store-row">
+            <i class="bi bi-clock-fill"></i>
+            <span>Mon–Sun: 10:00–21:00</span>
+        </div>
 
-      <div class="map-store-row">
-        <i class="bi bi-car-front-fill"></i>
-        <span>Valet parking available</span>
-      </div>
+        <div class="map-store-row">
+            <i class="bi bi-car-front-fill"></i>
+            <span>Valet parking available</span>
+        </div>
 
-      <a href="https://maps.google.com?q=Phnom Penh Cambodia"
-         target="_blank"
-         class="map-open-btn"
-         style="margin-top:.8rem;display:inline-flex">
-        <i class="bi bi-map"></i> Get Directions
-      </a>
-    </div>
-
-    <!-- KEEP YOUR PIN DESIGN -->
-    <div class="map-pin-wrap">
-      <div class="map-pin"><i class="bi bi-geo-alt-fill"></i></div>
-
-      <div class="map-address">
-        Phnom Penh, <span>Cambodia</span>
-      </div>
-
-      <div>
         <a href="https://maps.google.com?q=Phnom Penh Cambodia"
-           target="_blank"
-           class="map-open-btn">
-          <i class="bi bi-box-arrow-up-right"></i> Open in Google Maps
+            target="_blank"
+            class="map-open-btn"
+            style="margin-top:.8rem;display:inline-flex">
+            <i class="bi bi-map"></i> Get Directions
         </a>
-      </div>
-    </div>
+        </div>
 
-  </div>
-</section>
+        <!-- KEEP YOUR PIN DESIGN -->
+        <div class="map-pin-wrap">
+        <div class="map-pin"><i class="bi bi-geo-alt-fill"></i></div>
+
+        <div class="map-address">
+            Phnom Penh, <span>Cambodia</span>
+        </div>
+
+        <div>
+            <a href="https://maps.google.com?q=Phnom Penh Cambodia"
+            target="_blank"
+            class="map-open-btn">
+            <i class="bi bi-box-arrow-up-right"></i> Open in Google Maps
+            </a>
+        </div>
+        </div>
+
+    </div>
+    </section>
 
 @endsection

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\{Brand, Categories, Products, Shop};
+use App\Models\{Banner, Brand, Categories, Products, Shop};
 
 class MainController extends Controller
 {
@@ -43,33 +43,52 @@ class MainController extends Controller
     // 4. Return the data (Laravel handles JSON automatically)
     return $query->get();
     }
+public function slides()
+{
+    $banners = Banner::where('status', 1)->get();
 
-    public function slides()
-    {
-        return response()->json([
-            [
-                "eyebrow" => "New Collection — Spring 2026",
-                "title" => "Dress with<br><em>Intent.</em>",
-                "sub" => "Curated luxury pieces...",
-                "img" => "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1400&q=80",
-                "btn1" => "Shop Collection",
-                "btn2" => "Explore Lookbook",
+    return response()->json(
+        $banners->map(function ($banner, $index) {
+            return [
+                "eyebrow"   => null,
+                "title"     => $banner->title,
+                "sub"       => null,
+                "img"       => asset('storage/banners/' . $banner->image),
+                "btn1"      => "Shop Now",
+                "btn1_link" => $banner->link,
+                "btn2"      => "Explore Lookbook",
                 "btn1Style" => "",
-                "slideClass" => "slide-1"
-            ],
-            [
-                "eyebrow" => "Sale — Up to 40% Off",
-                "title" => "Luxury at<br><em>Your Price.</em>",
-                "sub" => "Select pieces...",
-                // "img" => asset('storage/slides/slide2.jpg'),
-                "img" => "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80",
-                "btn1" => "Shop Sale",
-                "btn2" => "All Offers",
-                "btn1Style" => "background:#c0392b",
-                "slideClass" => "slide-2"
-            ]
-        ]);
-    }
+                "slideClass"=> "slide-" . ($index + 1),
+            ];
+        })
+    );
+}
+    // public function slides()
+    // {
+    //     return response()->json([
+    //         [
+    //             "eyebrow" => "New Collection — Spring 2026",
+    //             "title" => "Dress with<br><em>Intent.</em>",
+    //             "sub" => "Curated luxury pieces...",
+    //             "img" => "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1400&q=80",
+    //             "btn1" => "Shop Collection",
+    //             "btn2" => "Explore Lookbook",
+    //             "btn1Style" => "",
+    //             "slideClass" => "slide-1"
+    //         ],
+    //         [
+    //             "eyebrow" => "Sale — Up to 40% Off",
+    //             "title" => "Luxury at<br><em>Your Price.</em>",
+    //             "sub" => "Select pieces...",
+    //             // "img" => asset('storage/slides/slide2.jpg'),
+    //             "img" => "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80",
+    //             "btn1" => "Shop Sale",
+    //             "btn2" => "All Offers",
+    //             "btn1Style" => "background:#c0392b",
+    //             "slideClass" => "slide-2"
+    //         ]
+    //     ]);
+    // }
 
     public function getBrands()
     {
@@ -104,6 +123,18 @@ class MainController extends Controller
         }
 
         return response()->json($brand);
+    }
+
+
+    public function search(Request $request)
+    {
+        $results = Products::where('name', 'like', "%{$request->q}%")
+            ->orWhere('code', 'like', "%{$request->q}%")
+            ->select('id', 'name', 'code')
+            ->limit(6)
+            ->get();
+
+        return response()->json($results);
     }
 
 

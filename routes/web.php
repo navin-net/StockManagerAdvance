@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\{
     BaseController,
     ProductController,
 };
+use App\Http\Controllers\Api\Shop\CartController;
 
 
 
@@ -22,11 +23,17 @@ use App\Http\Controllers\Admin\{
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+Route::get('/cartas', [CartController::class, 'getCartByToken']);
 
 // Route::get('/',function(){
 //     return view('admin-v2.dashbord.index');
 // });
+Route::get('/checkout', function () {
+    return view('login');
+});
+
+
+Route::get('/testingsa',[BaseController::class, 'testing']);
 
 Route::get('/users/import', [BaseController::class, 'showImportForm'])
     ->name('users.import.form');

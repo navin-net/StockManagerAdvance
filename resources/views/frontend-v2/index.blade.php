@@ -32,176 +32,64 @@
                              ============================================================ -->
     <section id="categories">
         <div class="container-fluid px-4">
-            <div class="row g-3">
-                @if($categories->count() > 0)
-                    @php
-                        function getCatInitials($name)
-                        {
-                            $words = explode(' ', trim($name));
-                            if (count($words) >= 2) {
-                                return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
-                            }
-                            return strtoupper(substr($name, 0, 2));
+            @if($categories->count() > 0)
+                @php
+                    function getCatInitials($name) {
+                        $words = explode(' ', trim($name));
+                        if (count($words) >= 2) {
+                            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
                         }
+                        return strtoupper(substr($name, 0, 2));
+                    }
 
-                        $bgColors = ['#1a1a2e', '#16213e', '#0f3460', '#533483', '#2b2d42', '#1b4332', '#6d2b3d'];
-                        $txtColors = ['#e94560', '#e2b04a', '#4cc9f0', '#f72585', '#ef233c', '#95d5b2', '#f4a261'];
-                        $cat1 = $categories->get(0);
-                    @endphp
+                    $total = $categories->count();
 
-                    {{-- Reusable macro for the initials block --}}
-                    @php
-                        $catInitialBlock = function ($cat, $index) use ($bgColors, $txtColors) {
+                    // Dynamic cols: match total if <= 6, else cap at 4
+                    if ($total <= 6) {
+                        $cols = $total;
+                    } else {
+                        // Find best fit: how many cols makes full rows
+                        $cols = 4;
+                        foreach ([5, 4, 3] as $c) {
+                            if ($total % $c === 0) { $cols = $c; break; }
+                        }
+                    }
+                @endphp
+
+                <div class="cat-grid" style="grid-template-columns: repeat({{ $cols }}, 1fr);">
+                    @foreach($categories as $i => $cat)
+                        @php
                             $initials = getCatInitials($cat->name);
-                            $colorIndex = $index % count($bgColors);
-                            $bg = $bgColors[$colorIndex];
-                            $txt = $txtColors[$colorIndex];
-                            return "
-                                                <div style='
-                                                    width:100%;height:100%;min-height:120px;
-                                                    display:flex;align-items:center;justify-content:center;
-                                                    background:{$bg};
-                                                    font-size:2.5rem;font-weight:700;
-                                                    font-family:Cormorant Garamond,serif;
-                                                    letter-spacing:.05em;color:{$txt};
-                                                '>{$initials}</div>
-                                            ";
-                        };
-                    @endphp
+                            $num      = str_pad($i + 1, 2, '0', STR_PAD_LEFT);
+                        @endphp
 
-                    {{-- Column 1: cat 1 (large card) --}}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="cat-card cat-card-lg" style="cursor:pointer" onclick="goToCategory({{ $cat1->id }})">
-                            {!! $catInitialBlock($cat1, 0) !!}
-                            <div class="cat-info">
-                                <div class="cat-name">{{ $cat1->name }}</div>
-                                <div class="cat-count">{{ $cat1->products_count }} Products</div>
+                        <div class="cat-card" onclick="goToCategory({{ $cat->id }})">
+                            <span class="cat-ghost">{{ $initials }}</span>
+                            <span class="cat-index">{{ $num }}</span>
+
+                            <div class="cat-bar"></div>
+                            <div class="cat-name">{{ $cat->name }}</div>
+                            <div class="cat-count">{{ $cat->products_count }} products</div>
+                            <div class="cat-pill">
+                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                    <path d="M2 8L8 2M8 2H3M8 2V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                </svg>
+                                Browse
                             </div>
-                            <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
                         </div>
-                    </div>
-
-                    {{-- Column 2: cat 2 & 3 stacked --}}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="row g-3 h-100">
-                            @foreach($categories->slice(1, 2)->values() as $index => $cat)
-                                <div class="col-12">
-                                    <div class="cat-card" style="cursor:pointer" onclick="goToCategory({{ $cat->id }})">
-                                        {!! $catInitialBlock($cat, $index + 1) !!}
-                                        <div class="cat-info">
-                                            <div class="cat-name">{{ $cat->name }}</div>
-                                            <div class="cat-count">{{ $cat->products_count }} Products</div>
-                                        </div>
-                                        <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    {{-- Column 3: cat 4 & 5 side by side --}}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="row g-3 h-100">
-                            @foreach($categories->slice(3, 2)->values() as $index => $cat)
-                                <div class="col-6">
-                                    <div class="cat-card" style="cursor:pointer" onclick="goToCategory({{ $cat->id }})">
-                                        {!! $catInitialBlock($cat, $index + 3) !!}
-                                        <div class="cat-info">
-                                            <div class="cat-name">{{ $cat->name }}</div>
-                                            <div class="cat-count">{{ $cat->products_count }} Products</div>
-                                        </div>
-                                        <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    {{-- Remaining cats grouped: 1 large + 2 stacked + 2 side-by-side --}}
-                    @php $remaining = $categories->slice(5)->values(); @endphp
-
-                    @if($remaining->count() > 0)
-                        @foreach($remaining->chunk(5) as $chunk)
-                            @php $chunk = $chunk->values(); @endphp
-
-                            {{-- Large card --}}
-                            @if($chunk->get(0))
-                                @php $cat = $chunk->get(0);
-                                $i = $remaining->search(fn($c) => $c->id === $cat->id) + 5; @endphp
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="cat-card cat-card-lg" style="cursor:pointer" onclick="goToCategory({{ $cat->id }})">
-                                        {!! $catInitialBlock($cat, $i) !!}
-                                        <div class="cat-info">
-                                            <div class="cat-name">{{ $cat->name }}</div>
-                                            <div class="cat-count">{{ $cat->products_count }} Products</div>
-                                        </div>
-                                        <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- 2 stacked --}}
-                            @if($chunk->get(1) || $chunk->get(2))
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="row g-3 h-100">
-                                        @foreach([$chunk->get(1), $chunk->get(2)] as $cat)
-                                            @if($cat)
-                                                @php $i = $remaining->search(fn($c) => $c->id === $cat->id) + 5; @endphp
-                                                <div class="col-12">
-                                                    <div class="cat-card" style="cursor:pointer" onclick="goToCategory({{ $cat->id }})">
-                                                        {!! $catInitialBlock($cat, $i) !!}
-                                                        <div class="cat-info">
-                                                            <div class="cat-name">{{ $cat->name }}</div>
-                                                            <div class="cat-count">{{ $cat->products_count }} Products</div>
-                                                        </div>
-                                                        <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- 2 side by side --}}
-                            @if($chunk->get(3) || $chunk->get(4))
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="row g-3 h-100">
-                                        @foreach([$chunk->get(3), $chunk->get(4)] as $cat)
-                                            @if($cat)
-                                                @php $i = $remaining->search(fn($c) => $c->id === $cat->id) + 5; @endphp
-                                                <div class="col-6">
-                                                    <div class="cat-card" style="cursor:pointer" onclick="goToCategory({{ $cat->id }})">
-                                                        {!! $catInitialBlock($cat, $i) !!}
-                                                        <div class="cat-info">
-                                                            <div class="cat-name">{{ $cat->name }}</div>
-                                                            <div class="cat-count">{{ $cat->products_count }} Products</div>
-                                                        </div>
-                                                        <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                        @endforeach
-                    @endif
-
-                @endif
-            </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
-
     <!-- ============================================================
                              FILTER BAR
-                             ============================================================ -->
+    ============================================================ -->
 
 
     <!-- ============================================================
                              TRENDING PRODUCTS
-                             ============================================================ -->
+    ============================================================ -->
     <section id="trending">
         <div class="container-fluid px-4 py-5">
             <div class="row mb-4 align-items-end">
@@ -211,7 +99,7 @@
                     <div class="title-rule"></div>
                 </div>
                 <div class="col-auto">
-                    <a href="#"
+                    <a href="{{ url('shop/products') }}"
                         style="font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent);text-decoration:none;">
                         View All Products <i class="bi bi-arrow-right"></i>
                     </a>
@@ -452,6 +340,7 @@
                 inner.innerHTML = SLIDES.map((s, i) => `
                                 <div class="carousel-item ${i === 0 ? 'active' : ''}">
                                     <div class="hero-slide ${s.slideClass}">
+
                                         <div class="hero-art">
                                             <img src="${s.img}" loading="${i === 0 ? 'eager' : 'lazy'}" />
                                         </div>
@@ -468,6 +357,7 @@
                                     </div>
                                 </div>
                             `).join('');
+// console.log(${s.slideClass});
 
                 indicators.innerHTML = SLIDES.map((_, i) => `
                                 <button type="button"
@@ -510,11 +400,6 @@
         }
 
         loadBrands();
-        function goToCategory(categoryId) {
-            sessionStorage.setItem('filter_category_id', categoryId);
-            window.location.href = "{{ route('shop.products') }}";
-        }
-
 
         async function loadTrendingProducts() {
             try {
@@ -539,7 +424,7 @@
                         : `$${parseFloat(product.selling_price).toFixed(2)}`;
 
                     return `
-                                <div class="col-xl-3 col-lg-4 col-md-6 product-item" data-tag="${tag}">
+                                <div class="col-6 col-md-4 col-lg-3 col-product" data-tag="${tag}">
                                     <div class="product-card">
                                         <div class="product-img-wrap">
                                             <img src="${image}" alt="${product.name}" loading="lazy" />
@@ -583,5 +468,11 @@
         }
 
         loadTrendingProducts();
+
+
+        function goToCategory(categoryId) {
+            sessionStorage.setItem('filter_category_id', categoryId);
+            window.location.href = "{{ route('shop.products') }}";
+        }
     </script>
 @endpush

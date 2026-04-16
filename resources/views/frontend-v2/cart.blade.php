@@ -7,14 +7,15 @@
         <div class="container-fluid px-4">
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item active">Shopping Bag</li>
                 </ol>
             </nav>
             <div class="page-hero-eyebrow">Your Selection</div>
             <h1 class="page-hero-title">Shopping <em>Bag</em></h1>
-            <p style="color:rgba(255,255,255,.5); font-size:.85rem; margin-top:.5rem;"><span id="heroItemCount">2</span>
-                items awaiting checkout</p>
+            <p style="color:rgba(255,255,255,.5); font-size:.85rem; margin-top:.5rem;">
+                <span id="heroItemCount">0</span> items awaiting checkout
+            </p>
         </div>
     </div>
 
@@ -50,7 +51,8 @@
                     <div class="empty-cart" id="emptyCart">
                         <div class="empty-icon"><i class="bi bi-bag-x"></i></div>
                         <h4>Your bag is empty</h4>
-                        <p>Looks like you haven't added anything to your bag yet.<br>Discover our curated collection.</p>
+                        <p>Looks like you haven't added anything to your bag
+                            yet.<br>Discover our curated collection.</p>
                         <a href="luxe-products.html" class="btn-shop-now"><i class="bi bi-arrow-right"></i> Browse
                             Collection</a>
                     </div>
@@ -66,7 +68,8 @@
                         <div class="promo-success" id="promoSuccess"><i class="bi bi-check-circle-fill"></i> Code <strong
                                 id="promoApplied"></strong> applied — 15% off!</div>
                         <div class="promo-error" id="promoError"><i class="bi bi-x-circle-fill"></i> Invalid code. Try
-                            <em>LUXE15</em></div>
+                            <em>LUXE15</em>
+                        </div>
                     </div>
 
                     <!-- Recently viewed -->
@@ -85,11 +88,12 @@
                         <div class="summary-body">
 
                             <div class="summary-line">
-                                <span class="label">Subtotal (<span id="summaryCount">2</span> items)</span>
+                                <span class="label">Subtotal (<span id="itemCountLabel">2</span>)</span>
                                 <span class="value" id="summarySubtotal">$0.00</span>
                             </div>
                             <div class="summary-line discount" id="discountRow" style="display:none">
-                                <span class="label"><i class="bi bi-tag-fill me-1"></i>Promo (LUXE15)</span>
+                                <span class="label"><i class="bi bi-tag-fill me-1"></i>Promo
+                                    (LUXE15)</span>
                                 <span class="value" id="discountAmount">–$0.00</span>
                             </div>
                             <div class="summary-line shipping">
@@ -115,13 +119,15 @@
                                 <i class="bi bi-lock-fill"></i> Secure Checkout
                             </a>
                             <button class="btn-paypal" onclick="showToast('Redirecting to PayPal…', 'bi-paypal')">
-                                <span style="font-size:.7rem;font-weight:400;margin-right:2px;">Pay with</span>
+                                <span style="font-size:.7rem;font-weight:400;margin-right:2px;">Pay
+                                    with</span>
                                 <span style="font-size:1rem;">Pay</span><span
                                     style="color:#009CDE;font-size:1rem;">Pal</span>
                             </button>
 
                             <div class="secure-badges">
-                                <i class="bi bi-shield-lock-fill"></i> SSL Encrypted &amp; Secure Checkout
+                                <i class="bi bi-shield-lock-fill"></i> SSL Encrypted &amp;
+                                Secure Checkout
                             </div>
 
                             <div class="payment-icons">
@@ -136,7 +142,8 @@
                                 <i class="bi bi-calendar3"></i>
                                 <div class="delivery-est-text">
                                     <strong>Estimated delivery:</strong> Order within <span id="deliveryCountdown"
-                                        style="color:var(--accent);font-weight:600;"></span> for dispatch today.
+                                        style="color:var(--accent);font-weight:600;"></span> for
+                                    dispatch today.
                                 </div>
                             </div>
 
@@ -159,21 +166,17 @@
                     </div>
                 </div>
 
+
+
+                <div class="upsell-section" id="upsellSection">
+                    <div class="container-fluid px-4">
+                        <div class="section-sub-label">Complete Your Look</div>
+                        <h2 class="upsell-title">You May <strong>Also Like</strong></h2>
+                        <div class="accent-rule"></div>
+                        <div class="row g-3" id="upsellProducts"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- ── YOU MAY ALSO LIKE ── -->
-    <div class="upsell-section" id="upsellSection">
-        <div class="container-fluid px-4">
-            <div class="section-sub-label">Complete Your Look</div>
-            <h2 class="upsell-title">You May <strong>Also Like</strong></h2>
-            <div class="accent-rule"></div>
-            <div class="row g-3" id="upsellProducts"></div>
-        </div>
-    </div>
-
-
-
-
 @endsection

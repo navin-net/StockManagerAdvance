@@ -16,7 +16,7 @@
                 <a class="currency-select" style="color:var(--white);text-decoration:none;font-weight:500;"><i
                         class="bi bi-globe me-1"></i></a>
 
-                <select class="btn-select" onchange="changeLanguage(this.value)">
+                <select id="languageSelect" name="language" class="btn-select" onchange="changeLanguage(this.value)">
                     <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>EN 🇺🇸</option>
                     <option value="km" {{ app()->getLocale() == 'km' ? 'selected' : '' }}>KH 🇰🇭</option>
                 </select>
@@ -41,23 +41,52 @@
         <div class="collapse navbar-collapse" id="navCollapse">
             <ul class="navbar-nav mx-auto align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('shop') ? 'active' : '' }}" href="{{ url('shop/') }}">
-                        {{ __('messages.home') }}
+                    <a class="nav-link {{ request()->is('/', 'shop') ? 'active' : '' }}" href="{{ url('/') }}">
+                            {{ __('messages.home') }}
                     </a>
                 </li>
 
-                <li class="nav-item mega position-relative">
-                    <a class="nav-link {{ request()->is('shop/products*') ? 'active' : '' }}"
+
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('shop/products') ? 'active' : '' }}"
                         href="{{ url('shop/products') }}">
                         {{ __('messages.products') }}
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->is('shop/cart') ? 'active' : '' }}" href="{{ url('shop/cart') }}">
-                        {{ __('messages.shopping_cart') }}
+
+                <li class="nav-item nav-dropdown mega-category-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle-custom" style="text-align: center">
+                        {{ __('messages.categories') }}
+                        <i class="bi bi-chevron-down dropdown-arrow"></i>
                     </a>
+
+                    <div class="mega-dropdown-menu">
+                        <div class="mega-dropdown-grid">
+                            @foreach($categories as $category)
+                                <div class="mega-column">
+
+                                    {{-- Clickable title --}}
+                                    <div class="mega-title" onclick="toggleSubcategories(this)">
+{{ \Illuminate\Support\Str::limit($category->name, 10, '...') }}                                        <i class="bi bi-chevron-down sub-arrow"></i>
+                                    </div>
+
+                                    {{-- Subcategory list — NO inline style="display:none" here! --}}
+                                    <div class="subcategory-list">
+                                        @foreach($category->subcategories as $subcategory)
+                                            <a href="javascript:void(0)" onclick="goToSubCategory({{ $subcategory->id }})">
+                                                {{ $subcategory->name }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </li>
+
 
                 {{-- <li class="nav-item">
                     <a class="nav-link {{ request()->is('shop/checkout') ? 'active' : '' }}"
@@ -106,8 +135,10 @@
                                 account</div>
                         </div>
                         <div class="acc-body">
-                            <input type="email" class="acc-input" placeholder="Email address" />
-                            <input type="password" class="acc-input" placeholder="Password" />
+
+                            <input type="email" id="email" name="email" class="acc-input" placeholder="Email address" />
+                            <input type="password" id="password" name="password" class="acc-input"
+                                placeholder="Password" />
                             <button class="btn-acc-login">Sign In <i class="bi bi-arrow-right ms-1"></i></button>
 
                             <div class="acc-divider"><span>or continue with</span></div>
@@ -129,9 +160,9 @@
                 <a href="{{ url('shop/wishlist') }}" class="{{ $isWishlist ? 'active' : '' }}">
                     <i class="bi {{ $isWishlist ? 'bi-heart-fill' : 'bi-heart' }}"></i>
                 </a>
-                <a href="#" id="cartToggle" title="Cart" style="position:relative">
-                    <i class="bi bi-bag"></i>
-                    <span class="badge-dot">3</span>
+                    <a href="#" id="cartToggle" title="Cart" style="position:relative" onclick="refreshCart()">
+                        <i class="bi bi-bag"></i>
+                    <span class="badge-dot" id="cart-count">0</span>
                 </a>
             </div>
         </div>

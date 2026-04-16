@@ -8,14 +8,15 @@
                 <div class="footer-brand">{{ $shopDetail->name }}<span>'s</span></div>
                 <div class="footer-tagline">Follow Your Idea</div>
                 <p style="font-size:.82rem;color:rgba(255,255,255,.4);margin-top:1rem;line-height:1.8">
-                    {{-- Curated luxury fashion from the world's most distinctive designers. Every piece tells a story. --}}
-                {{ $shopDetail->description }}
+                    {{-- Curated luxury fashion from the world's most distinctive designers. Every piece tells a story.
+                    --}}
+                    {{ $shopDetail->description }}
                 </p>
                 <div class="social-icons mt-3">
-                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="{{ $shopDetail->instagram }}"><i class="bi bi-instagram"></i></a>
                     <a href="#"><i class="bi bi-facebook"></i></a>
                     <a href="#"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#"><i class="bi bi-pinterest"></i></a>
+                    {{-- <a href="#"><i class="bi bi-pinterest"></i></a> --}}
                     <a href="#"><i class="bi bi-tiktok"></i></a>
                 </div>
             </div>
@@ -100,71 +101,32 @@
      CART SIDEBAR
      ============================================================ -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+
 <div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
-        <h6>Your Bag <span
+        <h6>Your Bag <span class="cart-count-display"
                 style="color:var(--muted);font-size:.85rem;font-family:'DM Sans',sans-serif;font-weight:400">(3
                 items)</span></h6>
         <button class="cart-close" onclick="closeCart()"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="cart-body">
         <!-- Cart Item 1 -->
-        <div class="cart-item">
-            <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=200&q=80" alt="" />
-            <div style="flex:1">
-                <div class="cart-item-name">Oversized Silk Blazer</div>
-                <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">Éclat Paris · Size M</div>
-                <div class="cart-item-price">$245.00</div>
-                <div class="qty-control">
-                    <button class="qty-btn">−</button>
-                    <span class="qty-num">1</span>
-                    <button class="qty-btn">+</button>
-                    <button
-                        style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;margin-left:auto">Remove</button>
-                </div>
-            </div>
-        </div>
-        <!-- Cart Item 2 -->
-        <div class="cart-item">
-            <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200&q=80" alt="" />
-            <div style="flex:1">
-                <div class="cart-item-name">Minimalist Runner Sneakers</div>
-                <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">Studio Muse · EU 42</div>
-                <div class="cart-item-price">$126.00</div>
-                <div class="qty-control">
-                    <button class="qty-btn">−</button>
-                    <span class="qty-num">1</span>
-                    <button class="qty-btn">+</button>
-                    <button
-                        style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;margin-left:auto">Remove</button>
-                </div>
-            </div>
-        </div>
-        <!-- Cart Item 3 -->
-        <div class="cart-item">
-            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&q=80" alt="" />
-            <div style="flex:1">
-                <div class="cart-item-name">Heritage Chronograph Watch</div>
-                <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">Voltaire Co.</div>
-                <div class="cart-item-price">$650.00</div>
-                <div class="qty-control">
-                    <button class="qty-btn">−</button>
-                    <span class="qty-num">1</span>
-                    <button class="qty-btn">+</button>
-                    <button class="btn-remove">Remove</button>
-                </div>
-            </div>
-        </div>
+        <div id="cart-item"></div>
+
+
+
+
+
     </div>
     <div class="cart-footer">
         <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px"><i class="bi bi-tag me-1"
                 style="color:var(--accent)"></i>15% pickup discount applied</div>
         <div class="cart-total">
             <span>Subtotal</span>
-            <span>$1,021.00</span>
+            <span id="cart-total">$1,021.00</span>
         </div>
-        <a href="#" class="btn-checkout">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></a>
-        <a href="#"
+        <a href="{{ route('shop.checkout') }}" class="btn-checkout">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></a>
+        <a href="{{ route('shop.cart') }}"
             style="display:block;text-align:center;font-size:.75rem;color:var(--muted);margin-top:10px;text-decoration:none;">
             <i class="bi bi-bag me-1"></i>View Full Cart
         </a>
@@ -175,15 +137,94 @@
 <button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
     <i class="bi bi-chevron-up"></i>
 </button>
-
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Item?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this item from your cart?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Bootstrap 5.3 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('backend/js/bootstrap.bundle.min.js') }}"></script>
-
+<script src="{{ asset('backend/js/core.js') }}"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ── Mobile: toggle main dropdown panel ──
+        const megaDropdowns = document.querySelectorAll(".mega-category-dropdown");
+
+        megaDropdowns.forEach(dropdown => {
+            const toggle = dropdown.querySelector(".dropdown-toggle-custom");
+
+            if (toggle) {
+                toggle.addEventListener("click", function (e) {
+                    if (window.innerWidth <= 991) {
+                        e.preventDefault();
+                        dropdown.classList.toggle("open");
+
+                        // Close other dropdowns
+                        megaDropdowns.forEach(other => {
+                            if (other !== dropdown) {
+                                other.classList.remove("open");
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        // ── Close dropdown when clicking outside ──
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".mega-category-dropdown")) {
+                megaDropdowns.forEach(d => d.classList.remove("open"));
+            }
+        });
+
+    });
+
+    // ── Toggle subcategories (desktop + mobile) ──
+    function toggleSubcategories(titleEl) {
+        const column = titleEl.closest('.mega-column');
+        const subList = column.querySelector('.subcategory-list');
+        const isOpen = subList.classList.contains('open');
+
+        // Close all first
+        document.querySelectorAll('.subcategory-list').forEach(l => l.classList.remove('open'));
+        document.querySelectorAll('.mega-title').forEach(t => t.classList.remove('active'));
+
+        // Open current if it was closed
+        if (!isOpen) {
+            subList.classList.add('open');
+            titleEl.classList.add('active');
+        }
+    }
+
+    function goToCategory(categoryId) {
+        sessionStorage.removeItem('filter_subcategory_id');
+        sessionStorage.setItem('filter_category_id', categoryId);
+        window.location.href = "{{ route('shop.products') }}";
+    }
+
+    function goToSubCategory(subCategoryId) {
+        sessionStorage.removeItem('filter_category_id');
+        sessionStorage.setItem('filter_subcategory_id', subCategoryId);
+        window.location.href = "{{ route('shop.products') }}";
+    }
+
     function changeLanguage(lang) {
         window.location.href = `/lang/${lang}`;
     }
-
 
     const accountDropdown = document.querySelector('.account-dropdown');
     const accountBtn = accountDropdown.querySelector('a');
@@ -193,26 +234,10 @@
         accountDropdown.classList.toggle('active');
     });
 
-
-
-    document.getElementById('cartToggle').addEventListener('click', function (e) {
-        e.preventDefault();
-        document.getElementById('cartSidebar').classList.add('open');
-        document.getElementById('cartOverlay').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    });
-    function closeCart() {
-        document.getElementById('cartSidebar').classList.remove('open');
-        document.getElementById('cartOverlay').classList.remove('show');
-        document.body.style.overflow = '';
-    }
     const scrollBtn = document.getElementById('scrollTop');
     window.addEventListener('scroll', () => {
         scrollBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
     });
-
-
-
 
     const toggle = document.getElementById('themeToggle');
     const icon = document.getElementById('themeIcon');
@@ -241,5 +266,7 @@
         document.body.classList.add('dark-mode');
         updateIcon();
     }
+
+
 
 </script>

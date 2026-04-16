@@ -282,7 +282,18 @@
                 <a href="{{ url($prefix . '/reports') }}"
                     class="nav-link d-flex align-items-center {{ request()->is($prefix . '/reports') ? 'active' : '' }}">
                     <i class="bi bi-bag-dash-fill"></i>
-                    <span>{{ __('messages.report_sales') }}</span>
+                    <span>{{ __('messages.overview_chart') }}</span>
+                </a>
+
+                <a href="{{ url($prefix . '/reports/daily-sales') }}"
+                    class="nav-link d-flex align-items-center {{ request()->is($prefix . '/reports/daily-sales') ? 'active' : '' }}">
+                    <i class="bi bi-calendar2-week"></i>
+                    <span>{{ __('messages.daily_sales') }}</span>
+                </a>
+                <a href="{{ url($prefix . '/reports/monthly-sales') }}"
+                    class="nav-link d-flex align-items-center {{ request()->is($prefix . '/reports/monthly-sales') ? 'active' : '' }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ __('messages.monthly_sales') }}</span>
                 </a>
             </div>
         </div>

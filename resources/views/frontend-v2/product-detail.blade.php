@@ -1,6 +1,6 @@
 @extends('frontend-v2.app')
 
-@section('title', 'Products - {{ $product->name }}')
+@section('title', 'product_detail')
 
 @section('content')
     <!-- ── PAGE HERO ── -->

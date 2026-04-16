@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Shop;
 
 use Illuminate\Http\Request;
-// use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\BaseController;
-use App\Models\{Banner, Brand, Categories, Products};
+use App\Models\{Banner, Brand, Carts, Categories, Products};
 
 class ShopController extends BaseController
 {
@@ -17,6 +16,7 @@ class ShopController extends BaseController
 
     public function index()
     {
+
         $banners = Banner::where('status', 1)->get();
         $categories = Categories::withCount('products')->get();
         return view('frontend-v2.index', compact('banners','categories'));
@@ -25,9 +25,9 @@ class ShopController extends BaseController
     public function products(Request $request)
     {
 
+    $categories = Categories::withCount('products')->get();
 
-
-        return view('frontend-v2.products');
+        return view('frontend-v2.products',compact('categories'));
     }
 
     public function show($code)

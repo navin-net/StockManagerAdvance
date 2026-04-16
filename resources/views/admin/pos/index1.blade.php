@@ -543,18 +543,18 @@
             const tax = afterDisc * 0.08;
             const grand = afterDisc + tax;
 
-            localStorage.setItem('pos_cart', JSON.stringify({
-                items: cart.map(i => ({
-                    name: i.name,
-                    price: i.price,
-                    qty: i.qty
-                })),
-                subtotal: subtotal,
-                discount: discAmt,
-                tax: tax,
-                grand: grand,
-                pay_method: payMethod,
-            }));
+            // localStorage.setItem('pos_cart', JSON.stringify({
+            //     items: cart.map(i => ({
+            //         name: i.name,
+            //         price: i.price,
+            //         qty: i.qty
+            //     })),
+            //     subtotal: subtotal,
+            //     discount: discAmt,
+            //     tax: tax,
+            //     grand: grand,
+            //     pay_method: payMethod,
+            // }));
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -945,13 +945,13 @@
                 success: function(data) {
                     if (data.success) {
 
-                        localStorage.setItem('pos_cart', JSON.stringify({
-                            completed: true,
-                            grand: parseFloat($('#payingAmt').val())
-                        }));
-                        setTimeout(() => localStorage.setItem('pos_cart', JSON.stringify({
-                            items: []
-                        })), 5000);
+                        // localStorage.setItem('pos_cart', JSON.stringify({
+                        //     completed: true,
+                        //     grand: parseFloat($('#payingAmt').val())
+                        // }));
+                        // setTimeout(() => localStorage.setItem('pos_cart', JSON.stringify({
+                        //     items: []
+                        // })), 5000);
 
                         showAlert(`Sale ${data.reference} complete!`, 'success');
                         bootstrap.Modal.getInstance(document.getElementById('paymentModal'))?.hide();

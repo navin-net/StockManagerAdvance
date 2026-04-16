@@ -8,6 +8,10 @@
 return [
     /* ================= General ================= */
     'welcome' => 'Welcome',
+    'product_detail' => 'Product Detail',
+    'overview_chart' => 'Overview Chart',
+    'daily_sales' => 'Daily Sales',
+    'monthly_sales' => 'Monthly Sales',
     'portfolio' => 'Portfolio',
     'welcome_mart24h_users' => 'Welcome Mart24h Users',
     'dashboard' => 'Dashboard',
@@ -350,5 +354,6 @@ return [
     'shopping_cart' => 'Shopping Cart',
     'about_us' => 'About Us',
     'contact_us' => 'Contact Us',
-
+    'list' => 'List',
+    'across_all_categories' => 'Across All Categories',
 ];

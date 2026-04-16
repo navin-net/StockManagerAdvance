@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\{Auth, View};
-use App\Models\{Products, Shop};
 use App\Imports\UsersImport;
+use App\Models\{Brand, Categories, Products, Shop};
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Http\Request;
+
 class BaseController extends Controller
 {
     protected $shopDetail;
@@ -34,6 +35,10 @@ class BaseController extends Controller
                 : asset('images/default-shop-logo.png'),
         ];
 
+        $this->categories = Categories::withCount('products')->get();
+        $this->brands = Brand::withCount('products')->get();
+        View::share('categories', $this->categories);
+        View::share('brands',$this->brands);
         View::share('shopDetail', $this->shopDetail);
     }
 
@@ -69,6 +74,15 @@ class BaseController extends Controller
             'success'  => true,
             'messages' => $import->messages,
         ]);
+    }
+
+
+    public function testing(){
+
+        $products = Products::where('stock_quantity', '>', 0)->get();
+
+        return view('import', compact('products'));
+
     }
 
 

@@ -1,26 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\PortfolioController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\{
-    AuthController,
-    ProfileController,
-    SalesController,
-    PurchasesController,
-    BillerController,
-    BrandController,
-    CategoriesController,
-    UserController,
-    GroupsController,
-    ProductController,
-    SubCategoryController,
-    WarehouseController,
-    QualitysController,
-    CustomerController,
-    PosController,
-    ShopController,
-    UnitController
-};
+use App\Http\Controllers\Admin\{AuthController, BillerController, BrandController, CategoriesController, CustomerController, GroupsController, PortfolioController, PosController, ProductController, ProfileController, PurchasesController, QualitysController, ReportsController, SalesController, ShopController, SubCategoryController, UnitController, UserController, WarehouseController};
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
@@ -109,6 +90,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::post('units/bulk_delete', [UnitController::class, 'bulkDelete'])->name('units.bulkDelete');
         Route::resource('/warehouse', WarehouseController::class)->except(['show']);
         Route::resource('/qualitys', QualitysController::class)->except(['show']);
+    });
+
+    Route::prefix('reports')->group(function(){
+        Route::get('/',[ReportsController::class,'index'])->name('reports');
+        Route::get('/daily-sales',[ReportsController::class,'daily_sales'])->name('reports.daily-sales');
+        Route::get('/monthly-sales',[ReportsController::class,'monthly_sales'])->name('reports.monthly-sales');
+
     });
 
     Route::prefix('shop')->group(function () {

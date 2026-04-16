@@ -8,8 +8,9 @@
     <!-- CSS Files -->
     <link href="{{ asset('backend/css/bootstrap.min.css') }}" rel="stylesheet">
     {{-- Select2 --}}
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('backend/DataTables/datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/style-custom.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -713,12 +714,16 @@
             color: var(--ink-mid);
             text-decoration: none;
             padding: 6px 12px;
-            border: 1px solid  #e2e2ea;
+            border: 1px solid #e2e2ea;
             border-radius: 6px;
             background: #ffffff;
             transition: all .15s;
         }
-        .btn-back:hover { color: var(--ink); border-color: #bbbbc8; }
+
+        .btn-back:hover {
+            color: var(--ink);
+            border-color: #bbbbc8;
+        }
 
         .btn-print {
             display: inline-flex;
@@ -729,152 +734,159 @@
             padding: 7px 16px;
             border-radius: 6px;
             border: none;
-            background:#1a1a2e;;
+            background: #1a1a2e;
+            ;
             color: #fff;
             cursor: pointer;
             transition: opacity .15s;
             font-family: 'Outfit', sans-serif;
         }
-        .btn-print:hover { opacity: .85; }
 
-/* ── WiFi Info ── */
-.rcpt-wifi {
-    margin-top: 14px;
-    padding: 12px 16px;
-    background: #f0f0eb;
-    border-radius: 6px;
-    border: 1px dashed #c8c8c0;
-    text-align: center;
-}
+        .btn-print:hover {
+            opacity: .85;
+        }
 
-.rcpt-wifi__label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
+        /* ── WiFi Info ── */
+        .rcpt-wifi {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: #f0f0eb;
+            border-radius: 6px;
+            border: 1px dashed #c8c8c0;
+            text-align: center;
+        }
 
-.rcpt-wifi__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
+        .rcpt-wifi__label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
 
-.rcpt-wifi__item-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 2px;
-}
+        .rcpt-wifi__grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
 
-.rcpt-wifi__item-value {
-    font-family: 'Courier Prime', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a1a1a;
-    word-break: break-all;
-}
+        .rcpt-wifi__item-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 2px;
+        }
+
+        .rcpt-wifi__item-value {
+            font-family: 'Courier Prime', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a1a;
+            word-break: break-all;
+        }
+
         /* ══════════════════════════════════════════════
    PRINT STYLES
 ══════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════
+        /* ══════════════════════════════════════════════
    PRINT STYLES
 ══════════════════════════════════════════════ */
 
-@media print {
+        @media print {
 
-    body {
-        background: #fff !important;
-        margin: 0;
-        padding: 0;
-    }
+            body {
+                background: #fff !important;
+                margin: 0;
+                padding: 0;
+            }
 
-    .rcpt-page {
-        background: #fff !important;
-        padding: 0;
-        min-height: auto;
-    }
+            .rcpt-page {
+                background: #fff !important;
+                padding: 0;
+                min-height: auto;
+            }
 
-    /* Hide UI elements when printing */
-    .rcpt-topbar,
-    .modal,
-    .btn,
-    .rcpt-actions {
-        display: none !important;
-    }
+            /* Hide UI elements when printing */
+            .rcpt-topbar,
+            .modal,
+            .btn,
+            .rcpt-actions {
+                display: none !important;
+            }
 
-    /* Receipt card print layout */
-    .rcpt-card {
-        box-shadow: none !important;
-        border: none !important;
-        max-width: 80mm;
-        width: 100%;
-        margin: auto;
-    }
+            /* Receipt card print layout */
+            .rcpt-card {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 80mm;
+                width: 100%;
+                margin: auto;
+            }
 
-    .rcpt-paper {
-        padding: 12px 14px !important;
-        font-size: 12px;
-    }
+            .rcpt-paper {
+                padding: 12px 14px !important;
+                font-size: 12px;
+            }
 
-    /* Remove decorative torn edges */
-    .rcpt-card::before,
-    .rcpt-card::after {
-        display: none !important;
-    }
+            /* Remove decorative torn edges */
+            .rcpt-card::before,
+            .rcpt-card::after {
+                display: none !important;
+            }
 
-    /* Remove background textures */
-    .rcpt-paper::before {
-        display: none !important;
-    }
+            /* Remove background textures */
+            .rcpt-paper::before {
+                display: none !important;
+            }
 
-    /* Better print readability */
-    .rcpt-store__name {
-        font-size: 20px;
-        letter-spacing: 2px;
-    }
+            /* Better print readability */
+            .rcpt-store__name {
+                font-size: 20px;
+                letter-spacing: 2px;
+            }
 
-    .rcpt-ref__num {
-        font-size: 16px;
-    }
+            .rcpt-ref__num {
+                font-size: 16px;
+            }
 
-    .rcpt-item {
-        font-size: 11px;
-    }
+            .rcpt-item {
+                font-size: 11px;
+            }
 
-    .rcpt-total-row--grand span:last-child {
-        font-size: 22px;
-    }
+            .rcpt-total-row--grand span:last-child {
+                font-size: 22px;
+            }
 
-    /* Force black text for printers */
-    * {
-        color: #000 !important;
-    }
+            /* Force black text for printers */
+            * {
+                color: #000 !important;
+            }
 
-    /* Remove animations */
-    * {
-        animation: none !important;
-        transition: none !important;
-    }
-    .no-print {
-        display: none !important;
-    }
-    /* Page size for thermal printer */
-    @page {
-        size: 80mm auto;
-        margin: 5mm;
-    }
-}
+            /* Remove animations */
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            /* Page size for thermal printer */
+            @page {
+                size: 80mm auto;
+                margin: 5mm;
+            }
+        }
     </style>
 </head>
 
@@ -911,14 +923,14 @@
 
     <div class="rcpt-page">
         <div class="topbar">
-<div style="display:flex; gap:8px;" class="no-print">
-    <a href="{{ route('pos.index') }}" class="btn-print" style="background:#16a34a; text-decoration:none;">
-        <i class="bi bi-plus-lg"></i> New POS
-    </a>
-    <button onclick="window.print()" class="btn-print">
-        <i class="bi bi-printer"></i> Print
-    </button>
-</div>
+            <div style="display:flex; gap:8px;" class="no-print">
+                <a href="{{ route('pos.index') }}" class="btn-print" style="background:#16a34a; text-decoration:none;">
+                    <i class="bi bi-plus-lg"></i> New POS
+                </a>
+                <button onclick="window.print()" class="btn-print">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
         </div>
         <br>
         {{-- ════════════════════ RECEIPT CARD ════════════════════ --}}
@@ -932,8 +944,7 @@
                 {{-- Store header --}}
                 <div class="rcpt-store">
                     <div class="rcpt-store__logo-placeholder">
-                        <img src="{{ asset($biller->logo ?? '') }}"
-                            style="width: 100%;"
+                        <img src="{{ asset($biller->logo ?? '') }}" style="width: 100%;"
                             onerror="this.outerHTML='<span class=\'fw-bold text-dark text-uppercase\'>StockManagment</span>'">
                     </div>
                     {{-- <div class="rcpt-store__name">{{ config('app.name', 'My Store') }}</div> --}}
@@ -958,7 +969,7 @@
                             {{ $sale->customer?->name ?? 'Walk-in Customer' }}
                         </div>
                     </div>
-                    <div class="rcpt-info-item" >
+                    <div class="rcpt-info-item">
                         <div class="rcpt-info-item__label">Cashier</div>
                         <div class="rcpt-info-item__value">
                             {{ $sale->user?->name ?? auth()->user()->name }}
@@ -973,7 +984,7 @@
                         </div>
                     @endif
                     @if($sale->customer?->phone)
-                        <div class="rcpt-info-item" >
+                        <div class="rcpt-info-item">
                             <div class="rcpt-info-item__label">{{ __('messages.phone') }}</div>
                             <div class="rcpt-info-item__value">{{ $sale->customer->phone }}</div>
                         </div>
@@ -1088,7 +1099,7 @@
                 {{-- Decorative barcode --}}
                 {{-- <div class="rcpt-barcode" aria-hidden="true">
                     @foreach($barHeights as $h)
-                        <span style="height:{{ $h }}px;"></span>
+                    <span style="height:{{ $h }}px;"></span>
                     @endforeach
                 </div> --}}
 
@@ -1131,9 +1142,16 @@
             </div>
         </div>
     </div>
-
     <script>
+        window.onload = function () {
+            setTimeout(() => {
+                window.print();
+            }, 500);
 
+            window.onafterprint = function () {
+                window.close();
+            };
+        };
     </script>
 </body>
 

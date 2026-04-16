@@ -7,15 +7,16 @@
         <div class="container-fluid px-4">
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">{{ __('messages.home') }}</a></li>
                     {{-- <li class="breadcrumb-item"><a href="#">Women</a></li> --}}
-                    <li class="breadcrumb-item active">All Products</li>
+                    <li class="breadcrumb-item active">{{ __('messages.list_products') }}</li>
                 </ol>
             </nav>
-            <div class="page-hero-eyebrow">Curated Collection</div>
-            <h1 class="page-hero-title">List <em>Products</em></h1>
+            {{-- <div class="page-hero-eyebrow">Curated Collection</div> --}}
+            <h1 class="page-hero-title">{{ __('messages.list') }} <em>{{ __('messages.products') }}</em></h1>
             <p style="color:rgba(255,255,255,.5); font-size:.85rem; margin-top:.6rem;">
-                Showing <span id="heroCount">0</span> products across all categories
+                {{ __('messages.showing') }} <span id="heroCount">0</span> {{ __('messages.products') }}
+                {{ __('messages.across_all_categories') }}
             </p>
         </div>
     </div>
@@ -37,6 +38,16 @@
                 <div id="filterTags"></div>
             </div>
 
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search Products filters…" />
+            </div>
+
+
             <!-- CATEGORIES -->
             <div class="filter-section">
                 <button class="filter-section-btn" onclick="toggleSection(this)">
@@ -53,7 +64,7 @@
                     Brand <i class="bi bi-chevron-down"></i>
                 </button>
                 <div class="filter-body" id="sec-brands">
-                    <input type="text" class="brand-search" placeholder="Search brands…"
+                    <input type="text" id="brandSearch" name="brandSearch" class="brand-search" placeholder="Search brands…"
                         oninput="filterBrands(this.value)" />
                     <div id="brandList">
                         {{-- Dynamically filled by buildSidebar() --}}
@@ -165,22 +176,23 @@
                     <span class="result-count"><strong id="resultCount">0</strong> products</span>
                 </div>
                 <div class="d-flex align-items-center gap-3 sort-bar-right">
-                    <select class="sort-select" onchange="sortProducts(this.value)">
-                        <option value="featured">Featured</option>
-                        <option value="newest">Newest First</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="rating">Top Rated</option>
-                        <option value="bestselling">Best Selling</option>
-                    </select>
-                    <div class="view-toggle">
-                        <a href="#" class="active" id="gridViewBtn" onclick="setView('grid', event)" title="Grid view">
-                            <i class="bi bi-grid-3x3-gap"></i>
-                        </a>
-                        <a href="#" id="listViewBtn" onclick="setView('list', event)" title="List view">
-                            <i class="bi bi-list-ul"></i>
-                        </a>
-                    </div>
+                    {{-- <select class="sort-select" onchange="sortProducts(this.value)"> --}}
+                        <select id="sortProducts" name="sort" class="sort-select" onchange="sortProducts(this.value)">
+                            <option value="featured">Featured</option>
+                            <option value="newest">Newest First</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="rating">Top Rated</option>
+                            <option value="bestselling">Best Selling</option>
+                        </select>
+                        <div class="view-toggle">
+                            <a href="#" class="active" id="gridViewBtn" onclick="setView('grid', event)" title="Grid view">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                            </a>
+                            <a href="#" id="listViewBtn" onclick="setView('list', event)" title="List view">
+                                <i class="bi bi-list-ul"></i>
+                            </a>
+                        </div>
                 </div>
             </div>
 
@@ -230,7 +242,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="quickViewLabel">Quick View</h5>
+                    {{-- <h5 class="modal-title" id="quickViewLabel">Quick View</h5> --}}
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -252,10 +264,9 @@
                                 <span id="modal-oldprice" class="text-muted text-decoration-line-through ms-3"></span>
                             </div>
 
-                            <div id="modal-desc" class="mb-4"></div>
-
-                            <button onclick="addToCartFromModal()" class="btn btn-primary w-100 py-3">
-                                <i class="bi bi-bag-plus"></i> Add to Cart
+                            {{-- <div id="modal-desc" class="mb-4"></div> --}}
+                            <button id="modal-add-to-cart" class="btn-cart w-100 py-3">
+                                <i class="bi bi-bag-plus"></i> <span>Add to Cart</span>
                             </button>
                         </div>
                     </div>
@@ -277,9 +288,9 @@
 
         // ── STATE ────────────────────────────────────────────────────────────────
         let state = {
-            categories: new Set(), // stores category IDs
-            subcategories: new Set(), // stores subcategory IDs
-            brands: new Set(), // stores brand IDs
+            categories: new Set(),
+            subcategories: new Set(),
+            brands: new Set(),
             priceMin: 0,
             priceMax: 5000,
             minRating: 0,
@@ -287,6 +298,8 @@
             view: 'grid',
             page: 1,
             perPage: 12,
+            search: ''
+
         };
 
         // ── LOAD DATA ────────────────────────────────────────────────────────────
@@ -298,7 +311,7 @@
             try {
                 // Fire all three requests in parallel
                 const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-                    fetch(`${baseUrl}/getProducts`),      // ✅ use backticks, not quotes
+                    fetch(`${baseUrl}/getProducts`),
                     fetch(`${baseUrl}/getCategories`),
                     fetch(`${baseUrl}/getBrands`),
                 ]);
@@ -325,7 +338,7 @@
                     stock: p.stock_quantity,
                     rating: parseFloat(p.rating ?? 0),
                     reviews: parseInt(p.reviews ?? 0),
-                    badge: p.expiry_date && new Date(p.expiry_date) < new Date() ? 'expired' : 'new',
+                    // badge: ,
                 }));
 
                 // Map categories (expects subcategories relation)
@@ -341,8 +354,12 @@
                 // Map brands
                 SERVER_BRANDS = brandsData.map(b => ({
                     id: b.id,
+                    image: b.image,
                     name: b.name,
                 }));
+
+                console.log(SERVER_BRANDS);
+
 
                 buildSidebar();
                 renderProducts();
@@ -352,50 +369,84 @@
             }
         }
 
+
+        let searchTimer;
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            clearTimeout(searchTimer);
+
+            searchTimer = setTimeout(() => {
+                state.search = this.value.toLowerCase().trim();
+                state.page = 1; // reset page
+                renderProducts();
+            }, 300);
+        });
+
         // ── BUILD SIDEBAR ────────────────────────────────────────────────────────
         function buildSidebar() {
             // Categories
             const catContainer = document.getElementById('sec-categories');
             catContainer.innerHTML = SERVER_CATEGORIES.map(cat => `
-                            <div class="cat-tree-item mt-1">
-                                <div class="cat-parent" onclick="toggleCategory(this, ${cat.id})" data-cat="${cat.id}">
-                                    <div class="cat-checkbox"></div>
-                                    <span>${cat.name}</span>
-                                </div>
-                                <div class="sub-tree">
-                                    ${cat.subcategories.map(sub => `
-                                            <div class="sub-item" onclick="toggleSub(this, ${cat.id}, ${sub.id})" data-sub="${sub.id}">
-                                                <div class="sub-dot"></div>
-                                                <span>${sub.name}</span>
-                                            </div>
-                                        `).join('')}
-                                </div>
-                            </div>
-                        `).join('');
-
+                                    <div class="cat-tree-item mt-1">
+                                        <div class="cat-parent" onclick="toggleCategory(this, ${cat.id})" data-cat="${cat.id}">
+                                            <div class="cat-checkbox"></div>
+                                            <span>${cat.name}</span>
+                                        </div>
+                                        <div class="sub-tree">
+                                            ${cat.subcategories.map(sub => `
+                                                    <div class="sub-item" onclick="toggleSub(this, ${cat.id}, ${sub.id})" data-sub="${sub.id}">
+                                                        <div class="sub-dot"></div>
+                                                        <span>${sub.name}</span>
+                                                    </div>
+                                                `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('');
             // Brands
             const brandList = document.getElementById('brandList');
             brandList.innerHTML = SERVER_BRANDS.map(b => `
-                            <div class="brand-check-item" onclick="toggleBrand(this, ${b.id})" data-brand="${b.name}">
-                                <div class="brand-check-box"></div>
-                                <span>${b.name}</span>
-                            </div>
-                        `).join('');
+                                    <div class="brand-check-item" onclick="toggleBrand(this, ${b.id})" data-brand="${b.name}">
+                                        <div class="brand-check-box"></div>
+                                        <span>${b.name}</span>
+                                    </div>
+                                `).join('');
         }
 
         // ── RENDER PRODUCTS ──────────────────────────────────────────────────────
         function renderProducts() {
+
             let filtered = PRODUCTS.filter(p => {
+
+                // 🔍 SEARCH
+                if (state.search) {
+                    const keyword = state.search;
+
+                    const match =
+                        p.name.toLowerCase().includes(keyword) ||
+                        (p.code && p.code.toLowerCase().includes(keyword)) ||
+                        (p.brand_name && p.brand_name.toLowerCase().includes(keyword)) ||
+                        (p.desc && p.desc.toLowerCase().includes(keyword));
+
+                    if (!match) return false;
+                }
+
+                // 🎯 CATEGORY / SUBCATEGORY
                 if (state.subcategories.size > 0 && !state.subcategories.has(p.sub)) return false;
-                else if (state.subcategories.size === 0 && state.categories.size > 0 && !state.categories.has(p
-                    .cat)) return false;
+                else if (state.subcategories.size === 0 && state.categories.size > 0 && !state.categories.has(p.cat)) return false;
+
+                // 🏷 BRAND
                 if (state.brands.size > 0 && !state.brands.has(p.brand_id)) return false;
+
+                // 💰 PRICE
                 if (p.price < state.priceMin || p.price > state.priceMax) return false;
+
+                // ⭐ RATING
                 if (p.rating < state.minRating) return false;
+
                 return true;
             });
 
-            // Sort
+            // 🔃 SORT
             if (state.sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
             else if (state.sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
             else if (state.sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
@@ -405,7 +456,6 @@
             const total = filtered.length;
             const totalPages = Math.ceil(total / state.perPage);
 
-            // Clamp page
             if (state.page > totalPages) state.page = 1;
 
             const start = (state.page - 1) * state.perPage;
@@ -418,6 +468,7 @@
 
             document.getElementById('resultCount').textContent = total;
             document.getElementById('heroCount').textContent = total;
+
             document.getElementById('pageInfo').textContent =
                 total === 0 ? '' : `Showing ${start + 1}–${Math.min(end, total)} of ${total} products`;
 
@@ -434,58 +485,83 @@
             grid.innerHTML = paginated.map((p, i) => {
 
                 const stars = renderStars(p.rating);
-                const badgeHtml = p.badge ?
-                    `<span class="product-badge badge-${p.badge}">${p.badge}</span>` :
-                    '';
-                const priceHtml = p.oldPrice && p.oldPrice > p.price ?
-                    `<del>$${p.oldPrice.toLocaleString()}</del> <span class="sale-price">$${p.price.toLocaleString()}</span>` :
-                    `$${p.price.toLocaleString()}`;
+
+                const badgeHtml = p.badge
+                    ? `<span class="product-badge badge-${p.badge}">${p.badge}</span>`
+                    : '';
+
+                const stockBadge = p.stock <= 0
+                    ? `<span class="product-badge badge-danger">Out of Stock</span>`
+                    : '';
+
+                const priceHtml = (p.oldPrice && p.oldPrice > p.price)
+                    ? `<del>$${p.oldPrice.toLocaleString()}</del>
+                            <span class="sale-price">$${p.price.toLocaleString()}</span>`
+                    : `$${p.price.toLocaleString()}`;
 
                 return `
-                                <div class="${colClass} col-product" data-id="${p.id}"
-                                     style="animation: fadeInUp .4s ease ${i * 0.04}s both">
-                                    <div class="product-card">
-                                        <div class="product-img-wrap">
+                        <div class="${colClass} col-product" data-id="${p.id}">
+                            <div class="product-card">
+                                <div class="product-img-wrap">
+                                    <img src="${p.img}" alt="${p.name}"
+                                        loading="${i < 6 ? 'eager' : 'lazy'}"
+                                        onerror="this.onerror=null;this.src='/noimage.png'" />
 
-                                        <img src="${p.img}" alt="${p.name}"
-                                            loading="${i < 6 ? 'eager' : 'lazy'}"
-                                            onerror="this.onerror=null;this.src='/noimage.png'" />
-                                            ${badgeHtml}
-                                            <div class="product-actions">
-                                                <button class="action-btn" title="Wishlist" onclick="toggleWishlist(this)">
-                                                    <i class="bi bi-heart"></i>
-                                                </button>
-                                                <button class="action-btn quick-view-btn" title="Quick View" data-id="${p.id}"
-                                                    data-name="${p.name.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"
-                                                    data-img="${p.img || '/noimage.png'}"
-                                                    data-price="${p.price}"
-                                                    data-oldprice="${p.oldPrice || ''}"
-                                                    data-rating="${p.rating || 0}"
-                                                    data-reviews="${p.reviews || 0}"
-                                                    data-desc="${(p.desc || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="action-btn view-detail-btn" title="View Detail" data-code="${p.code}">
-                                                    <i class="bi bi-box-arrow-up-right"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="product-body">
-                                            <div class="product-name">${p.name}</div>
-                                            <div class="product-stars">
-                                                <div class="stars">${stars}</div>
-                                                <span class="rating-count">(${p.reviews})</span>
-                                            </div>
-                                            <div class="product-price">${priceHtml}</div>
-                                            <button class="btn-cart" onclick="addToCart(this)">
-                                                <i class="bi bi-bag-plus"></i> Add to Cart
-                                            </button>
-                                        </div>
+                                    ${badgeHtml}
+                                    ${stockBadge}
+
+                                    <div class="product-actions">
+                                        <button class="action-btn" onclick="toggleWishlist(this)">
+                                            <i class="bi bi-heart"></i>
+                                        </button>
+
+                                        <button class="action-btn quick-view-btn"
+                                            data-id="${p.id}"
+                                            data-name="${p.name}"
+                                            data-stock="${p.stock}"
+                                            data-img="${p.img}"
+                                            data-price="${p.price}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
+                                        <button class="action-btn view-detail-btn"
+                                            data-code="${p.code}">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </button>
                                     </div>
-                                </div>`;
+                                </div>
+
+                                <div class="product-body">
+                                    <div class="product-name">${highlight(p.name)}</div>
+
+                                    <div class="product-stars">
+                                        <div class="stars">${stars}</div>
+                                        <span class="rating-count">(${p.reviews})</span>
+                                    </div>
+
+                                    <div class="product-price">${priceHtml}</div>
+                                        <button class="btn-cart ${p.stock <= 0 ? 'disabled-btn' : ''}"
+                                            ${p.stock <= 0 ? 'disabled aria-disabled="true"' : ''}
+                                            onclick="${p.stock > 0 ? `addToCart('${p.id}', this)` : 'return false'}">
+                                            ${p.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                                        </button>
+                                </div>
+                            </div>
+                        </div>
+                        `;
             }).join('');
 
             renderPagination(totalPages);
+        }
+
+
+        function highlight(text) {
+            if (!state.search) return text;
+
+            return text.replace(
+                new RegExp(`(${state.search})`, 'gi'),
+                '<mark>$1</mark>'
+            );
         }
 
         // ── PAGINATION ───────────────────────────────────────────────────────────
@@ -506,9 +582,9 @@
             let html = '';
 
             html += `<a href="#" class="page-link-custom ${current === 1 ? 'disabled' : ''}"
-                                    onclick="goToPage(${current - 1}, event)">
-                                    <i class="bi bi-chevron-left"></i>
-                                 </a>`;
+                                            onclick="goToPage(${current - 1}, event)">
+                                            <i class="bi bi-chevron-left"></i>
+                                         </a>`;
 
             let prev = 0;
             for (const p of sorted) {
@@ -516,14 +592,14 @@
                     html += `<span class="page-link-custom disabled" style="pointer-events:none">…</span>`;
                 }
                 html += `<a href="#" class="page-link-custom ${p === current ? 'active' : ''}"
-                                        onclick="goToPage(${p}, event)">${p}</a>`;
+                                                onclick="goToPage(${p}, event)">${p}</a>`;
                 prev = p;
             }
 
             html += `<a href="#" class="page-link-custom ${current === totalPages ? 'disabled' : ''}"
-                                    onclick="goToPage(${current + 1}, event)">
-                                    <i class="bi bi-chevron-right"></i>
-                                 </a>`;
+                                            onclick="goToPage(${current + 1}, event)">
+                                            <i class="bi bi-chevron-right"></i>
+                                         </a>`;
 
             wrap.innerHTML = html;
         }
@@ -613,8 +689,8 @@
             }
             tagsEl.innerHTML = tags.map(t =>
                 `<span class="filter-tag" onclick="removeTag('${t.type}', ${JSON.stringify(t.value)})">
-                                ${t.label} <i class="bi bi-x"></i>
-                             </span>`
+                                        ${t.label} <i class="bi bi-x"></i>
+                                     </span>`
             ).join('');
         }
 
@@ -826,15 +902,15 @@
         }
 
         // ── CART / WISHLIST ──────────────────────────────────────────────────────
-        function addToCart(btn) {
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-check-circle"></i> Added!';
-            btn.classList.add('added');
-            setTimeout(() => {
-                btn.innerHTML = orig;
-                btn.classList.remove('added');
-            }, 1800);
-        }
+        // function addToCart(btn) {
+        //     const orig = btn.innerHTML;
+        //     btn.innerHTML = '<i class="bi bi-check-circle"></i> Added!';
+        //     btn.classList.add('added');
+        //     setTimeout(() => {
+        //         btn.innerHTML = orig;
+        //         btn.classList.remove('added');
+        //     }, 1800);
+        // }
 
         function toggleWishlist(btn) {
             btn.classList.toggle('active');
@@ -1032,28 +1108,102 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             updateRangeFill();
+
             loadAll().then(() => {
                 const categoryId = sessionStorage.getItem('filter_category_id');
+                const subCategoryId = sessionStorage.getItem('filter_subcategory_id');
+
+                // ── CATEGORY FILTER ─────────────────────────────
                 if (categoryId) {
-                    sessionStorage.removeItem('filter_category_id'); // clear immediately
+                    sessionStorage.removeItem('filter_category_id');
+
                     const catId = parseInt(categoryId);
                     state.categories.add(catId);
+
                     const catEl = document.querySelector(`.cat-parent[data-cat="${catId}"]`);
                     if (catEl) {
                         catEl.classList.add('checked');
                         catEl.nextElementSibling.classList.add('open');
                     }
+
+                    updateFilterTags();
+                    renderProducts();
+                }
+
+                // ── SUBCATEGORY FILTER ──────────────────────────
+                if (subCategoryId) {
+                    sessionStorage.removeItem('filter_subcategory_id');
+
+                    const subId = parseInt(subCategoryId);
+
+                    // find parent category from SERVER_CATEGORIES
+                    let parentCatId = null;
+
+                    SERVER_CATEGORIES.forEach(cat => {
+                        if (cat.subcategories.some(sub => sub.id === subId)) {
+                            parentCatId = cat.id;
+                        }
+                    });
+
+                    if (parentCatId) {
+                        state.categories.add(parentCatId);
+                    }
+
+                    state.subcategories.add(subId);
+
+                    // mark category open
+                    if (parentCatId) {
+                        const catEl = document.querySelector(`.cat-parent[data-cat="${parentCatId}"]`);
+                        if (catEl) {
+                            catEl.classList.add('checked');
+                            catEl.nextElementSibling.classList.add('open');
+                        }
+                    }
+
+                    // mark subcategory checked
+                    const subEl = document.querySelector(`.sub-item[data-sub="${subId}"]`);
+                    if (subEl) {
+                        subEl.classList.add('checked');
+                    }
+
                     updateFilterTags();
                     renderProducts();
                 }
             });
         });
 
-
         // Quick View Modal Handler - Use event delegation
         document.addEventListener('click', function (e) {
             const btn = e.target.closest('.quick-view-btn');
-            if (!btn) return;
+
+            // Safety check: if click isn't on the button, do nothing
+                if (!btn) return;
+
+                // 1. Get the stock from the clicked button
+                const stock = parseInt(btn.dataset.stock) || 0;
+
+                // 2. Find the Modal Button and its internal parts
+                const addToCartBtn = document.getElementById('modal-add-to-cart');
+
+                // We look for the span and icon inside the button
+                const btnText = addToCartBtn.querySelector('span');
+                const btnIcon = addToCartBtn.querySelector('i');
+
+                // 3. Apply the logic
+                if (stock <= 0) {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.classList.replace('btn-primary', 'btn-secondary');
+
+                    if (btnText) btnText.textContent = ' Out of Stock';
+                    if (btnIcon) btnIcon.className = 'bi bi-x-circle';
+                } else {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.classList.replace('btn-secondary', 'btn-primary');
+
+                    if (btnText) btnText.textContent = ' Add to Cart';
+                    if (btnIcon) btnIcon.className = 'bi bi-bag-plus';
+                }
+
 
             // Get data safely
             const name = btn.dataset.name || 'No Name';
@@ -1062,14 +1212,12 @@
             const oldPrice = btn.dataset.oldprice ? parseFloat(btn.dataset.oldprice) : null;
             const rating = parseFloat(btn.dataset.rating) || 0;
             const reviews = btn.dataset.reviews || 0;
-            const desc = btn.dataset.desc || 'No description available.';
 
             // Update modal elements
             document.getElementById('modal-image').src = img;
             document.getElementById('modal-image').alt = name;
 
             document.getElementById('modal-name').textContent = name;
-            document.getElementById('modal-desc').textContent = desc;
             document.getElementById('modal-price').textContent = '$' + price.toFixed(2);
 
             // Handle old price
@@ -1108,5 +1256,10 @@
 
             window.open(`/shop/products/${code}`, '_blank');
         });
+
+
+
+
     </script>
+
 @endpush
