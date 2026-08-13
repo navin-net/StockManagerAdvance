@@ -1,4 +1,7 @@
 "# Mart24h"
+
+Stock Management System helps retail and wholesale teams keep inventory, supplier, and purchasing data consistent and actionable. The platform streamlines the full lifecycle of stock management—from cataloging brands and SKUs to reconciling supplier invoices and generating printable PDFs for every transaction.
+
 When you clone a Laravel project from GitHub and it doesn't include the `.env` and `vendor` directories, you can follow these steps to set it up:
 
 1. **Clone the Repository**:
