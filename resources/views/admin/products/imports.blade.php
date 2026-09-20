@@ -34,9 +34,12 @@
                 </span>
             </div>
         </div>
+
         <section class="section">
             <div class="row">
                 <div class="col-lg-12">
+
+                    {{-- Populated dynamically by JS after each import attempt --}}
                     <div id="importAlert"></div>
 
                     <div class="card border-0 shadow-sm rounded-3" style="height: 300px">
@@ -54,9 +57,11 @@
                                     </button>
                                 </div>
                             </div>
-<form action="{{ url('users/import') }}" method="POST" enctype="multipart/form-data">
-    @csrf
-                                    <div class="modal-body">
+
+                            <form id="importForm" action="{{ route('products.import') }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                <div class="modal-body">
                                     <div class="row mb-3">
                                         <div class="col-md-12">
                                             <label class="form-label fw-semibold">
@@ -76,11 +81,14 @@
                                             </small>
                                         </div>
                                     </div>
-                                    <div class="modal-footer border-0">
-                                        <button type="submit" class="btn btn-primary rounded-3"
-                                            id="saveBtn">{{ __('messages.import_data') }}</button>
-                                    </div>
+                                </div>
+                                <div class="modal-footer border-0">
+                                    <button type="submit" class="btn btn-primary rounded-3" id="saveBtn">
+                                        {{ __('messages.import_data') }}
+                                    </button>
+                                </div>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -88,6 +96,7 @@
         </section>
     </div>
 @endsection
+
 @push('scripts')
     <script>
         function downloadFile() {
@@ -111,6 +120,79 @@
             }
         }
 
-    </script>
+        document.getElementById('importForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Always AJAX — never a full page submit
 
+            const form = this;
+            const formData = new FormData(form);
+            const saveBtn = document.getElementById('saveBtn');
+            const alertBox = document.getElementById('importAlert');
+
+            saveBtn.disabled = true;
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = 'Importing...';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json',
+                },
+            })
+                .then(response => response.json().then(data => ({ status: response.status, data })))
+                .then(({ data }) => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = originalText;
+                    renderAlert(data);
+                })
+                .catch(error => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = originalText;
+                    alertBox.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Error</strong>
+                            <p class="mb-0">Something went wrong. Please try again.</p>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    console.error('Error:', error);
+                });
+
+            function renderAlert(data) {
+                const msgs = data.messages || {};
+                let bodyHtml = '';
+
+                if (data.success) {
+                    bodyHtml += `<p class="mb-1">Created: ${msgs.created ?? 0}, Updated: ${msgs.updated ?? 0}</p>`;
+                    if (msgs.skipped_count) {
+                        bodyHtml += `<p class="mb-0">Skipped rows: ${msgs.skipped_count}</p>`;
+                    }
+                } else if (Array.isArray(msgs.error_messages) && msgs.error_messages.length) {
+                    bodyHtml += '<ul class="mb-0 mt-2">' +
+                        msgs.error_messages.map(err => `<li>${escapeHtml(err)}</li>`).join('') +
+                        '</ul>';
+                } else {
+                    bodyHtml += '<p class="mb-0">Import failed. Please check your file and try again.</p>';
+                }
+
+                alertBox.innerHTML = `
+                    <div class="alert ${data.success ? 'alert-success' : 'alert-danger'} alert-dismissible fade show mb-4" role="alert">
+                        <strong>${data.success ? '{{ __('messages.success') }}' : '{{ __('messages.error') }}'}</strong>
+                        ${bodyHtml}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+
+                if (data.success) {
+                    form.reset();
+                    document.getElementById('excelFileName').textContent = "{{ __('messages.no_file_chosen') }}";
+                }
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+        });
+    </script>
 @endpush

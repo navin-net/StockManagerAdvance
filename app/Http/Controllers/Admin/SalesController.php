@@ -31,7 +31,7 @@ class SalesController extends Controller
                 'sales.id',
                 'sales.customer_id',
                 'sales.reference',
-                'sales.date',
+                'sales.created_at',
                 'sales.total_amount AS grand_total',
                 DB::raw('COALESCE(SUM(sma_payments.amount), 0) AS paid'),
                 DB::raw('(sma_sales.total_amount - COALESCE(SUM(sma_payments.amount), 0)) AS balance'),
@@ -41,15 +41,15 @@ class SalesController extends Controller
                 'sales.payment_status',
             ])
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
-            ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
+            ->leftJoin('companies as biller', 'sales.biller_id', '=', 'biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', 1)
-            ->orWhereNull('sales.sale_type')
+//            ->orWhereNull('sales.sale_type')
             ->groupBy([
                 'sales.id',
                 'sales.customer_id',
                 'sales.reference',
-                'sales.date',
+                'sales.created_at',
                 'sales.total_amount',
                 'companies.name',
                 'sales.status',
@@ -58,6 +58,10 @@ class SalesController extends Controller
             $data->where('sales.warehouse_id', $request->warehouse_id);
         }
         return DataTables::of($data)
+            ->editColumn('created_at', function ($row) {
+                // Format to your preferred date/time format
+                return $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '';
+            })
             ->addColumn('action', function ($data) {
                 return '<div class="dropdown">
                     <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -384,7 +388,7 @@ class SalesController extends Controller
                 'sales.payment_status',
             ])
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
-            ->leftJoin('companies as biller', 'sales.biiler_id', '=', 'biller.id')
+            ->leftJoin('companies as biller', 'sales.biller_id', '=', 'biller.id')
             ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', 0)
             ->orWhereNull('sales.sale_type')

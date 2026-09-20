@@ -147,7 +147,7 @@
                     <div class="pos-cart__title">
                         ORDER <span class="pos-cart__badge" id="cartCount">0</span>
                     </div>
-                    <div class="pos-cart__subtitle">{{ $sales->reference }}</div>
+                    <div class="pos-cart__subtitle">{{ $records->reference }}</div>
                 </div>
                 <div class="pos-cart__actions">
                     <button class="pos-ibtn" data-bs-toggle="modal" data-bs-target="#barcodeModal" title="Barcode scan">
@@ -167,7 +167,7 @@
                     <select id="customerSelect" class="pos-select flex-fill">
                         <option value="">— Select Customer —</option>
                         @foreach ($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ $customer->id == 4 ? 'selected' : '' }}>
+                            <option value="{{ $customer->id }}" {{ $customer->id == 6 ? 'selected' : '' }}>
                                 {{ $customer->name }}
                             </option>
                         @endforeach

@@ -945,7 +945,7 @@
                 <div class="rcpt-store">
                     <div class="rcpt-store__logo-placeholder">
                         <img src="{{ asset($biller->logo ?? '') }}" style="width: 100%;"
-                            onerror="this.outerHTML='<span class=\'fw-bold text-dark text-uppercase\'>StockManagment</span>'">
+                            onerror="this.outerHTML='<span class=\'fw-bold text-dark text-uppercase\'>NiTaMart</span>'">
                     </div>
                     {{-- <div class="rcpt-store__name">{{ config('app.name', 'My Store') }}</div> --}}
                     {{-- <div class="rcpt-store__tagline">Point of Sale Receipt</div> --}}
@@ -1079,21 +1079,21 @@
                 @endif
 
                 {{-- WiFi Info --}}
-                <div class="rcpt-wifi">
-                    <div class="rcpt-wifi__label">
-                        <i class="bi bi-wifi"></i> Free WiFi
-                    </div>
-                    <div class="rcpt-wifi__grid">
-                        <div>
-                            <div class="rcpt-wifi__item-label">Network</div>
-                            <div class="rcpt-wifi__item-value">MyStore_Guest</div>
-                        </div>
-                        <div>
-                            <div class="rcpt-wifi__item-label">Password</div>
-                            <div class="rcpt-wifi__item-value">welcome2025</div>
-                        </div>
-                    </div>
-                </div>
+{{--                <div class="rcpt-wifi">--}}
+{{--                    <div class="rcpt-wifi__label">--}}
+{{--                        <i class="bi bi-wifi"></i> Free WiFi--}}
+{{--                    </div>--}}
+{{--                    <div class="rcpt-wifi__grid">--}}
+{{--                        <div>--}}
+{{--                            <div class="rcpt-wifi__item-label">Network</div>--}}
+{{--                            <div class="rcpt-wifi__item-value">MyStore_Guest</div>--}}
+{{--                        </div>--}}
+{{--                        <div>--}}
+{{--                            <div class="rcpt-wifi__item-label">Password</div>--}}
+{{--                            <div class="rcpt-wifi__item-value">welcome2025</div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
 
 
                 {{-- Decorative barcode --}}
@@ -1107,7 +1107,7 @@
                 <div class="rcpt-footer">
                     <div class="rcpt-footer__thankyou">Thank You!</div>
                     <div class="rcpt-footer__sub">
-                        {{ now()->format('Y') }} · {{ config('app.name', 'My Store') }}<br>
+{{--                        {{ now()->format('Y') }} · {{ config('app.name', 'My Store') }}<br>--}}
                         Keep this receipt for your records
                     </div>
                 </div>

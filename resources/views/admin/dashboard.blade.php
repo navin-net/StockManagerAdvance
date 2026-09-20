@@ -236,7 +236,7 @@
                 data: 'customer'
             },
             {
-                data: 'date'
+                data: 'created_at'
             },
             {
                 data: 'grand_total'

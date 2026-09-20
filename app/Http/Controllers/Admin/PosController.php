@@ -18,29 +18,20 @@ class PosController extends BaseController
 
     public function openRegister()
     {
-
         $id = auth()->id();
-
-        // dd($id);
-
         $openRegister = DB::table('pos_registers')
             ->where('user_id', $id)
             ->where('status', 'open')
             ->first();
-
         // dd($openRegister);
-
         if ($openRegister) {
-
             // Restore session if missing
             session([
                 'register_opened' => true,
                 'cash_register_id' => $openRegister->id
             ]);
-
             return redirect()->route('pos.index');
         }
-
         return view('admin.pos.open-register', [
             'pageTitle' => __('messages.open_register'),
             'heading' => __('messages.open_register'),
@@ -75,27 +66,14 @@ class PosController extends BaseController
             'user_id' => auth()->id(),
             'cash_in_hand' => $request->cash_in_hand,
             'status' => 'open',
-            'date' => now(),
+            'opened_at' => now(),
         ]);
+        DB::table('pos_registers')->where('id', $registerId)->update(['reference' => 'POS-' . now()->format('Ymd') . '-' . $registerId]);
 
-        // Create sale
-        $sale = Sale::create([
-            'total_amount' => 0,
-            'customer_id' => 4, // default customer
-            'cash_register_id' => $registerId,
-            'user_id' => auth()->id(),
-            'status' => 'pending',
-        ]);
-
-        $sale->reference = 'POS-' . now()->format('Ymd') . '-' . $sale->id;
-
-        $sale->save();
-        // dd($sale);
 
         session([
             'register_opened' => true,
             'cash_register_id' => $registerId,
-            'sale_id' => $sale->id,
         ]);
 
         return redirect()->route('pos.index');
@@ -150,29 +128,6 @@ class PosController extends BaseController
             'register_opened' => true,
             'cash_register_id' => $register->id,
         ]);
-
-
-
-
-        $sale = Sale::where('cash_register_id', $register->id)
-            ->where('status', 'pending')
-            ->latest()
-            ->first();
-
-        if (!$sale) {
-            $sale = Sale::create([
-                'reference'        => Sale::generateReference(),
-                'customer_id'      => 4,
-                'cash_register_id' => $register->id,
-                'user_id'          => auth()->id(),
-                'total_amount'     => 0,
-                'status'           => 'pending',
-                'payment_status'   => 'unpaid',
-                'date'             => now()->toDateString(),
-            ]);
-        }
-    session(['sale_id' => $sale->id]);
-
         $products = Products::select(
             'products.id',
             'products.name',
@@ -195,12 +150,11 @@ class PosController extends BaseController
         $brands = Brand::all();
         $customers = Companies::where('group_id', 4)->get();
         $warehouse = Warehouses::where('id',1)->get();
-
         return view('admin.pos.index1', [
             'products' => $products,
             'categories' => $categories,
             'brands' => $brands,
-            'sales' => $sale,
+            // 'sales' => $sale,
             'pageTitle' => __('messages.pos_system'),
             'heading' => __('messages.pos_system'),
             'customers' => $customers,
@@ -259,7 +213,7 @@ class PosController extends BaseController
 
             $amountPaid = (float) $request->amount_paid;
             $posBalance = round($amountPaid - $totalAmount, 2);
-            $paymentStatus = $amountPaid >= $totalAmount ? 'paid' : 'partial';
+            $paymentStatus = $amountPaid >= $totalAmount ? 'completed' : 'pending';
 
             // ── Step 3: Update the pending sale from session ──────
             $sale = Sale::find(session('sale_id'));
@@ -268,6 +222,7 @@ class PosController extends BaseController
                 $sale->update([
                     'customer_id' => $request->customer_id ?? $sale->customer_id,
                     'warehouse_id' => $request->warehouse_id ?? $sale->warehouse_id,
+                    'sale_type' => 'pos',
                     'subtotal' => $subtotal,
                     'discount' => $discountAmt,
                     'discount_type' => $discountType,
@@ -289,6 +244,7 @@ class PosController extends BaseController
                     'total_amount' => $totalAmount,
                     'status' => 'completed',
                     'payment_status' => $paymentStatus,
+                    'sale_type' => 'pos',
                     // 'note' => $request->note,
                     'date' => now()->toDateString(),
                 ]);
@@ -355,7 +311,6 @@ class PosController extends BaseController
             ->where('group_name', 'biller')
             ->get();
         // die($billers);
-        // ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
 
         return view('admin.pos.receipt', [
             'sale' => $sale,

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Imports\UsersImport;
 use App\Models\{Brand, Categories, ProductImage, Products, Qualitys, SaleItem, SubCategory, Units};
+use App\Imports\Admin\ProductsImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage, Validator};
 use Maatwebsite\Excel\Facades\Excel;
@@ -367,30 +367,54 @@ class ProductController extends Controller
         return response()->json($subCategories);
     }
 
-    public function showImportForm()
-    {
-        return view('admin.products.imports', [
-            'pageTitle' => __('messages.products_import'),
-            'heading' => __('messages.products_import'),
-            'description' => __('messages.dashboard_welcome'),
-            'breadcrumbs' => [
-                ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
-                ['label' => __('messages.products_import'), 'url' => '', 'active' => true],
-            ]
-        ]);
-    }
+public function showImportForm()
+{
+    return view('admin.products.imports', [
+        'pageTitle' => __('messages.products_import'),
+        'heading' => __('messages.products_import'),
+        'description' => __('messages.dashboard_welcome'),
+        'breadcrumbs' => [
+            ['label' => __('messages.products'), 'url' => route('products.index'), 'active' => false],
+            ['label' => __('messages.products_import'), 'url' => '', 'active' => true],
+        ]
+    ]);
+}
 
-    public function import(Request $request)
-    {
-        $import = new UsersImport();
-        Excel::import($import, $request->file('file'));
+public function import(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'file' => ['required', 'file', 'mimes:xlsx,xls,csv'],
+    ]);
 
+    if ($validator->fails()) {
         return response()->json([
-            'success' => true,
-            'messages' => $import->messages,
-        ]);
+            'success' => false,
+            'messages' => [
+                'error_messages' => $validator->errors()->all(),
+            ],
+        ], 422);
     }
 
+    $import = new ProductsImport();
+
+    try {
+        Excel::import($import, $request->file('file'));
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'messages' => [
+                'error_messages' => ['Import failed: ' . $e->getMessage()],
+            ],
+        ], 422);
+    }
+
+    $messages = $import->getMessages();
+
+    return response()->json([
+        'success'  => empty($messages['error_messages']),
+        'messages' => $messages,
+    ]);
+}
 
     public function barcodelabel(Request $request)
     {
@@ -439,9 +463,5 @@ class ProductController extends Controller
                 ['label' => __('messages.adjustment'), 'url' => '', 'active' => true],
             ]
         ]);
-
-
-
     }
-
 }
