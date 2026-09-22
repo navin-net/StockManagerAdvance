@@ -230,10 +230,10 @@
                     </span>
                     <span id="totDiscount">−$0.00</span>
                 </div>
-                <div class="pos-total-row">
-                    <span>Tax (8%)</span>
-                    <span id="totTax">$0.00</span>
-                </div>
+{{--                <div class="pos-total-row">--}}
+{{--                    <span>Tax (8%)</span>--}}
+{{--                    <span id="totTax">$0.00</span>--}}
+{{--                </div>--}}
                 <hr class="pos-sep">
                 <div class="pos-total-row pos-total-row--grand">
                     <span>Total Due</span>
@@ -540,8 +540,8 @@
             const discVal = parseFloat($('#discountValue').val()) || 0;
             const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
             const afterDisc = subtotal - discAmt;
-            const tax = afterDisc * 0.08;
-            const grand = afterDisc + tax;
+            // const tax = afterDisc * 0.08;
+            const grand = afterDisc;
 
             // localStorage.setItem('pos_cart', JSON.stringify({
             //     items: cart.map(i => ({
@@ -809,12 +809,14 @@
             const discVal = parseFloat($('#discountValue').val()) || 0;
             const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
             const afterDisc = subtotal - discAmt;
-            const tax = afterDisc * 0.08;
-            const grand = afterDisc + tax;
+            // const tax = afterDisc * 0.08;
+            const grand = afterDisc;
+            // const grand = afterDisc + tax;
+
 
             $('#totSubtotal').text(`$${subtotal.toFixed(2)}`);
             $('#totDiscount').text(`−$${discAmt.toFixed(2)}`);
-            $('#totTax').text(`$${tax.toFixed(2)}`);
+            // $('#totTax').text(`$${tax.toFixed(2)}`);
             $('#totGrand').text(`$${grand.toFixed(2)}`);
             $('#chargeAmt').text(`$${grand.toFixed(2)}`);
             $('#chargeBtn').prop('disabled', cart.length === 0);
@@ -864,8 +866,9 @@
             const discVal = parseFloat($('#discountValue').val()) || 0;
             const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
             const afterDisc = subtotal - discAmt;
-            const tax = afterDisc * 0.08;
-            const grand = afterDisc + tax;
+            // const tax = afterDisc * 0.08;
+            const grand = afterDisc;
+            // const grand = afterDisc + tax;
 
             const rows = cart.map(i =>
                 `<div class="receipt-line">
@@ -878,7 +881,6 @@
                 ${rows}
                 <div class="receipt-line mt-2"><span>Subtotal</span><strong>$${subtotal.toFixed(2)}</strong></div>
                 <div class="receipt-line"><span>Discount</span><strong style="color:var(--green);">−$${discAmt.toFixed(2)}</strong></div>
-                <div class="receipt-line"><span>Tax (8%)</span><strong>$${tax.toFixed(2)}</strong></div>
                 <div class="receipt-line total"><span>Total Due</span><span>$${grand.toFixed(2)}</span></div>
             `);
 

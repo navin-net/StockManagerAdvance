@@ -8,7 +8,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     Route::get('/', [AuthController::class, 'dashboard'])->name('admin.dashboard');
 
-    //Mengemnt Profile
+    //Management Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
@@ -16,32 +16,40 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::put('/profile/updateInformation', [ProfileController::class, 'updateInformation'])->name('profile.updateInformation');
     //Products
     Route::resource('products', ProductController::class)->except(['show']);
-    Route::get('/products/getData', [ProductController::class, 'getData'])->name('products.getData');
-    Route::get('/products/show/{id}', [ProductController::class, 'show'])->name('products.show');
-    Route::get('/products/subcategories/{category}', [ProductController::class, 'getSubCategories'])->name('products.subcategories');
-    Route::delete('/products/images/{id}', [ProductController::class, 'removeImage'])->name('products.images.remove');
-    Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
-    // Route::get('products/import', [ProductController::class, 'import'])->name('products.import');
-    Route::get('/products/import', [ProductController::class, 'showImportForm'])
-        ->name('products.import.form');
-    Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
-
-
-    Route::get('products/code-label', [ProductController::class, 'barcodelabel'])->name('products.barcodelabel');
-    Route::get('products/adjustment', [ProductController::class, 'adjustment'])->name('products.adjustment');
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/getData', [ProductController::class, 'getData'])
+            ->name('getData');
+        Route::get('/show/{id}', [ProductController::class, 'show'])
+            ->name('show');
+        Route::get('/subcategories/{category}', [ProductController::class, 'getSubCategories'])
+            ->name('subcategories');
+        Route::delete('/images/{id}', [ProductController::class, 'removeImage'])
+            ->name('images.remove');
+        Route::get('/export', [ProductController::class, 'export'])
+            ->name('export');
+        Route::get('/import', [ProductController::class, 'showImportForm'])
+            ->name('import.form');
+        Route::post('/import', [ProductController::class, 'import'])
+            ->name('import');
+        Route::get('/code-label', [ProductController::class, 'barcodelabel'])
+            ->name('barcodelabel');
+        Route::get('/adjustment', [ProductController::class, 'adjustment'])
+            ->name('adjustment');
+    });
 
     //SALES
     Route::resource('sales', SalesController::class)->except(['show']);
-    Route::get('/sales/getData', [SalesController::class, 'getData'])->name('sales.getData');
-    Route::get('/sales/getDataPos',[SalesController::class, 'getDataPos'])->name('sales.getDataPos');
-    Route::get('/sales/pos', [SalesController::class, 'pos'])->name('sales.pos');
-
-    Route::post('/sales/bulk-delete', [SalesController::class, 'bulkDelete'])->name('sales.bulkDelete');
-    Route::get('/sales/export', [SalesController::class, 'export'])->name('sales.export');
-    Route::get('/sales/detail/{id}', [SalesController::class, 'show'])->name('sales.show');
-    Route::get('/sales/payments/{id}', [SalesController::class, 'payments'])->name('sales.payments');
-    Route::post('/sales/payment/store', [SalesController::class, 'storePayment'])->name('sales.storePayment');
-    Route::get('/sales/listPayments/{id}', [SalesController::class, 'listPayments'])->name('sales.listPayments');
+    Route::prefix('sales')->name('sales.')->group(function () {
+        Route::get('/getData', [SalesController::class, 'getData'])->name('getData');
+        Route::get('/getDataPos', [SalesController::class, 'getDataPos'])->name('getDataPos');
+        Route::get('/pos', [SalesController::class, 'pos'])->name('pos');
+        Route::post('/bulk-delete', [SalesController::class, 'bulkDelete'])->name('bulkDelete');
+        Route::get('/export', [SalesController::class, 'export'])->name('export');
+        Route::get('/detail/{id}', [SalesController::class, 'show'])->name('show');
+        Route::get('/payments/{id}', [SalesController::class, 'payments'])->name('payments');
+        Route::post('/payment/store', [SalesController::class, 'storePayment'])->name('storePayment');
+        Route::get('/listPayments/{id}', [SalesController::class, 'listPayments'])->name('listPayments');
+    });
     //Purchases
     Route::resource('purchases', PurchasesController::class)->except(['show']);
     Route::prefix('purchases')->group(function () {
@@ -63,7 +71,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             ->name('billers.users.edit');
         Route::put('/{id}/users/update', [BillerController::class, 'updateUser'])
             ->name('billers.users.update');
-
         Route::delete('/users/{id}/delete', [BillerController::class, 'deleteUser'])->name('billers.users.delete');
     });
 
@@ -94,8 +101,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('reports')->group(function(){
         Route::get('/',[ReportsController::class,'index'])->name('reports');
-        Route::get('/daily-sales',[ReportsController::class,'daily_sales'])->name('reports.daily-sales');
+//        Route::get('/daily-sales',[ReportsController::class,'daily_sales'])->name('reports.daily-sales');
         Route::get('/monthly-sales',[ReportsController::class,'monthly_sales'])->name('reports.monthly-sales');
+        Route::get('/daily-sales', [ReportsController::class, 'dailySalesReport'])
+            ->name('reports.daily-sales');
+
+        Route::get('/daily-sales/pdf', [ReportsController::class, 'dailySalesReportPdf'])
+            ->name('reports.daily-sales.pdf');
+
 
     });
 
@@ -124,11 +137,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('/customer-display', function () {
             return view('customer-display');
         });
-
-
-
     });
 
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 

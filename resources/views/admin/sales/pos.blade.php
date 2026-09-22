@@ -197,8 +197,8 @@
                         `<input type="checkbox" class="saleCheckbox" value="${data}">`
                 },
                 {
-                    data: 'date',
-                    name: 'date',
+                    data: 'created_at',
+                    name: 'created_at',
                 },
                 {
                     data: 'reference',

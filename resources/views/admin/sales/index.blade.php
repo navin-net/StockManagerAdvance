@@ -116,52 +116,6 @@
             </div>
         </section>
     </div>
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-3 border-0 shadow">
-                <div class="modal-header border-0 rounded-top-3">
-                    <h5 class="modal-title fw-semibold" id="deleteModalLabel">{{ __('messages.confirm_delete') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    {{ __('messages.delete_confirm') }}
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
-                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                    <form id="deleteForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm rounded-3">{{ __('messages.delete') }}</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Delete Confirmation Modal -->
-    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-3 border-0 shadow">
-                <div class="modal-header border-0 rounded-top-3">
-                    <h5 class="modal-title fw-semibold" id="bulkDeleteModalLabel">
-                        {{ __('messages.confirm_bulk_delete') }}
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    {{ __('messages.delete_confirm') }}
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
-                        data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
-                    <button type="button" class="btn btn-danger btn-sm rounded-3"
-                        id="confirmBulkDelete">{{ __('messages.delete') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -214,7 +168,6 @@
     </div>
 
 
-
     <!-- Modal -->
     <div class="modal fade" id="ListpaymentModal">
         <div class="modal-dialog modal-xl">
@@ -238,6 +191,103 @@
             </div>
         </div>
     </div>
+
+
+
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade"
+         id="deleteSale"
+         tabindex="-1"
+         aria-labelledby="deleteSaleLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content rounded-3 border-0 shadow">
+
+                {{-- Modal Header --}}
+                <div class="modal-header border-0">
+
+                    <h5 class="modal-title fw-semibold"
+                        id="deleteSaleLabel">
+                        {{ __('messages.confirm_delete') }}
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+
+                </div>
+
+
+                {{-- Modal Body --}}
+                <div class="modal-body">
+
+                    {{ __('messages.delete_confirm') }}
+
+                </div>
+
+
+                {{-- Modal Footer --}}
+                <div class="modal-footer border-0">
+
+                    <button type="button"
+                            class="btn btn-secondary btn-sm rounded-3"
+                            data-bs-dismiss="modal">
+
+                        {{ __('messages.cancel') }}
+
+                    </button>
+
+
+                    <form id="deleteForm">
+
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm rounded-3">
+
+                            {{ __('messages.delete') }}
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div class="modal fade" id="bulkdeleteSale" tabindex="-1" aria-labelledby="bulkdeleteSaleLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 border-0 shadow">
+                <div class="modal-header border-0 rounded-top-3">
+                    <h5 class="modal-title fw-semibold" id="bulkdeleteSaleLabel">
+                        {{ __('messages.confirm_bulk_delete') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ __('messages.delete_confirm') }}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                            data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                    <button type="button" class="btn btn-danger btn-sm rounded-3"
+                            id="confirmBulkDelete">{{ __('messages.delete') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 @endsection
@@ -369,7 +419,7 @@
 
 
 
-        });
+
 
         $(document).on('click', '.list-payment-sale', function (e) {
             e.preventDefault();
@@ -479,6 +529,121 @@
         });
 
 
+
+
+        /* ===================
+        Delete Sale
+        ====================== */
+        $(document).on('click', '.delete-sale', function (e) {
+
+            e.preventDefault();
+
+            // Get sale ID
+            let id = $(this).data('id');
+
+            console.log('Sale ID:', id);
+
+            // Check ID
+            if (!id) {
+                console.error('Sale ID is missing.');
+                return;
+            }
+
+            // Store ID in delete form
+            $('#deleteForm').data('id', id);
+
+            // Get Bootstrap modal
+            const modalElement = document.getElementById('deleteSale');
+
+            // Create / get modal instance
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(modalElement);
+
+            // Show modal
+            modal.show();
+        });
+
+        $(document).on('submit', '#deleteForm', function (e) {
+
+            e.preventDefault();
+
+            // Get stored sale ID
+            let id = $(this).data('id');
+
+            console.log('Deleting Sale ID:', id);
+
+            // Check ID
+            if (!id) {
+                console.error('Sale ID is missing.');
+                return;
+            }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Button
+        |--------------------------------------------------------------------------
+        */
+
+            let deleteButton =
+                $('#deleteForm button[type="submit"]');
+
+            deleteButton
+                .prop('disabled', true)
+                .html(`
+                <span class="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true">
+                </span>
+                Deleting...
+            `);
+
+            $.ajax({
+                url: '/admin/sales/' + id,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN':
+                        $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    // console.log('Delete successful:', response);
+                    const modalElement =  document.getElementById('deleteSale');
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modal.hide();
+                    if (typeof table !== 'undefined') {
+                        table.ajax.reload(null, false);
+                    }
+                    let message = response.message || 'Sale deleted successfully.';
+                    $('#alertsContainer').html(` <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${message} <button type="button" class="btn-close" data-bs-dismiss="alert"  aria-label="Close"> </button>
+                    </div>`);
+                },
+                error: function (xhr) {
+                    console.error('Delete error:', xhr);
+                    const modalElement = document.getElementById('deleteSale');
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modal.hide();
+                    let message =  xhr.responseJSON?.message || 'Something went wrong.';
+                    $('#alertsContainer').html(`<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`);
+
+                },
+                complete: function () {
+                    deleteButton
+                        .prop('disabled', false)
+                        .html(`
+                        {{ __('messages.delete') }}
+                        `);
+
+                }
+
+            });
+
+        });
+
+        });
 
     </script>
 @endpush

@@ -8,11 +8,33 @@ use Illuminate\Database\Eloquent\Model;
 class Sale extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'reference',
+        'warehouse_id',
+        'customer_id',
+        'user_id',
+        'cash_register_id',
+        'sale_type',
 
-    protected $fillable = ['reference', 'warehouse_id', 'customer_id', 'user_id', 'total_amount', 'status', 'date', 'status', 'payment_status', 'cash_register_id', 'sale_type'];
+        // ── Before / After ─────────────────
+        'subtotal',        // 👈 WAS MISSING
+        'discount',
+        'discount_value',
+        'discount_type',
+        // ───────────────────────────────────
+
+        'total_amount',
+        'payment_status',
+        'status',
+        'date',
+    ];
 
     protected $casts = [
-        'date' => 'datetime',
+        'date'           => 'datetime',
+        'subtotal'       => 'decimal:2',
+        'discount'       => 'decimal:2',
+        'discount_value' => 'decimal:2',
+        'total_amount'   => 'decimal:2',
     ];
 
     public function items()
