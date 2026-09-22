@@ -270,6 +270,7 @@ return [
     'banner' => 'បដា',
     'slug' => 'ស្លាក',
     'qualitys_list' => 'បញ្ជីគុណភាព',
+    'qualitys' => 'គុណភាព',
     'units' => 'ឯកតា',
     'units_list' => 'បញ្ជីឯកតា',
     'shop_info_updated' => 'បានធ្វើបច្ចុប្បន្នភាពព័ត៌មានហាង!',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Qualitys;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Ramsey\Uuid\Type\Integer;
 use Yajra\DataTables\Facades\DataTables;
 
 class QualitysController extends Controller
@@ -64,7 +65,17 @@ class QualitysController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+        ]);
+
+        $quality = Qualitys::create($validated);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Quality added successfully',
+            'quality' => $quality
+        ]);
     }
 
     /**
@@ -80,7 +91,10 @@ class QualitysController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $quality = Qualitys::findOrFail($id);
+        return response()->json(['quality' => $quality]);
+
+
     }
 
     /**
@@ -88,7 +102,17 @@ class QualitysController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $quality = Qualitys::findOrFail($id);
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+        ]);
+        $quality->update($validated);
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Quality updated successfully',
+            'quality'   => $quality
+        ]);
     }
 
     /**
@@ -96,6 +120,26 @@ class QualitysController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        Qualitys::destroy($id);
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Quality deleted successfully',
+            'destroy'   => true
+        ]);
+
     }
-}
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:quality,id', // Validate each ID exists in the quality table
+        ]);
+
+        Qualitys::whereIn('id', $request->ids)->delete();
+
+        return response()->json(['success' => 'Selected quality deleted successfully.']);
+
+    }
+
+    }

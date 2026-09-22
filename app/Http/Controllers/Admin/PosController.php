@@ -120,6 +120,9 @@ class PosController extends BaseController
             ->where('status', 'open')
             ->first();
 
+
+
+
         if (!$register) {
             return redirect()->route('pos.openRegister');
         }
@@ -150,6 +153,8 @@ class PosController extends BaseController
         $brands = Brand::all();
         $customers = Companies::where('group_id', 4)->get();
         $warehouse = Warehouses::where('id',1)->get();
+
+        $total = Sale::sum('total_amount');
         return view('admin.pos.index1', [
             'products' => $products,
             'categories' => $categories,
@@ -160,6 +165,7 @@ class PosController extends BaseController
             'customers' => $customers,
             'warehouse' => $warehouse,
             'records' => $register,
+            'total' => $total,
         ]);
     }
 
@@ -208,8 +214,9 @@ class PosController extends BaseController
                 : min($discountValue, $subtotal);
 
             $afterDiscount = round($subtotal - $discountAmt, 2);
-            $tax = round($afterDiscount * 0.08, 2);
-            $totalAmount = round($afterDiscount + $tax, 2);
+//            $tax = round($afterDiscount * 0.08, 2);
+//            $totalAmount = round($afterDiscount + $tax, 2);
+            $totalAmount = round($afterDiscount , 2);
 
             $amountPaid = (float) $request->amount_paid;
             $posBalance = round($amountPaid - $totalAmount, 2);
@@ -220,33 +227,37 @@ class PosController extends BaseController
 
             if ($sale && $sale->status === 'pending') {
                 $sale->update([
-                    'customer_id' => $request->customer_id ?? $sale->customer_id,
-                    'warehouse_id' => $request->warehouse_id ?? $sale->warehouse_id,
-                    'sale_type' => 'pos',
-                    'subtotal' => $subtotal,
-                    'discount' => $discountAmt,
-                    'discount_type' => $discountType,
-                    'discount_value' => $discountValue,
-                    'tax' => $tax,
-                    'total_amount' => $totalAmount,
-                    'status' => 'completed',
-                    'payment_status' => $paymentStatus,
-                    // 'note' => $request->note,
-                    'date' => now()->toDateString(),
+                    'customer_id'     => $request->customer_id ?? $sale->customer_id,
+                    'warehouse_id'    => $request->warehouse_id ?? $sale->warehouse_id,
+                    'sale_type'       => 'pos',
+                    'subtotal'        => $subtotal,       // ✅ saved
+                    'discount'        => $discountAmt,    // ✅ saved
+                    'discount_type'   => $discountType,   // ✅ saved
+                    'discount_value'  => $discountValue,  // ✅ saved
+                    'total_amount'    => $totalAmount,
+                    'status'          => 'completed',
+                    'payment_status'  => $paymentStatus,
+                    'date'            => now()->toDateString(),
                 ]);
             } else {
-            //     // Fallback: create a fresh sale
                 $sale = Sale::create([
-                    'reference' => Sale::generateReference(),
-                    'customer_id' => $request->customer_id ?? 4,
-                    'cash_register_id' => session('cash_register_id'),
-                    'user_id' => auth()->id(),
-                    'total_amount' => $totalAmount,
-                    'status' => 'completed',
-                    'payment_status' => $paymentStatus,
-                    'sale_type' => 'pos',
-                    // 'note' => $request->note,
-                    'date' => now()->toDateString(),
+                    'reference'       => Sale::generateReference(),
+                    'customer_id'     => $request->customer_id ?? 4,
+                    'cash_register_id'=> session('cash_register_id'),
+                    'user_id'         => auth()->id(),
+                    'warehouse_id'    => $request->warehouse_id,
+
+                    'subtotal'        => $subtotal,
+                    'discount'        => $discountAmt,
+                    'discount_type'   => $discountType,
+                    'discount_value'  => $discountValue,
+
+
+                    'total_amount'    => $totalAmount,
+                    'status'          => 'completed',
+                    'payment_status'  => $paymentStatus,
+                    'sale_type'       => 'pos',
+                    'date'            => now()->toDateString(),
                 ]);
             }
 
@@ -293,6 +304,8 @@ class PosController extends BaseController
             return $sale;
         });
 
+
+//        die($sale);
         return response()->json([
             'success' => true,
             'sale_id' => $sale->id,

@@ -294,6 +294,7 @@ return [
     'save_changes' => 'Save Changes',
     'updated_successfully' => 'Settings updated successfully!',
     'qualitys_list' => 'Qualitys List',
+    'qualitys' => 'Qualitys',
     'settings_list' => 'Settings List',
     'shop_settings' => 'Shop Settings',
     'shop_info' => 'Shop Info',

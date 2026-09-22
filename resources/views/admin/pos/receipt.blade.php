@@ -899,7 +899,7 @@
         $change = $payment?->pos_balance ?? 0;
         $subtotal = $sale->subtotal ?? $sale->total_amount;
         $discount = $sale->discount ?? 0;
-        $tax = $sale->tax ?? 0;
+//        $tax = $sale->tax ?? 0;
         $grandTotal = $sale->total_amount;
         $method = $payment?->method ?? 'cash';
         $statusMap = [
@@ -1018,7 +1018,7 @@
                         <span>${{ number_format($subtotal, 2) }}</span>
                     </div>
 
-                    @if($discount > 0)
+{{--                    @if($discount > 0)--}}
                         <div class="rcpt-total-row rcpt-total-row--disc">
                             <span>
                                 Discount
@@ -1028,14 +1028,14 @@
                             </span>
                             <span>−${{ number_format($discount, 2) }}</span>
                         </div>
-                    @endif
+{{--                    @endif--}}
 
-                    @if($tax > 0)
-                        <div class="rcpt-total-row">
-                            <span>Tax (8%)</span>
-                            <span>${{ number_format($tax, 2) }}</span>
-                        </div>
-                    @endif
+{{--                    @if($tax > 0)--}}
+{{--                        <div class="rcpt-total-row">--}}
+{{--                            <span>Tax (8%)</span>--}}
+{{--                            <span>${{ number_format($tax, 2) }}</span>--}}
+{{--                        </div>--}}
+{{--                    @endif--}}
 
                     <div class="rcpt-total-row rcpt-total-row--grand">
                         <span>Total</span>

@@ -103,7 +103,7 @@
                             </div>
                             <div class="col-md-6 text-end">
                                 <p>{{ $records->cash_in_hand }}</p>
-                                <p>{{ $records->total_cash }}</p>
+                                <p>{{ $total }}</p>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -122,13 +122,13 @@
                                     <label for="total_cash"
                                         class="form-label">{{ __('messages.total_cash') }}</label>
                                     <input type="text" class="form-control"
-                                        value="{{ ($records->total_cash ?? 0) + ($records->cash_in_hand ?? 0) }}"
+                                        value="{{ ($total ?? 0) + ($records->cash_in_hand ?? 0) }}"
                                         id="total_cash" name="total_cash">
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <label for="note" class="form-label">{{ __('messages.note') }}</label>
-                                <input type="text" class="form-control" value="{{ $records->cash_in_hand }}"
+                                <input type="text" class="form-control" value="Null"
                                     id="note">
                             </div>
                         </div>

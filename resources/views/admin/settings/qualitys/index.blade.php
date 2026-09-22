@@ -54,7 +54,7 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3"
                                             aria-labelledby="actionDropdown">
-                                            <li><a class="dropdown-item" href="#" id="addqualitysBtn">
+                                            <li><a class="dropdown-item" href="#" id="addQualitysBtn">
                                                     <i class="bi bi-plus-circle me-2"></i>{{ __('messages.add') }}</a>
                                             </li>
                                             <li><a class="dropdown-item" href="#" id="exportqualitys">
@@ -105,6 +105,104 @@
             </div>
         </section>
 
+        <!-- Edit Quality Modal -->
+        <div class="modal fade" id="editQualityModal" tabindex="-1" aria-labelledby="editQualityModalLabel" aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0 rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="editQualityModalLabel">Edit Quality</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="editQualityForm">
+                        @csrf
+                        <input type="hidden" name="_method" value="PUT">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="editName" class="form-label fw-medium">Quality Name</label>
+                                <input type="text" class="form-control rounded-3" name="name" id="editName" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm rounded-3">Update Quality</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteQualityModal" tabindex="-1" aria-labelledby="deleteQualityModalLabel"
+             aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0  rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="deleteQualityModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this Quality?
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                                data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteQualityForm" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm rounded-3">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel"
+             aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0 rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="bulkDeleteModalLabel">Confirm Bulk Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete the selected Qualitys?
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                                data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="confirmBulkDeleteBtn"
+                                class="btn btn-danger btn-sm rounded-3">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addQualityModal" tabindex="-1" aria-labelledby="addQualityModalLabel" aria-hidden="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-3 border-0 shadow">
+                    <div class="modal-header border-0 rounded-top-3">
+                        <h5 class="modal-title fw-semibold" id="addQualityModalLabel">Create Quality</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="createQualityForm">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-medium">Quality Name</label>
+                                <input type="text" class="form-control rounded-3" name="name" id="name" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-3"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm rounded-3">Save Quality</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
 
     </div>
 @endsection
@@ -126,7 +224,7 @@
                         data: 'id',
                         name: 'id',
                         render: function(data) {
-                            return `<input type="checkbox" class="brandCheckbox" value="${data}">`;
+                            return `<input type="checkbox" class="Checkbox" value="${data}">`;
                         },
                         orderable: false,
                         searchable: false
@@ -157,6 +255,149 @@
                     infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
                 }
             });
+
+
+            $('#addQualitysBtn').click(function() {
+                $('#createQualityForm')[0].reset();
+                $('#addQualityModal').modal('show');
+            });
+            // Create Quality
+            $('#createQualityForm').submit(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{{ route('qualitys.store') }}",
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#addQualityModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                Quality added successfully!
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + (response.responseJSON?.message || 'Unable to create'));
+                    }
+                });
+            });
+
+            const BaseUrl = "/admin/system_settings/qualitys/";
+
+            // Edit Qualitys (open modal)
+            $(document).on('click', '.editQuality', function() {
+                const id = $(this).data('id');
+                $.get(BaseUrl + id + "/edit", function(data) {
+
+                    $('#editQualityModal').modal('show');
+                    $('#editName').val(data.quality.name);
+                    $('#editQualityForm').attr('data-id', id);
+                }).fail(function() {
+                    alert('Unable to fetch Quality details.');
+                });
+            });
+            // Update Qualitys
+            $('#editQualityForm').submit(function(e) {
+                e.preventDefault();
+                const id = $(this).attr('data-id');
+                $.ajax({
+                    url: BaseUrl + id,
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#editQualityModal').modal('hide');
+                        table.ajax.reload();
+                        $('#alertsContainer').html(`
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + (response.responseJSON?.message || 'Unable to update'));
+                    }
+                });
+            });
+
+
+            $(document).on('click', '.deleteQuality', function() {
+                var id = $(this).data('id');
+                $('#deleteQualityForm').attr('action', BaseUrl + id);
+                $('#deleteQualityModal').modal('show');
+            });
+
+            $('#deleteQualityForm').submit(function(e) {
+                e.preventDefault();
+                var id = $(this).attr('action').split('/').pop();
+                $.ajax({
+                    url: BaseUrl + id,
+                    method: 'DELETE',
+                    success: function(response) {
+                        $('#deleteQualityModal').modal('hide');
+                        table.ajax.reload();
+                        const successAlert = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                Quality Delete successfully!
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        $('#alertsContainer').html(successAlert);
+                    },
+                    error: function(response) {
+                        alert('Error: ' + response.responseJSON.message);
+                    }
+                });
+            });
+
+
+
+            $('#bulkDeleteBtn').on('click', function() {
+                var selectedIds = $('.Checkbox:checked').map(function() { return $(this).val(); }).get();
+
+                if (selectedIds.length > 0) {
+                    $('#bulkDeleteModal .modal-body').text(
+                        `Are you sure you want to delete ${selectedIds.length} selected group(s)?`
+                    );
+                    $('#bulkDeleteModal').modal('show');
+
+                    $('#confirmBulkDeleteBtn').off('click').on('click', function() {
+                        $.ajax({
+                            url: "{{ route('groups.bulkDelete') }}",
+                            method: 'POST',
+                            data: { ids: selectedIds },
+                            success: function(response) {
+                                $('#bulkDeleteModal').modal('hide');
+                                table.ajax.reload();
+                                $('#alertsContainer').html(`
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        ${response.success || 'Selected group(s) deleted successfully!'}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                `);
+                            },
+                            error: function(response) {
+                                alert('Error: ' + (response.responseJSON?.message || 'Unable to delete'));
+                            }
+                        });
+                    });
+                } else {
+                    // alert('Please select at least one group.');
+                    $('#alertsContainer').html(`
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            Please select at least one group.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `);
+                }
+            });
+
+
+
+
+
+
         });
 </script>
 @endpush

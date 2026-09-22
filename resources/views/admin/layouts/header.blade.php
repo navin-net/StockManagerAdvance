@@ -15,7 +15,7 @@
             <div class="d-flex align-items-center gap-2 ">
 
                 <!-- 🌐 Language Switch -->
-                <div class="btn-group">
+                <div class="btn-group desktop-only">
                     <button class="btn nbt-outline-custom dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
                         <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
@@ -40,7 +40,7 @@
                 </div>
 
                 <!-- 🎨 Theme Switch -->
-                <div class="btn-group">
+                <div class="btn-group desktop-only">
                     <button class="btn btn-outline-custom dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-moon-stars me-2"></i>
                         <span id="currentThemeLabel">Dark</span>
@@ -60,14 +60,14 @@
                 </div>
 
                 <!-- ⚠️ Alerts -->
-                <div class="btn-group">
+                <div class="btn-group desktop-only">
                     <button class="btn btn-outline-danger position-relative dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                             id="cartBadge" style="display:none;">0</span>
                     </button>
 
-                    <div class="dropdown-menu dropdown-menu-end p-2" style="width: 300px;">
+                    <div class="dropdown-menu dropdown-menu-end p-2 " style="width: 300px;">
                         <h6 class="dropdown-header text-danger">Alerts</h6>
                         <div id="alertList"></div>
                         <hr class="dropdown-divider">
@@ -76,11 +76,11 @@
                         </a>
                     </div>
                 </div>
-                <div class="btn-group">
-                    <a href="{{ url('/') }}" class="btn btn-primary" title="{{ __('messages.shop') }}">
-                        <i class="bi bi-shop-window"></i>
-                    </a>
-                </div>
+{{--                <div class="btn-group">--}}
+{{--                    <a href="{{ url('/') }}" class="btn btn-primary" title="{{ __('messages.shop') }}">--}}
+{{--                        <i class="bi bi-shop-window"></i>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
                 <!-- POS Button -->
                 <div class="btn-group">
                     <a href="{{ route('pos.index') }}" class="btn btn-success">
@@ -89,7 +89,7 @@
                 </div>
 
                 <!-- 👤 User Menu -->
-                <div class="btn-group">
+                <div class="btn-group desktop-only">
                     <button class="btn btn-outline-custom dropdown-toggle d-flex align-items-center"
                         data-bs-toggle="dropdown">
                         <img src="{{ Auth::user() && Auth::user()->avatar

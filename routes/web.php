@@ -23,29 +23,31 @@ use App\Http\Controllers\Api\Shop\CartController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/cartas', [CartController::class, 'getCartByToken']);
+//Route::get('/cartas', [CartController::class, 'getCartByToken']);
 
 // Route::get('/',function(){
 //     return view('admin-v2.dashbord.index');
 // });
-Route::get('/checkout', function () {
-    return view('login');
-});
-
-
-Route::get('/testingsa',[BaseController::class, 'testing']);
-
-Route::get('/users/import', [BaseController::class, 'showImportForm'])
-    ->name('users.import.form');
-Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
-
-Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
-Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
-
-Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
+//Route::get('/checkout', function () {
+//    return view('login');
+//});
+//
+//
+//Route::get('/testingsa',[BaseController::class, 'testing']);
+//
+//Route::get('/users/import', [BaseController::class, 'showImportForm'])
+//    ->name('users.import.form');
+//Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
+//
+//Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
+//Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
+//
+//Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:3,1');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 
@@ -73,4 +75,4 @@ Route::get('/test-mail', function () {
 
 
 require __DIR__ . '/admin.php';
-require __DIR__ . '/shop.php';
+//require __DIR__ . '/shop.php';
