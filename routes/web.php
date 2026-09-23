@@ -4,7 +4,11 @@ use App\Http\Controllers\{
     LanguageController,
     CookieController,
 };
-use App\Http\Controllers\Admin\{AuthController, BaseController, ProductController, ReportsController};
+use App\Http\Controllers\Admin\{
+    AuthController,
+    BaseController,
+    ProductController,
+};
 use App\Http\Controllers\Api\Shop\CartController;
 
 
@@ -19,31 +23,29 @@ use App\Http\Controllers\Api\Shop\CartController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-//Route::get('/cartas', [CartController::class, 'getCartByToken']);
+Route::get('/cartas', [CartController::class, 'getCartByToken']);
 
 // Route::get('/',function(){
 //     return view('admin-v2.dashbord.index');
 // });
-//Route::get('/checkout', function () {
-//    return view('login');
-//});
-//
-//
-//Route::get('/testingsa',[BaseController::class, 'testing']);
-//
-//Route::get('/users/import', [BaseController::class, 'showImportForm'])
-//    ->name('users.import.form');
-//Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
-//
-//Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
-//Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
-//
-//Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
-//Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/checkout', function () {
+    return view('login');
+});
+
+
+Route::get('/testingsa',[BaseController::class, 'testing']);
+
+Route::get('/users/import', [BaseController::class, 'showImportForm'])
+    ->name('users.import.form');
+Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
+
+Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
+Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
+
+Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:3,1');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 
@@ -66,14 +68,9 @@ Route::get('/test-mail', function () {
     return 'Mail Sent!';
 });
 
-Route::get('reports/daily-sales', [ReportsController::class, 'dailySalesReport'])
-    ->name('admin.reports.daily-sales');
-
-Route::get('reports/daily-sales/pdf', [ReportsController::class, 'dailySalesReportPdf'])
-    ->name('admin.reports.daily-sales.pdf');
 
 
 
 
 require __DIR__ . '/admin.php';
-//require __DIR__ . '/shop.php';
+require __DIR__ . '/shop.php';
