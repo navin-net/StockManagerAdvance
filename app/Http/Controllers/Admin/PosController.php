@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Admin\BaseController;
-use App\Models\{Brand, Categories, Companies, Payment, Products, Sale, SaleItem, Warehouses};
+use App\Models\{Brand, Categories, Companies, Payment, Products, Sale, SaleItem, Warehouses,PosRegisters};
 
 class PosController extends BaseController
 {
@@ -148,13 +148,21 @@ class PosController extends BaseController
             ->leftJoin('sub_categories', 'products.subcategory_id', '=', 'sub_categories.id')
             ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
             ->get();
-        // dd($register);
+
+        $id = PosRegisters::where('user_id', auth()->id())->first()->id;
+
+//        dd($id);
+
+
         $categories = Categories::all();
         $brands = Brand::all();
         $customers = Companies::where('group_id', 4)->get();
         $warehouse = Warehouses::where('id',1)->get();
 
-        $total = Sale::sum('total_amount');
+        $total = Sale::where('cash_register_id', $id)->sum('total_amount');
+
+//        dd($total);
+
         return view('admin.pos.index1', [
             'products' => $products,
             'categories' => $categories,
@@ -169,15 +177,18 @@ class PosController extends BaseController
         ]);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function store(Request $request)
     {
         $request->validate([
             'customer_id' => 'nullable|exists:companies,id',
-            'warehouse_id' => 'required',
+//            'warehouse_id' => 'required',
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|exists:products,id',
             'cart.*.qty' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,card,qr',
+            'payment_method' => 'required|in:cash,card,qr,bank',
             'amount_paid' => 'required|numeric|gt:0',
             'discount_type' => 'nullable|in:fixed,percentage',
             'discount_value' => 'nullable|numeric|min:0',

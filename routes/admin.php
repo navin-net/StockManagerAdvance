@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\{AuthController, BillerController, BrandController, CategoriesController, CustomerController, GroupsController, PortfolioController, PosController, ProductController, ProfileController, PurchasesController, QualitysController, ReportsController, SalesController, ShopController, SubCategoryController, UnitController, UserController, WarehouseController};
+use App\Http\Controllers\Admin\{AuthController, BillerController,SupplierController, BrandController, CategoriesController, CustomerController, GroupsController, PortfolioController, PosController, ProductController, ProfileController, PurchasesController, QualitysController, ReportsController, SalesController, ShopController, SubCategoryController, UnitController, UserController, WarehouseController};
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
@@ -85,6 +86,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             ->name('customers.users.edit');
         Route::delete('/users/{id}/delete', [CustomerController::class, 'deleteUser'])->name('customers.users.delete');
     });
+
+    Route::resource('suppliers',SupplierController::class)->except(['show']);
     // Setting system
     Route::prefix('system_settings')->group(function () {
         Route::resource('/groups', GroupsController::class)->except(['show']);
@@ -108,8 +111,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
         Route::get('/daily-sales/pdf', [ReportsController::class, 'dailySalesReportPdf'])
             ->name('reports.daily-sales.pdf');
+        Route::get('/product-sales', [ReportsController::class, 'productSalesReport'])
+            ->name('reports.product-sales');
 
+        Route::get('reports/monthly-purchases', [ReportsController::class, 'monthly_purchases'])
+            ->name('admin.reports.monthly-purchases');
 
+        Route::get('reports/daily-purchases', [ReportsController::class, 'dailyPurchasesReport'])
+            ->name('admin.reports.daily-purchases');
+
+        Route::get('reports/daily-purchases/pdf', [ReportsController::class, 'dailyPurchasesReportPdf'])
+            ->name('admin.reports.daily-purchases.pdf');
+
+        Route::get('reports/open-register',[ReportsController::class, 'openRegisterReport'])->name('reports.open-register');
     });
 
     Route::prefix('shop')->group(function () {
@@ -134,12 +148,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         });
         Route::post('/store', [PosController::class, 'store'])->name('store');
         Route::get('/receipt/{sale}',  [PosController::class, 'receipt'])->name('receipt');
-        Route::get('/customer-display', function () {
-            return view('customer-display');
-        });
+        Route::post('add-cash',[PosController::class,'addCash'])->name('add-cash');
+
+//        Route::get('/customer-display', function () {
+//            return view('customer-display');
+//        });
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 });
-

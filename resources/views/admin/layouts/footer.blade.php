@@ -71,75 +71,209 @@
     </div>
 
     <div class="modal fade" id="closePos" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="closePosLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header d-flex justify-content-between align-items-center">
-                    <h1 class="modal-title fs-5 mb-0" id="closePosLabel">
-                        {{ __('messages.close_register') }}
-                        {{ now()->setTimezone('Asia/Phnom_Penh')->format('Y-m-d H:i:s') }}
-                    </h1>
+         aria-labelledby="closePosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content pos-modal">
 
-                    <div class="d-flex gap-2 align-items-center">
-                        <!-- Print Button -->
-                        <button type="button" class="btn btn-outline-success btn-sm"
-                            onclick="printAnyModal('closePos')">
-                            <i class="bi bi-printer me-1"></i> {{ __('messages.print') }}
-                        </button>
-
-                        <!-- Close Button (X) -->
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
+                <!-- Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="closePosLabel">
+                        <i class="bi bi-power me-2"></i>{{ __('messages.close_register') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST" action="{{ route('pos.close-register') }}" class="d-inline">
+
+                <form method="POST" action="{{ route('pos.close-register') }}">
                     @csrf
+                    <!-- Body -->
                     <div class="modal-body">
-                        <p>{{ __('messages.cpr') }}</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p>Cash in hand:</p>
-                                <p>Cash Payment:</p>
+                        <p class="text-muted mb-3">{{ __('messages.cpr') }}</p>
+
+                        <div class="row g-2">
+
+                            <!-- Cash In Hand (editable) -->
+                            <div class="col-6">
+                                <label for="cash_in_hand" class="pos-field-label">{{ __('messages.cash_in_hand') }}</label>
+                                <input min="0" step="0.01" type="number" id="cash_in_hand" name="cash_in_hand"
+                                       class="pos-input w-100 fw-bold @error('cash_in_hand') is-invalid @enderror"
+                                       value="{{ $records->cash_in_hand }}" required>
+                                @error('cash_in_hand')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
-                            <div class="col-md-6 text-end">
-                                <p>{{ $records->cash_in_hand }}</p>
-                                <p>{{ $total }}</p>
+
+                            <!-- Cash Payment -->
+                            <div class="col-6">
+                                <label class="pos-field-label">{{ __('messages.cash_payment') ?? 'Cash Payment' }}</label>
+                                <input type="text" class="pos-input w-100" value="{{ $total }}" readonly>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="cash_in_hand"
-                                        class="form-label">{{ __('messages.cash_in_hand') }}</label>
-                                    <input min="0" id="cash_in_hand" name="cash_in_hand"
-                                        class="form-control @error('cash_in_hand') is-invalid @enderror"
-                                        value="{{ $records->cash_in_hand }}" required>
-                                    @error('cash_in_hand')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+
+                            <!-- Note (editable) -->
+                            <div class="col-6">
+                                <label for="note" class="pos-field-label">{{ __('messages.note') }}</label>
+                                <input type="text" id="note" name="note" class="pos-input w-100" value="Null">
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="total_cash"
-                                        class="form-label">{{ __('messages.total_cash') }}</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ ($total ?? 0) + ($records->cash_in_hand ?? 0) }}"
-                                        id="total_cash" name="total_cash">
-                                </div>
+
+                            <!-- Total Cash -->
+                            <div class="col-6">
+                                <label class="pos-field-label">{{ __('messages.total_cash') }}</label>
+                                <input type="text" id="total_cash" name="total_cash" class="pos-input w-100 fw-bold"
+                                       value="{{ ($total ?? 0) + ($records->cash_in_hand ?? 0) }}" readonly>
                             </div>
-                            <div class="col-md-12">
-                                <label for="note" class="form-label">{{ __('messages.note') }}</label>
-                                <input type="text" class="form-control" value="Null"
-                                    id="note">
-                            </div>
+
                         </div>
                     </div>
 
+                    <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-power me-1"></i> {{ __('messages.close') }}
+                        <button type="button" class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">
+                            {{ __('messages.cancel') ?? 'Cancel' }}
+                        </button>
+                        <button type="button" class="pos-btn pos-btn--ghost" onclick="printAnyModal('closePos')">
+                            <i class="bi bi-printer me-1"></i>{{ __('messages.print') }}
+                        </button>
+                        <button type="submit" class="pos-btn pos-btn--primary">
+                            <i class="bi bi-lock me-1"></i>{{ __('messages.close') }}
                         </button>
                     </div>
                 </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addCash" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content pos-modal">
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-cash-coin me-2"></i>Add / Remove Cash
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="cashForm">
+                    @csrf
+                    <!-- Body -->
+                    <div class="modal-body">
+
+                        <!-- Current balance (context, read-only) -->
+                        <div class="pos-balance-note mb-3 p-2 rounded d-flex justify-content-between align-items-center">
+                            <span class="pos-field-label mb-0">Current Balance</span>
+                            <span class="fw-bold">480.00</span>
+                        </div>
+
+                        <div class="row g-2">
+
+                            <!-- Type -->
+                            <div class="col-12">
+                                <label class="pos-field-label">Type *</label>
+                                <div class="d-flex gap-2">
+                                    <label class="pos-btn pos-btn--ghost flex-fill text-center mb-0">
+                                        <input type="radio" name="type" value="in" class="form-check-input me-1" checked>
+                                        <i class="bi bi-plus-circle me-1"></i>Cash In
+                                    </label>
+                                    <label class="pos-btn pos-btn--ghost flex-fill text-center mb-0">
+                                        <input type="radio" name="type" value="out" class="form-check-input me-1">
+                                        <i class="bi bi-dash-circle me-1"></i>Cash Out
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-12">
+                                <label class="pos-field-label">Amount *</label>
+                                <input type="number" step="0.01" min="0.01" name="amount" id="amount" class="pos-input w-100" placeholder="Enter amount">
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="col-12">
+                                <label class="pos-field-label">Reason</label>
+                                <textarea name="reason" id="reason" class="pos-input w-100" rows="2" placeholder="e.g. Change top-up, bank deposit"></textarea>
+                            </div>
+
+                        </div>
+
+                        <!-- Message -->
+                        <div id="cashMsg" class="mt-2 small text-muted"></div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="pos-btn pos-btn--primary">
+                            {{ __('messages.submit') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="registerDetail" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content pos-modal">
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-cash-register me-2"></i>Cash Register Details
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center ">
+                        <span class="pos-field-label mb-0">Cash in Hand</span>
+                        <span class="text-secondary">{{ $records->cash_in_hand }}</span>
+                    </div>
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center">
+                        <span class="pos-field-label mb-0">Total Sale Amount</span>
+                        <span class="text-secondary">480.00</span>
+                    </div>
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center ">
+                        <span class="pos-field-label mb-0">Total Payment</span>
+                        <span class="text-secondary">480.00</span>
+                    </div>
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center">
+                        <span class="pos-field-label mb-0">Cash Payment</span>
+                        <span class="text-secondary">480.00</span>
+                    </div>
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center">
+                        <span class="pos-field-label mb-0">Total Expense</span>
+                        <span class="text-secondary">480.00</span>
+                    </div>
+
+                    <div class="pos-balance-note p-2 rounded d-flex justify-content-between align-items-center">
+                        <span class="mb-0 fw-bold">Total Cash</span>
+                        <span class="fw-bold">{{ number_format($total, 2) }}</span>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="pos-btn pos-btn--primary"
+                            data-bs-dismiss="modal"
+                            data-bs-toggle="modal"
+                            data-bs-target="#closeRegisterModal">
+
+                        <i class="bi bi-lock me-1"></i>Cancel
+
+                    </button>
+
+                </div>
+
             </div>
         </div>
     </div>

@@ -258,11 +258,10 @@ class ProductController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => true,
-                'message' => __('messages.product_updated') . ' - ' . $product->name,
-                'redirect' => route('products.index')
-            ]);
+            return redirect()->route('products.index')
+                ->with('success', __('messages.product_updated') . ' - ' . $product->name);
+
+
         } catch (\Exception $e) {
             DB::rollBack();
 

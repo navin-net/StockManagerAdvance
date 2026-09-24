@@ -30,6 +30,34 @@
     <link rel="stylesheet" href="{{ asset('backend/DataTables/datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/style-custom.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        #paymentMethodGroup button.pos-method-btn,
+        #bankSelectorGroup button.pos-method-btn {
+            border: 1px solid var(--wire2) !important;
+            background: var(--ink3) !important;
+            color: var(--chalk) !important;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+            font-size: 0.9rem !important;
+            transition: background var(--trans), border-color var(--trans), color var(--trans) !important;
+            box-shadow: none !important;
+        }
+
+        #paymentMethodGroup button.pos-method-btn:hover,
+        #bankSelectorGroup button.pos-method-btn:hover {
+            border-color: var(--lime) !important;
+        }
+
+        #paymentMethodGroup button.pos-method-btn.active,
+        #bankSelectorGroup button.pos-method-btn.active {
+            background: var(--lime) !important;
+            color: #ffffff !important;
+            border-color: var(--lime) !important;
+            font-weight: 600 !important;
+        }
+    </style>
+
+
     @stack('styles')
 </head>
 @php

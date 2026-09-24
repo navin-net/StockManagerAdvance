@@ -7,7 +7,6 @@ use App\Models\{Purchase, Sale, User};
 class Payment extends Model
 {
 
-
     public $timestamps = false;
 
     protected $fillable = [
@@ -16,19 +15,21 @@ class Payment extends Model
         'reference',
         'method',
         'amount',
+        'status',
         'paid_at',
-        'note',
         'attachment',
         'pos_paid',
         'pos_balance',
         'created_by',
+        'note',
     ];
-
 
     protected $casts = [
-        'paid_at' => 'datetime',
+        'amount'      => 'decimal:2',
+        'pos_paid'    => 'decimal:2',
+        'pos_balance' => 'decimal:2',
+        'paid_at'     => 'datetime',
     ];
-
 
 
     public function sale()

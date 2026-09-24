@@ -238,6 +238,14 @@ return [
     'cancelled' => 'Cancelled',
     'item_count' => 'Item Count',
     'items' => 'Items',
+    'spc' => 'Search products, code…',
+    'cie' => 'Cart is empty',
+    'tpa' => 'Tap a product to add',
+    'total_due' => 'Total Due',
+    'charge' => 'Charge',
+    'finalize_sale' => 'Finalize Sale',
+    'CONFIRM_CHARGE' => 'CONFIRM & CHARGE',
+    'order' => 'Order',
     'quantity' => 'Quantity',
     'confirm_sale_submission' => 'Confirm Sale Submission',
     'confirm_submission' => 'Confirm Submission',
@@ -257,6 +265,14 @@ return [
     'customers_list' => 'Customers List',
     'customer' => 'Customer',
 
+    /* ================ Suppliers =================*/
+    'add_supplier' => 'Add Supplier',
+    'edit_supplier' => 'Edit Supplier',
+    'supplier_created' => 'Supplier added successfully!',
+    'supplier_updated' => 'Supplier updated successfully!',
+    'supplier_deleted_successfully' => 'Supplier deleted successfully!',
+    'list_suppliers' => 'Supplier List',
+    'suppliers' => 'Supplier',
 
     /* ================= Users & Billers ================= */
     'users' => 'Users',

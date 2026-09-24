@@ -2,12 +2,8 @@
 @section('title', $pageTitle)
 
 @section('content')
-    @push('styles')
-    @endpush
 
-    {{-- ─────────────────────────────────────────────────────────
-    HIDDEN DISCOUNT FIELDS (read by recalcTotals + submit)
-    ──────────────────────────────────────────────────────────── --}}
+    {{-- HIDDEN DISCOUNT FIELDS (read by recalcTotals + submit) --}}
     <input type="hidden" id="discountType" value="fixed">
     <input type="hidden" id="discountValue" value="0">
 
@@ -16,26 +12,26 @@
         {{-- ══════════ COL 1 — BRAND SIDEBAR ══════════ --}}
         <aside class="pos-sidebar">
             <div class="pos-sidebar__head">
-                <span class="pos-sidebar__label">Brands</span>
+                <span class="pos-sidebar__label">{{ __('messages.brands') }}</span>
             </div>
             <div class="pos-sidebar__search">
                 <i class="bi bi-search"></i>
-                <input type="text" id="brandSearch" placeholder="Search…" oninput="filterBrands()">
+                <input type="text" id="brandSearch" placeholder="{{ __('messages.search') }}…" oninput="filterBrands()">
             </div>
             <div class="pos-sidebar__list" id="brandList">
 
                 <button class="brand-btn active" data-brand="all" onclick="selectBrand(this,'all')">
                     <span class="brand-btn__icon">🏪</span>
-                    <span class="brand-btn__name">All</span>
+                    <span class="brand-btn__name">{{ __('messages.all') }}</span>
                     <span class="brand-btn__count" id="brandCntAll">{{ $products->count() }}</span>
                 </button>
 
                 @foreach ($brands as $brand)
                     <button class="brand-btn" data-brand="{{ $brand->id }}"
-                        onclick="selectBrand(this,'{{ $brand->id }}')">
+                            onclick="selectBrand(this,'{{ $brand->id }}')">
                         <span class="brand-btn__icon">
                             <img src="{{ $brand->image ? asset('storage/images/' . $brand->image) : asset('noimage.png') }}"
-                                alt="{{ $brand->name }}">
+                                 alt="{{ $brand->name }}">
                         </span>
                         <span class="brand-btn__name">{{ $brand->name }}</span>
                         <span class="brand-btn__count">
@@ -54,18 +50,18 @@
             <div class="pos-searchbar">
                 <div class="pos-search-wrap">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search products, code…" oninput="filterProducts()">
-                    <button class="pos-search-clear" onclick="clearSearch()"></button>
+                    <input type="text" id="searchInput" placeholder="{{ __('messages.spc') }}" oninput="filterProducts()">
+                    <button type="button" class="pos-search-clear" onclick="clearSearch()"></button>
                 </div>
-                <div class="pos-count"><span id="resCount">{{ $products->count() }}</span> items</div>
+                <div class="pos-count"><span id="resCount">{{ $products->count() }}</span> {{ __('messages.items') }}</div>
             </div>
 
             {{-- Category bar --}}
             <div class="pos-catbar">
                 <div class="pos-catbar__label"><i class="bi bi-grid-3x3-gap"></i></div>
                 <div class="pos-catbar__scroll" id="catScroller">
-                    <button class="pos-cat-tab active" data-cat="all" onclick="selectCat(this,'all')">
-                        All <span class="pos-cat-tab__cnt">{{ $products->count() }}</span>
+                    <button class="pos-cat-tab active" data-cat="all">
+                        {{ __('messages.all') }} <span class="pos-cat-tab__cnt">{{ $products->count() }}</span>
                     </button>
                     {{-- dynamically rebuilt by JS --}}
                 </div>
@@ -83,39 +79,34 @@
 
                     @forelse($products as $product)
                         <div class="pos-pcard {{ $product->stock_quantity <= 0 ? 'pos-pcard--out' : '' }}"
-                            data-id="{{ $product->id }}" data-brand="{{ $product->brand_id }}"
-                            data-cat="{{ $product->category ?? '' }}" data-subcat="{{ $product->subcategory ?? '' }}"
-                            data-name="{{ strtolower($product->name) }}"
-                            data-code="{{ strtolower($product->code ?? '') }}" data-price="{{ $product->selling_price }}"
-                            data-stock="{{ $product->stock_quantity }}"
-                            data-image="{{ $product->image ? asset('storage/' . $product->image) : asset('noimage.png') }}"
-                            onclick="addToCart(this)">
+                             data-id="{{ $product->id }}" data-brand="{{ $product->brand_id }}"
+                             data-cat="{{ $product->category ?? '' }}" data-subcat="{{ $product->subcategory ?? '' }}"
+                             data-name="{{ mb_strtolower($product->name) }}"
+                             data-code="{{ mb_strtolower($product->code ?? '') }}" data-price="{{ $product->selling_price }}"
+                             data-stock="{{ $product->stock_quantity }}"
+                             data-image="{{ $product->image ? asset('storage/' . $product->image) : asset('noimage.png') }}"
+                             onclick="addToCart(this)">
 
                             <div class="pos-pcard__img">
                                 @if ($product->stock_quantity <= 0)
-                                    <span class="pos-pcard__badge pos-pcard__badge--out">Out</span>
+                                    <span class="pos-pcard__badge pos-pcard__badge--out">{{ __('messages.out') }}</span>
                                 @elseif($product->stock_quantity <= 5)
-                                    <span class="pos-pcard__badge pos-pcard__badge--low">Low</span>
+                                    <span class="pos-pcard__badge pos-pcard__badge--low">{{ __('messages.low') }}</span>
                                 @endif
                                 <img src="{{ $product->image ? asset('storage/' . $product->image) : asset('noimage.png') }}"
-                                    alt="{{ $product->name }}">
+                                     alt="{{ $product->name }}">
                             </div>
 
                             <div class="pos-pcard__body">
                                 <div class="pos-pcard__name" title="{{ $product->name }}">{{ $product->name }}</div>
                                 <div class="pos-pcard__price">${{ number_format($product->selling_price, 2) }}</div>
                                 <div class="pos-pcard__stock">
-                                    {{ $product->stock_quantity <= 0 ? 'Out of stock' : $product->stock_quantity . ' in stock' }}
+                                    {{ $product->stock_quantity <= 0 ? __('messages.out_of_stock') : $product->stock_quantity . ' ' . __('messages.in_stock') }}
                                 </div>
                             </div>
-
-                            {{-- <div class="pos-pcard__plus"><i class="bi bi-plus-lg"></i></div> --}}
                         </div>
                     @empty
-                        <div class="pos-empty">
-                            {{-- <i class="bi bi-box-seam"></i> --}}
-                            {{-- <p>No products</p> --}}
-                        </div>
+                        <div class="pos-empty"></div>
                     @endforelse
 
                     {{-- No results placeholder --}}
@@ -125,8 +116,8 @@
                             <div class="x-mark"></div>
                             <div class="search-handle"></div>
                         </div>
-                        <p>No products match</p>
-                        <small>Try a different keyword or filter</small>
+                        <p>{{ __('messages.no_products_match') }}</p>
+                        <small>{{ __('messages.try_different') }}</small>
                         <div class="dots">
                             <div class="dot"></div>
                             <div class="dot"></div>
@@ -145,16 +136,17 @@
             <div class="pos-cart__head">
                 <div>
                     <div class="pos-cart__title">
-                        ORDER <span class="pos-cart__badge" id="cartCount">0</span>
+                        {{ __('messages.order') }} <span class="pos-cart__badge" id="cartCount">0</span>
                     </div>
                     <div class="pos-cart__subtitle">{{ $records->reference }}</div>
                 </div>
                 <div class="pos-cart__actions">
-                    <button class="pos-ibtn" data-bs-toggle="modal" data-bs-target="#barcodeModal" title="Barcode scan">
+                    <button class="pos-ibtn" data-bs-toggle="modal" data-bs-target="#barcodeModal"
+                            title="{{ __('messages.barcode_scan') }}">
                         <i class="bi bi-upc-scan"></i>
                     </button>
                     <button class="pos-ibtn pos-ibtn--danger" data-bs-toggle="modal" data-bs-target="#cancelModal"
-                        title="Cancel order">
+                            title="{{ __('messages.cancel_order') }}">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -162,104 +154,61 @@
 
             {{-- Customer --}}
             <div class="pos-cart__section">
-                <div class="pos-field-label"><i class="bi bi-person-circle"></i> Customer</div>
+                <div class="pos-field-label"><i class="bi bi-person-circle"></i> {{ __('messages.customer') }}</div>
                 <div class="d-flex gap-2 mb-2">
                     <select id="customerSelect" class="pos-select flex-fill">
-                        <option value="">— Select Customer —</option>
+                        <option value="">— {{ __('messages.select_customer') }} —</option>
                         @foreach ($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ $customer->id == 6 ? 'selected' : '' }}>
+                            {{-- Pass $defaultCustomerId from the controller; falls back to 6 --}}
+                            <option value="{{ $customer->id }}"
+                                {{ $customer->id == ($defaultCustomerId ?? 6) ? 'selected' : '' }}>
                                 {{ $customer->name }}
                             </option>
                         @endforeach
                     </select>
-                    {{-- <button class="pos-ibtn" title="Add new customer" onclick="alert('Open add-customer modal here')">
-                        --}}
-                    <button class="pos-ibtn" title="Add new customer" data-bs-toggle="modal"
-                        data-bs-target="#addcustomerModal">
+                    <button class="pos-ibtn" title="{{ __('messages.add_new_customer') }}" data-bs-toggle="modal"
+                            data-bs-target="#addcustomerModal">
                         <i class="bi bi-person-plus"></i>
                     </button>
                 </div>
-                <div class="pos-field-label mb-1">
-                    <i class="bi bi-building"></i> {{ __('messages.warehouse') }}
-                </div>
-                <div class="d-flex gap-2">
-                    <select id="warehouseSelect" class="pos-select flex-fill locked" disabled>
-                        <option value="">— Select Customer —</option>
-                        @foreach ($warehouse as $customer)
-                            <option value="{{ $customer->id }}" {{ $customer->id == 1 ? 'selected' : '' }}>
-                                {{ $customer->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
             </div>
-
-            {{-- Discount inline --}}
-            {{-- <div class="pos-discount-row">
-                <div class="pos-field-label mb-0" style="white-space:nowrap;">
-                    <i class="bi bi-tag"></i> Discount
-                </div>
-                <select class="pos-select" style="width:85px;" onchange="setDiscountType(this.value)">
-                    <option value="fixed">$ Fixed</option>
-                    <option value="percentage">% Pct</option>
-                </select>
-                <input type="number" class="pos-input flex-fill" id="discountInput" placeholder="0" min="0" step="0.01"
-                    oninput="setDiscountValue(this.value)">
-            </div> --}}
 
             {{-- Cart items --}}
             <div class="pos-cart__items" id="cartItems">
                 <div class="pos-cart__empty" id="cartEmpty">
                     <i class="bi bi-bag-x"></i>
-                    <p>Cart is empty</p>
-                    <small>Tap a product to add</small>
+                    <p>{{ __('messages.cie') }}</p>
+                    <small>{{ __('messages.tpa') }}</small>
                 </div>
             </div>
 
             {{-- Totals --}}
             <div class="pos-cart__totals">
                 <div class="pos-total-row">
-                    <span>Subtotal</span>
+                    <span>{{ __('messages.subtotal') }}</span>
                     <span id="totSubtotal">$0.00</span>
                 </div>
                 <div class="pos-total-row pos-total-row--disc">
                     <span>
-                        Discount
+                        {{ __('messages.discount') }}
                         <i class="bi bi-pencil-square ms-1 text-primary" style="cursor:pointer" data-bs-toggle="modal"
-                            data-bs-target="#discountModal"></i>
+                           data-bs-target="#discountModal"></i>
                     </span>
                     <span id="totDiscount">−$0.00</span>
                 </div>
-{{--                <div class="pos-total-row">--}}
-{{--                    <span>Tax (8%)</span>--}}
-{{--                    <span id="totTax">$0.00</span>--}}
-{{--                </div>--}}
                 <hr class="pos-sep">
                 <div class="pos-total-row pos-total-row--grand">
-                    <span>Total Due</span>
+                    <span>{{ __('messages.total_due') }}</span>
                     <span id="totGrand">$0.00</span>
                 </div>
             </div>
 
-            {{-- Payment method --}}
-            {{-- <div class="pos-pay-methods">
-                <button class="pos-pay-btn active" data-method="cash" onclick="selectPayMethod(this,'cash')">
-                    <i class="bi bi-cash-stack"></i> Cash
-                </button>
-                <button class="pos-pay-btn" data-method="card" onclick="selectPayMethod(this,'card')">
-                    <i class="bi bi-credit-card-2-front"></i> Card
-                </button>
-                <button class="pos-pay-btn" data-method="qr" onclick="selectPayMethod(this,'qr')">
-                    <i class="bi bi-qr-code-scan"></i> QR Pay
-                </button>
-            </div> --}}
-
             {{-- Charge button --}}
             <div class="pos-cart__footer">
                 <button class="pos-charge-btn" id="chargeBtn" disabled data-bs-toggle="modal"
-                    data-bs-target="#paymentModal">
+                        data-bs-target="#paymentModal">
                     <i class="bi bi-bag-check-fill"></i>
-                    <span>CHARGE</span>
+                    <span>{{ __('messages.charge') }}</span>
                     <span id="chargeAmt">$0.00</span>
                 </button>
             </div>
@@ -281,236 +230,234 @@
     {{-- ═══════════════════════════════════════
     MODALS
     ═══════════════════════════════════════ --}}
+
+    {{-- Add Customer --}}
     <div class="modal fade" id="addcustomerModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content pos-modal">
 
-                <!-- Header -->
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-person-plus me-2"></i>Add Customer
+                        <i class="bi bi-person-plus me-2"></i>{{ __('messages.add_customer') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="customerForm" enctype="multipart/form-data">
                     @csrf
-                    <!-- Body -->
                     <div class="modal-body">
                         <div class="row g-2">
 
-                            <!-- Name -->
                             <div class="col-6">
-                                <label class="pos-field-label">Customer Name *</label>
-                                <input type="text" name="name" id="name" class="pos-input w-100" placeholder="Enter name">
+                                <label class="pos-field-label">{{ __('messages.customer_name') }} *</label>
+                                <input type="text" name="name" id="name" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_name') }}">
                             </div>
 
-                            <!-- Phone -->
                             <div class="col-6">
-                                <label class="pos-field-label">Phone *</label>
-                                <input type="text" name="phone" id="phone" class="pos-input w-100" placeholder="Enter phone">
+                                <label class="pos-field-label">{{ __('messages.phone') }} *</label>
+                                <input type="text" name="phone" id="phone" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_phone') }}">
                             </div>
 
-                            <!-- Email -->
                             <div class="col-12">
-                                <label class="pos-field-label">Email *</label>
-                                <input type="email" name="email" id="email" class="pos-input w-100" placeholder="Enter email">
+                                <label class="pos-field-label">{{ __('messages.email') }} *</label>
+                                <input type="email" name="email" id="email" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_email') }}">
                             </div>
 
-                            <!-- Address -->
                             <div class="col-12">
-                                <label class="pos-field-label">Address *</label>
-                                <textarea name="address" id="address" class="pos-input w-100" rows="2" placeholder="Enter address"></textarea>
+                                <label class="pos-field-label">{{ __('messages.address') }} *</label>
+                                <textarea name="address" id="address" class="pos-input w-100" rows="2"
+                                          placeholder="{{ __('messages.enter_address') }}"></textarea>
                             </div>
 
-                            <!-- City -->
                             <div class="col-6">
-                                <label class="pos-field-label">City</label>
-                                <input type="text" name="city" id="city" class="pos-input w-100" placeholder="Enter city">
+                                <label class="pos-field-label">{{ __('messages.city') }}</label>
+                                <input type="text" name="city" id="city" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_city') }}">
                             </div>
 
-                            <!-- Street -->
                             <div class="col-6">
-                                <label class="pos-field-label">Street</label>
-                                <input type="text" name="street" id="street" class="pos-input w-100" placeholder="Enter street">
+                                <label class="pos-field-label">{{ __('messages.street') }}</label>
+                                <input type="text" name="street" id="street" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_street') }}">
                             </div>
 
-                            <!-- Number of Houses -->
                             <div class="col-6">
-                                <label class="pos-field-label">No. Houses</label>
-                                <input type="text" name="number_of_houses" id="number_of_houses" class="pos-input w-100" placeholder="Enter number">
+                                <label class="pos-field-label">{{ __('messages.no_houses') }}</label>
+                                <input type="text" name="number_of_houses" id="number_of_houses" class="pos-input w-100"
+                                       placeholder="{{ __('messages.enter_number') }}">
                             </div>
 
-                            <!-- Warehouse -->
-                            <div class="col-6">
-                                <label class="pos-field-label">Warehouse *</label>
-                                <select name="warehouse_id" id="warehouse_id" class="pos-input w-100">
-                                    <option value="">Select warehouse</option>
-                                    @foreach($warehouse as $warehous)
-                                        <option value="{{ $warehous->id }}">{{ $warehous->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Logo -->
                             <div class="col-12">
-                                <label class="pos-field-label">Logo</label>
+                                <label class="pos-field-label">{{ __('messages.logo') }}</label>
                                 <input type="file" name="logo" id="logo" class="pos-input w-100">
                             </div>
 
                         </div>
 
-                        <!-- Message -->
                         <div id="customerMsg" class="mt-2 small text-muted"></div>
                     </div>
 
-                    <!-- Footer -->
                     <div class="modal-footer">
-                        <button type="button" class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="pos-btn pos-btn--primary">
-                            {{ __('messages.submit') }}
-                        </button>
+                        <button type="button" class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                        <button type="submit" class="pos-btn pos-btn--primary">{{ __('messages.submit') }}</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-
+    {{-- Barcode --}}
     <div class="modal fade" id="barcodeModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content pos-modal">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-upc-scan me-2"></i>Barcode / Code</h5>
+                    <h5 class="modal-title"><i class="bi bi-upc-scan me-2"></i>{{ __('messages.barcode_code') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="text" id="barcodeInput" class="pos-input w-100"
-                        placeholder="Scan or type product code…" autocomplete="off">
+                           placeholder="{{ __('messages.scan_or_type') }}" autocomplete="off">
                     <div id="barcodeResult" class="mt-2" style="font-size:11px;color:var(--dim);"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button class="pos-btn pos-btn--primary" onclick="addByBarcode()">Add Item</button>
+                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                    <button class="pos-btn pos-btn--primary" onclick="addByBarcode()">{{ __('messages.add_item') }}</button>
                 </div>
             </div>
         </div>
     </div>
 
-
-
-    {{-- Cancel / Clear Modal --}}
+    {{-- Cancel / Clear --}}
     <div class="modal fade" id="cancelModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content pos-modal">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Clear Order</h5>
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-warning me-2"></i>{{ __('messages.clear_order') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center py-2">
-                    <p style="font-size:13px;">Are you sure you want to clear all items from this order?</p>
+                    <p style="font-size:13px;">{{ __('messages.clear_order_confirm') }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">No, keep it</button>
-                    <button class="pos-btn pos-btn--danger" onclick="clearOrder()">Yes, clear</button>
+                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">{{ __('messages.no_keep_it') }}</button>
+                    <button class="pos-btn pos-btn--danger" onclick="clearOrder()">{{ __('messages.yes_clear') }}</button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Discount Modal (for detailed edit via link) --}}
+    {{-- Discount --}}
     <div class="modal fade" id="discountModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content pos-modal">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-tag me-2"></i>Apply Discount</h5>
+                    <h5 class="modal-title"><i class="bi bi-tag me-2"></i>{{ __('messages.apply_discount') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="pos-field-label mb-2">Discount Type</div>
+                    <div class="pos-field-label mb-2">{{ __('messages.discount_type') }}</div>
                     <select class="pos-select w-100 mb-3" id="discountTypeModal">
-                        <option value="fixed">Fixed Amount ($)</option>
-                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">{{ __('messages.fixed_amount') }} ($)</option>
+                        <option value="percentage">{{ __('messages.percentage') }} (%)</option>
                     </select>
-                    <div class="pos-field-label mb-2">Value</div>
+                    <div class="pos-field-label mb-2">{{ __('messages.value') }}</div>
                     <input type="number" class="pos-input w-100" id="discountValueModal" placeholder="0.00"
-                        min="0" step="0.01">
+                           min="0" step="0.01">
                 </div>
                 <div class="modal-footer">
-                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">Close</button>
-                    <button class="pos-btn pos-btn--primary" onclick="applyDiscountModal()">Apply</button>
+                    <button class="pos-btn pos-btn--ghost" data-bs-dismiss="modal">{{ __('messages.close') }}</button>
+                    <button class="pos-btn pos-btn--primary" onclick="applyDiscountModal()">{{ __('messages.apply') }}</button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Payment Modal --}}
+    {{-- Payment --}}
     <div class="modal fade" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content pos-modal">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-bag-check-fill me-2" style="color:var(--lime);"></i>Finalize Sale
+                        <i class="bi bi-bag-check-fill me-2" style="color:var(--lime);"></i>{{ __('messages.finalize_sale') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
 
-                    {{-- Order summary --}}
+                    {{-- Order summary (filled by JS) --}}
                     <div id="paymentSummary" class="mb-3 p-3"
-                        style="background:var(--ink3);border-radius:10px;border:1px solid var(--wire2);">
-                        {{-- filled by JS --}}
+                         style="background:var(--ink3);border-radius:10px;border:1px solid var(--wire2);"></div>
+
+                    {{-- Payment Method --}}
+                    <div class="mb-3">
+                        <div class="pos-field-label mb-2">{{ __('messages.payment_method') }}</div>
+                        <input type="hidden" id="paymentMethod" value="cash">
+                        <div class="d-flex flex-wrap gap-2" id="paymentMethodGroup">
+                            <button type="button" class="pos-method-btn active" data-method="cash"
+                                    onclick="selectPaymentMethod('cash')">
+                                <i class="bi bi-cash-stack me-1"></i>{{ __('messages.cash') }}
+                            </button>
+                            <button type="button" class="pos-method-btn" data-method="bank"
+                                    onclick="selectPaymentMethod('bank')">
+                                <i class="bi bi-bank me-1"></i>{{ __('messages.bank_transfer') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Bank selector (bank transfer only) --}}
+                    <div class="mb-3" id="bankSelectorWrap" style="display:none;">
+                        <div class="pos-field-label mb-2">{{ __('messages.select_bank') }}</div>
+                        <input type="hidden" id="bankName" name="bank_name" value="">
+                        <div class="d-flex flex-wrap gap-2" id="bankSelectorGroup">
+                            <button type="button" class="pos-method-btn" data-bank="aba" onclick="selectBank('aba')">ABA Bank</button>
+                            <button type="button" class="pos-method-btn" data-bank="acleda" onclick="selectBank('acleda')">ACLEDA Bank</button>
+                            <button type="button" class="pos-method-btn" data-bank="canadia" onclick="selectBank('canadia')">Canadia Bank</button>
+                            <button type="button" class="pos-method-btn" data-bank="wing" onclick="selectBank('wing')">Wing Bank</button>
+                        </div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-12 col-12">
                             <div class="row g-3">
                                 <div class="col-md-4 col-12">
-                                    <div class="pos-field-label mb-2">Received Amount</div>
+                                    <div class="pos-field-label mb-2">{{ __('messages.received_amount') }}</div>
                                     <div class="pos-input-group">
                                         <span>$</span>
                                         <input type="number" class="pos-input" id="receivedAmt" placeholder="0.00"
-                                            min="0" step="0.01" oninput="calcChange()" required>
+                                               min="0" step="0.01">
                                     </div>
                                 </div>
                                 <div class="col-md-4 col-12">
-                                    <div class="pos-field-label mb-2">Total to Pay</div>
+                                    <div class="pos-field-label mb-2">{{ __('messages.total_to_pay') }}</div>
                                     <div class="pos-input-group">
                                         <span>$</span>
-                                        <input type="number" class="pos-input" id="payingAmt" placeholder="0.00"
-                                            readonly>
+                                        <input type="number" class="pos-input" id="payingAmt" placeholder="0.00" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-4 col-12">
-                                    <div class="pos-field-label mb-2">Change</div>
+                                    <div class="pos-field-label mb-2">{{ __('messages.change') }}</div>
                                     <div class="pos-input-group">
                                         <span>$</span>
-                                        <input type="text" class="pos-input" id="changeAmt" placeholder="0.00"
-                                            readonly style="font-weight:700;color:var(--green);">
+                                        <input type="text" class="pos-input" id="changeAmt" placeholder="0.00" readonly
+                                               style="font-weight:700;color:var(--green);">
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <div class="pos-field-label mb-2">Payment Note</div>
-                                    <textarea class="pos-input w-100" id="payNote" rows="2" placeholder="Optional note…" style="resize:none;"></textarea>
+                                    <div class="pos-field-label mb-2">{{ __('messages.payment_note') }}</div>
+                                    <textarea class="pos-input w-100" id="payNote" rows="2"
+                                              placeholder="{{ __('messages.optional_note') }}" style="resize:none;"></textarea>
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="col-md-3 col-12">
-                            <div class="pos-field-label mb-2 text-center">Quick Cash</div>
-                            <div class="d-flex flex-column gap-1">
-                                <button class="pos-quick-cash" data-val="20">$20</button>
-                                <button class="pos-quick-cash" data-val="50">$50</button>
-                                <button class="pos-quick-cash" data-val="100">$100</button>
-                                <button class="pos-quick-cash" data-val="500">$500</button>
-                                <button class="pos-btn pos-btn--danger mt-1" id="clearQuick">Clear</button>
-                            </div>
-                        </div> --}}
                     </div>
 
                     <hr class="pos-sep mt-3">
 
                     <button class="pos-charge-btn w-100 mt-2" id="submitSaleBtn" type="button" onclick="submitSale()">
                         <i class="bi bi-check-circle-fill"></i>
-                        <span>CONFIRM & CHARGE</span>
+                        <span>{{ __('messages.CONFIRM_CHARGE') }}</span>
                     </button>
 
                 </div>
@@ -523,87 +470,230 @@
 @push('scripts')
     <script>
         /* ═══════════════════════════════════════════════════════
-               STATE
-            ═══════════════════════════════════════════════════════ */
+           STATE / CONSTANTS
+        ═══════════════════════════════════════════════════════ */
+        const STORE_URL          = @json(route('pos.store'));
+        const CUSTOMER_STORE_URL = @json(route('customers.store'));
+        const CSRF_TOKEN         = @json(csrf_token());
+        const NO_IMAGE           = @json(asset('noimage.png'));
+
+        // All translated strings used by JS
+        const T = {
+            all:          @json(__('messages.all')),
+            added:        @json(__('messages.added')),
+            totalDue:     @json(__('messages.total_due')),
+            subtotal:     @json(__('messages.subtotal')),
+            discount:     @json(__('messages.discount')),
+            confirm:      @json(__('messages.CONFIRM_CHARGE')),
+            each:         @json(__('messages.each')),
+            processing:   @json(__('messages.processing')),
+            outOfStock:   @json(__('messages.out_of_stock')),
+            noMoreStock:  @json(__('messages.no_more_stock')),
+            stockLimit:   @json(__('messages.stock_limit')),
+            orderCleared: @json(__('messages.order_cleared')),
+            saleComplete: @json(__('messages.sale_complete')),   // contains :ref
+            saleFailed:   @json(__('messages.sale_failed')),
+            networkError: @json(__('messages.network_error')),
+            invalidTotal: @json(__('messages.invalid_total')),
+            enterReceived:@json(__('messages.enter_received')),
+            receivedLess: @json(__('messages.received_less')),
+            selectBank:   @json(__('messages.please_select_bank')),
+            invalidMethod:@json(__('messages.invalid_method')),
+            addedOk:      @json(__('messages.added_ok')),
+            noProduct:    @json(__('messages.no_product_code')),
+            saved:        @json(__('messages.saved')),
+            wentWrong:    @json(__('messages.something_wrong')),
+        };
+
         let cart = [];
         let activeBrand = 'all';
         let activeCat = 'all';
         let activeSub = 'all';
-        let payMethod = 'cash';
 
-        const STORE_URL = '{{ route('pos.store') }}';
-        const CSRF_TOKEN = '{{ csrf_token() }}';
+        /* ═══════════════════════════════════════════════════════
+           HELPERS
+        ═══════════════════════════════════════════════════════ */
+        function esc(str) {
+            return String(str ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
 
-        function broadcastCart() {
+        // Raw attribute as string (jQuery .data() converts "123" to a number)
+        function attr(el, name) {
+            return String($(el).attr('data-' + name) ?? '');
+        }
+
+        const toCents = n => Math.round((parseFloat(n) || 0) * 100);
+
+        const BTN_CONFIRM_HTML =
+            `<i class="bi bi-check-circle-fill"></i> <span>${esc(T.confirm)}</span>`;
+
+        function calcTotals() {
             const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
             const discType = $('#discountType').val();
             const discVal = parseFloat($('#discountValue').val()) || 0;
-            const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
-            const afterDisc = subtotal - discAmt;
-            // const tax = afterDisc * 0.08;
-            const grand = afterDisc;
-
-            // localStorage.setItem('pos_cart', JSON.stringify({
-            //     items: cart.map(i => ({
-            //         name: i.name,
-            //         price: i.price,
-            //         qty: i.qty
-            //     })),
-            //     subtotal: subtotal,
-            //     discount: discAmt,
-            //     tax: tax,
-            //     grand: grand,
-            //     pay_method: payMethod,
-            // }));
+            const discAmt = discType === 'percentage'
+                ? subtotal * discVal / 100
+                : Math.min(discVal, subtotal);
+            return { subtotal, discAmt, grand: subtotal - discAmt };
         }
 
         /* ═══════════════════════════════════════════════════════
-           PAYMENT CHECK
+           PAYMENT METHOD (cash / bank)
         ═══════════════════════════════════════════════════════ */
-        function checkPayment() {
-            const received = parseFloat($('#receivedAmt').val()) || 0;
-            const paying = parseFloat($('#payingAmt').val()) || 0;
-            $('#submitSaleBtn').prop('disabled', received < paying);
+        function selectPaymentMethod(method) {
+            $('#paymentMethod').val(method);
+
+            $('#paymentMethodGroup .pos-method-btn').each(function () {
+                $(this).toggleClass('active', $(this).data('method') === method);
+            });
+
+            const receivedField = $('#receivedAmt').closest('.col-md-4');
+            const changeField   = $('#changeAmt').closest('.col-md-4');
+            const bankWrap      = $('#bankSelectorWrap');
+
+            if (method === 'cash') {
+                receivedField.show();
+                changeField.show();
+                bankWrap.hide();
+
+                $('#bankName').val('');
+                $('#bankSelectorGroup .pos-method-btn').removeClass('active');
+
+                // Default: customer pays the exact amount
+                const total = parseFloat($('#payingAmt').val()) || 0;
+                $('#receivedAmt').val(total.toFixed(2));
+                calcChange();
+            } else {
+                // Bank transfer: no cash tendered, no change
+                receivedField.hide();
+                changeField.hide();
+                bankWrap.show();
+
+                $('#receivedAmt').val('');
+                $('#changeAmt').val('');
+            }
         }
 
-        $('#receivedAmt').on('input', checkPayment);
+        function selectBank(bank) {
+            $('#bankName').val(bank);
+            $('#bankSelectorGroup .pos-method-btn').each(function () {
+                $(this).toggleClass('active', $(this).data('bank') === bank);
+            });
+        }
+
+        function calcChange() {
+            const received = parseFloat($('#receivedAmt').val()) || 0;
+            const paying   = parseFloat($('#payingAmt').val()) || 0;
+            const change   = received - paying;
+
+            $('#changeAmt')
+                .val(change >= 0 ? change.toFixed(2) : '0.00')
+                .css('color', change >= 0 ? 'var(--green)' : 'var(--rose)');
+        }
+
+        function validatePayment() {
+            const method = $('#paymentMethod').val();
+            const total  = parseFloat($('#payingAmt').val()) || 0;
+
+            if (total <= 0) {
+                showAlert(esc(T.invalidTotal), 'danger');
+                return false;
+            }
+
+            if (method === 'cash') {
+                const received = parseFloat($('#receivedAmt').val()) || 0;
+
+                if (received <= 0) {
+                    showAlert(esc(T.enterReceived), 'danger');
+                    $('#receivedAmt').focus();
+                    return false;
+                }
+                if (toCents(received) < toCents(total)) {
+                    showAlert(esc(T.receivedLess), 'danger');
+                    $('#receivedAmt').focus();
+                    return false;
+                }
+                return true;
+            }
+
+            if (method === 'bank') {
+                if (!$('#bankName').val()) {
+                    showAlert(esc(T.selectBank), 'danger');
+                    return false;
+                }
+                return true;
+            }
+
+            showAlert(esc(T.invalidMethod), 'danger');
+            return false;
+        }
+
+        function preparePaymentData() {
+            if (!validatePayment()) return null;
+
+            const method = $('#paymentMethod').val();
+            const total  = parseFloat($('#payingAmt').val()) || 0;
+            const isCash = method === 'cash';
+
+            return {
+                payment_method: method,
+                bank_name: isCash ? null : $('#bankName').val(),
+                total_amount: total,
+                received_amount: isCash ? (parseFloat($('#receivedAmt').val()) || 0) : total,
+                change_amount: isCash ? (parseFloat($('#changeAmt').val()) || 0) : 0,
+                payment_note: $('#payNote').val().trim()
+            };
+        }
 
         /* ═══════════════════════════════════════════════════════
            BRAND SIDEBAR
         ═══════════════════════════════════════════════════════ */
         function selectBrand(el, brand) {
-            activeBrand = brand;
+            activeBrand = String(brand);
             activeCat = 'all';
             activeSub = 'all';
+
             $('.brand-btn').removeClass('active');
             $(el).addClass('active');
+
             buildCatTabs();
             filterProducts();
         }
 
         function filterBrands() {
-            const q = $('#brandSearch').val().toLowerCase();
-            $('.brand-btn').each(function() {
-                $(this).toggle($(this).find('.brand-btn__name').text().toLowerCase().includes(q));
+            const q = $('#brandSearch').val().toLowerCase().trim();
+
+            $('.brand-btn').each(function () {
+                $(this).toggle(
+                    $(this).find('.brand-btn__name').text().toLowerCase().includes(q)
+                );
             });
         }
 
         /* ═══════════════════════════════════════════════════════
-           CATEGORY TABS
+           CATEGORY / SUBCATEGORY TABS
         ═══════════════════════════════════════════════════════ */
-        function buildCatTabs() {
+        function brandVisibleCards() {
             const cards = $('.pos-pcard').toArray();
-            const visible = activeBrand === 'all' ? cards : cards.filter(c => $(c).data('brand') == activeBrand);
-            const cats = [...new Set(visible.map(c => $(c).data('cat')).filter(Boolean))].sort();
+            return activeBrand === 'all'
+                ? cards
+                : cards.filter(c => attr(c, 'brand') === activeBrand);
+        }
+
+        function buildCatTabs() {
+            const visible = brandVisibleCards();
+            const cats = [...new Set(visible.map(c => attr(c, 'cat')).filter(Boolean))].sort();
 
             $('#catScroller').html(
-                `<button class="pos-cat-tab active" data-cat="all" onclick="selectCat(this,'all')">
-                    All <span class="pos-cat-tab__cnt">${visible.length}</span>
+                `<button class="pos-cat-tab active" data-cat="all">
+                    ${esc(T.all)} <span class="pos-cat-tab__cnt">${visible.length}</span>
                 </button>` +
                 cats.map(cat => {
-                    const cnt = visible.filter(c => $(c).data('cat') === cat).length;
-                    return `<button class="pos-cat-tab" data-cat="${cat}" onclick="selectCat(this,'${cat}')">
-                        ${cat} <span class="pos-cat-tab__cnt">${cnt}</span>
+                    const cnt = visible.filter(c => attr(c, 'cat') === cat).length;
+                    return `<button class="pos-cat-tab" data-cat="${esc(cat)}">
+                        ${esc(cat)} <span class="pos-cat-tab__cnt">${cnt}</span>
                     </button>`;
                 }).join('')
             );
@@ -612,41 +702,45 @@
         }
 
         function selectCat(el, cat) {
-            activeCat = cat;
+            activeCat = String(cat);
             activeSub = 'all';
+
             $('.pos-cat-tab').removeClass('active');
             $(el).addClass('active');
 
-            if (cat !== 'all') {
+            if (activeCat !== 'all') {
                 const subs = [...new Set(
-                    $('.pos-pcard').toArray()
-                    .filter(c => (activeBrand === 'all' || $(c).data('brand') == activeBrand) && $(c).data(
-                        'cat') === cat)
-                    .map(c => $(c).data('subcat'))
-                    .filter(Boolean)
+                    brandVisibleCards()
+                        .filter(c => attr(c, 'cat') === activeCat)
+                        .map(c => attr(c, 'subcat'))
+                        .filter(Boolean)
                 )].sort();
                 buildSubcatTabs(subs);
             } else {
                 buildSubcatTabs([]);
             }
+
             filterProducts();
         }
 
         function buildSubcatTabs(subs) {
             const bar = $('#subcatBar');
+
             if (!subs.length) {
                 bar.removeClass('show');
+                $('#subcatScroller').empty();
                 return;
             }
+
             bar.addClass('show');
             $('#subcatScroller').html(
-                `<button class="pos-subcat-tab active" onclick="selectSub(this,'all')">All</button>` +
-                subs.map(s => `<button class="pos-subcat-tab" onclick="selectSub(this,'${s}')">${s}</button>`).join('')
+                `<button class="pos-subcat-tab active" data-sub="all">${esc(T.all)}</button>` +
+                subs.map(s => `<button class="pos-subcat-tab" data-sub="${esc(s)}">${esc(s)}</button>`).join('')
             );
         }
 
         function selectSub(el, sub) {
-            activeSub = sub;
+            activeSub = String(sub);
             $('.pos-subcat-tab').removeClass('active');
             $(el).addClass('active');
             filterProducts();
@@ -659,12 +753,12 @@
             const q = $('#searchInput').val().toLowerCase().trim();
             let visible = 0;
 
-            $('.pos-pcard').each(function() {
+            $('.pos-pcard').each(function () {
                 const ok =
-                    (activeBrand === 'all' || $(this).data('brand') == activeBrand) &&
-                    (activeCat === 'all' || $(this).data('cat') === activeCat) &&
-                    (activeSub === 'all' || $(this).data('subcat') === activeSub) &&
-                    (!q || $(this).data('name').includes(q) || $(this).data('code').includes(q));
+                    (activeBrand === 'all' || attr(this, 'brand') === activeBrand) &&
+                    (activeCat === 'all' || attr(this, 'cat') === activeCat) &&
+                    (activeSub === 'all' || attr(this, 'subcat') === activeSub) &&
+                    (!q || attr(this, 'name').includes(q) || attr(this, 'code').includes(q));
 
                 $(this).toggle(ok);
                 if (ok) visible++;
@@ -674,6 +768,11 @@
             $('#noResults').toggleClass('d-none', visible > 0);
         }
 
+        function clearSearch() {
+            $('#searchInput').val('');
+            filterProducts();
+        }
+
         /* ═══════════════════════════════════════════════════════
            BARCODE
         ═══════════════════════════════════════════════════════ */
@@ -681,16 +780,16 @@
             const code = $('#barcodeInput').val().toLowerCase().trim();
             if (!code) return;
 
-            const card = $('.pos-pcard').toArray().find(c => $(c).data('code') === code);
+            const card = $('.pos-pcard').toArray().find(c => attr(c, 'code') === code);
 
             if (card) {
                 addToCart(card);
                 $('#barcodeResult').html(
-                    `<span style="color:var(--green)">✓ Added: <strong>${$(card).data('name')}</strong></span>`);
+                    `<span style="color:var(--green)">✓ ${esc(T.addedOk)}: <strong>${esc($(card).find('.pos-pcard__name').text().trim())}</strong></span>`);
                 $('#barcodeInput').val('');
             } else {
                 $('#barcodeResult').html(
-                    `<span style="color:var(--rose)">✗ No product found for code: <strong>${code}</strong></span>`);
+                    `<span style="color:var(--rose)">✗ ${esc(T.noProduct)}: <strong>${esc(code)}</strong></span>`);
             }
         }
 
@@ -698,47 +797,62 @@
            CART ACTIONS
         ═══════════════════════════════════════════════════════ */
         function addToCart(card) {
-            const id = Number($(card).data('id'));
-            const name = $(card).find('.pos-pcard__name').text().trim();
-            const price = parseFloat($(card).data('price'));
-            const stock = parseInt($(card).data('stock'));
-            const image = $(card).data('image');
+            const id    = Number(attr(card, 'id'));
+            const name  = $(card).find('.pos-pcard__name').text().trim();
+            const price = parseFloat(attr(card, 'price')) || 0;
+            const stock = parseInt(attr(card, 'stock'), 10) || 0;
+            const image = attr(card, 'image');
 
             if (stock <= 0) {
-                showAlert('Out of stock', 'danger');
+                showAlert(esc(T.outOfStock), 'danger');
                 return;
             }
 
             const existing = cart.find(i => i.id === id);
             if (existing) {
                 if (existing.qty >= existing.stock) {
-                    showAlert('No more stock available', 'danger');
+                    showAlert(esc(T.noMoreStock), 'danger');
                     return;
                 }
                 existing.qty++;
             } else {
-                cart.push({
-                    id,
-                    name,
-                    price,
-                    qty: 1,
-                    stock,
-                    image
-                });
+                cart.push({ id, name, price, qty: 1, stock, image });
             }
+
             renderCart();
-            showAlert(`${name} {{ __('messages.added') }}`, 'success');
+            showAlert(`${esc(name)} ${esc(T.added)}`, 'success');
         }
 
         function changeQty(id, delta) {
             const item = cart.find(i => i.id === id);
             if (!item) return;
+
             item.qty += delta;
             if (item.qty > item.stock) {
                 item.qty = item.stock;
-                showAlert('Stock limit reached', 'warning');
+                showAlert(esc(T.stockLimit), 'warning');
             }
             if (item.qty < 1) cart = cart.filter(i => i.id !== id);
+
+            renderCart();
+        }
+
+        function updateQty(id, newQty) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+
+            let qty = parseInt(newQty, 10);
+
+            if (isNaN(qty) || qty < 1) {
+                cart = cart.filter(i => i.id !== id);
+            } else {
+                if (qty > item.stock) {
+                    qty = item.stock;
+                    showAlert(esc(T.stockLimit), 'warning');
+                }
+                item.qty = qty;
+            }
+
             renderCart();
         }
 
@@ -754,7 +868,7 @@
             $('#discountValue').val('0');
             renderCart();
             bootstrap.Modal.getInstance(document.getElementById('cancelModal'))?.hide();
-            showAlert('Order cleared', 'warning');
+            showAlert(esc(T.orderCleared), 'warning');
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -777,15 +891,15 @@
                     container.append(`
                         <div class="pos-cart-item">
                             <div class="pos-cart-item__img">
-                                <img src="${item.image}" alt="${item.name}" onerror="this.src='{{ asset('noimage.png') }}'">
+                                <img src="${esc(item.image)}" alt="${esc(item.name)}" onerror="this.src='${NO_IMAGE}'">
                             </div>
                             <div class="pos-cart-item__info">
-                                <div class="pos-cart-item__name">${item.name}</div>
-                                <div class="pos-cart-item__meta">$${item.price.toFixed(2)} each</div>
+                                <div class="pos-cart-item__name">${esc(item.name)}</div>
+                                <div class="pos-cart-item__meta">$${item.price.toFixed(2)} ${esc(T.each)}</div>
                             </div>
                             <div class="pos-cart-item__qty">
                                 <button class="pos-qb" onclick="changeQty(${item.id}, -1)">−</button>
-                                <span class="pos-qv">${item.qty}</span>
+                                <input type="number" class="pos-qv" id="qty_${item.id}" value="${item.qty}" min="1" onchange="updateQty(${item.id}, this.value)">
                                 <button class="pos-qb" onclick="changeQty(${item.id}, 1)">+</button>
                             </div>
                             <span class="pos-cart-item__total">$${(item.price * item.qty).toFixed(2)}</span>
@@ -795,142 +909,88 @@
                 });
             }
 
-
             recalcTotals();
-            broadcastCart();
         }
 
         /* ═══════════════════════════════════════════════════════
            TOTALS
         ═══════════════════════════════════════════════════════ */
         function recalcTotals() {
-            const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-            const discType = $('#discountType').val();
-            const discVal = parseFloat($('#discountValue').val()) || 0;
-            const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
-            const afterDisc = subtotal - discAmt;
-            // const tax = afterDisc * 0.08;
-            const grand = afterDisc;
-            // const grand = afterDisc + tax;
-
+            const { subtotal, discAmt, grand } = calcTotals();
 
             $('#totSubtotal').text(`$${subtotal.toFixed(2)}`);
             $('#totDiscount').text(`−$${discAmt.toFixed(2)}`);
-            // $('#totTax').text(`$${tax.toFixed(2)}`);
             $('#totGrand').text(`$${grand.toFixed(2)}`);
             $('#chargeAmt').text(`$${grand.toFixed(2)}`);
             $('#chargeBtn').prop('disabled', cart.length === 0);
-            broadcastCart();
         }
 
         /* ═══════════════════════════════════════════════════════
            DISCOUNT
         ═══════════════════════════════════════════════════════ */
-        function setDiscountType(val) {
-            $('#discountType').val(val);
-            recalcTotals();
-        }
-
-        function setDiscountValue(val) {
-            $('#discountValue').val(val || 0);
-            recalcTotals();
-        }
-
         function applyDiscountModal() {
             const type = $('#discountTypeModal').val();
             const val = parseFloat($('#discountValueModal').val()) || 0;
+
             $('#discountType').val(type);
             $('#discountValue').val(val);
-            $('.pos-discount-row select').val(type);
-            $('#discountInput').val(val);
             recalcTotals();
-            bootstrap.Modal.getInstance(document.getElementById('discountModal'))?.hide();
-        }
 
-        /* ═══════════════════════════════════════════════════════
-           PAYMENT METHOD
-        ═══════════════════════════════════════════════════════ */
-        function selectPayMethod(el, method) {
-            payMethod = method;
-            $('.pos-pay-btn').removeClass('active');
-            $(el).addClass('active');
-            broadcastCart();
+            bootstrap.Modal.getInstance(document.getElementById('discountModal'))?.hide();
         }
 
         /* ═══════════════════════════════════════════════════════
            PAYMENT MODAL
         ═══════════════════════════════════════════════════════ */
         function buildPaymentSummary() {
-            const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-            const discType = $('#discountType').val();
-            const discVal = parseFloat($('#discountValue').val()) || 0;
-            const discAmt = discType === 'percentage' ? subtotal * discVal / 100 : Math.min(discVal, subtotal);
-            const afterDisc = subtotal - discAmt;
-            // const tax = afterDisc * 0.08;
-            const grand = afterDisc;
-            // const grand = afterDisc + tax;
+            const { subtotal, discAmt, grand } = calcTotals();
 
             const rows = cart.map(i =>
                 `<div class="receipt-line">
-                    <span>${i.name} × ${i.qty}</span>
+                    <span>${esc(i.name)} × ${i.qty}</span>
                     <strong>$${(i.price * i.qty).toFixed(2)}</strong>
                  </div>`
             ).join('');
 
             $('#paymentSummary').html(`
                 ${rows}
-                <div class="receipt-line mt-2"><span>Subtotal</span><strong>$${subtotal.toFixed(2)}</strong></div>
-                <div class="receipt-line"><span>Discount</span><strong style="color:var(--green);">−$${discAmt.toFixed(2)}</strong></div>
-                <div class="receipt-line total"><span>Total Due</span><span>$${grand.toFixed(2)}</span></div>
+                <div class="receipt-line mt-2"><span>${esc(T.subtotal)}</span><strong>$${subtotal.toFixed(2)}</strong></div>
+                <div class="receipt-line"><span>${esc(T.discount)}</span><strong style="color:var(--green);">−$${discAmt.toFixed(2)}</strong></div>
+                <div class="receipt-line total"><span>${esc(T.totalDue)}</span><span>$${grand.toFixed(2)}</span></div>
             `);
 
             $('#payingAmt').val(grand.toFixed(2));
-            $('#receivedAmt').val('');
-            $('#changeAmt').val('');
-            resetQuickCash();
-        }
+            $('#payNote').val('');
 
-        function calcChange() {
-            const received = parseFloat($('#receivedAmt').val()) || 0;
-            const paying = parseFloat($('#payingAmt').val()) || 0;
-            const change = received - paying;
-            $('#changeAmt')
-                .val(change.toFixed(2))
-                .css('color', change >= 0 ? 'var(--green)' : 'var(--rose)');
-        }
+            // Reset button in case a previous attempt left it disabled
+            $('#submitSaleBtn').prop('disabled', false).html(BTN_CONFIRM_HTML);
 
-        function resetQuickCash() {
-            $('.pos-quick-cash').removeClass('active');
+            // Always start on cash; this also fills received = total
+            selectPaymentMethod('cash');
         }
 
         /* ═══════════════════════════════════════════════════════
            SUBMIT SALE
         ═══════════════════════════════════════════════════════ */
         function submitSale() {
-            const received = parseFloat($('#receivedAmt').val()) || 0;
-            const paying = parseFloat($('#payingAmt').val()) || 0;
-
-            if (received < paying) {
-                showAlert('Received amount must be greater than or equal to total.', 'danger');
-                return;
-            }
+            const pay = preparePaymentData();
+            if (!pay) return;
 
             const btn = $('#submitSaleBtn');
+
             btn.prop('disabled', true)
-                .html('<span class="spinner-border spinner-border-sm me-2"></span> Processing…');
+                .html(`<span class="spinner-border spinner-border-sm me-2"></span> ${esc(T.processing)}…`);
 
             const payload = {
                 customer_id: $('#customerSelect').val() || null,
-                warehouse_id: $('#warehouseSelect').val() || null,
-                cart: cart.map(i => ({
-                    id: i.id,
-                    qty: i.qty
-                })),
-                payment_method: payMethod,
-                amount_paid: received,
+                cart: cart.map(i => ({ id: i.id, qty: i.qty })),
+                payment_method: pay.payment_method,   // 'cash' | 'bank'
+                bank_name: pay.bank_name,             // null for cash
+                amount_paid: pay.received_amount,
+                change_amount: pay.change_amount,
                 discount_type: $('#discountType').val(),
                 discount_value: parseFloat($('#discountValue').val()) || 0,
-                note: $('#payNote').val(),
+                note: pay.payment_note,
             };
 
             $.ajax({
@@ -944,32 +1004,20 @@
                 },
                 data: JSON.stringify(payload),
 
-                success: function(data) {
+                success: function (data) {
                     if (data.success) {
-
-                        // localStorage.setItem('pos_cart', JSON.stringify({
-                        //     completed: true,
-                        //     grand: parseFloat($('#payingAmt').val())
-                        // }));
-                        // setTimeout(() => localStorage.setItem('pos_cart', JSON.stringify({
-                        //     items: []
-                        // })), 5000);
-
-                        showAlert(`Sale ${data.reference} complete!`, 'success');
+                        showAlert(esc(T.saleComplete.replace(':ref', data.reference)), 'success');
                         bootstrap.Modal.getInstance(document.getElementById('paymentModal'))?.hide();
                         setTimeout(() => window.location.href = data.receipt_url, 600);
                     } else {
-                        showAlert(data.message ?? 'Sale failed. Check stock.', 'danger');
-                        btn.prop('disabled', false)
-                            .html('<i class="bi bi-check-circle-fill"></i> <span>CONFIRM & CHARGE</span>');
+                        showAlert(esc(data.message ?? T.saleFailed), 'danger');
+                        btn.prop('disabled', false).html(BTN_CONFIRM_HTML);
                     }
                 },
 
-                error: function(xhr) {
-                    const msg = xhr.responseJSON?.message ?? 'Network error — please try again.';
-                    showAlert(msg, 'danger');
-                    btn.prop('disabled', false)
-                        .html('<i class="bi bi-check-circle-fill"></i> <span>CONFIRM & CHARGE</span>');
+                error: function (xhr) {
+                    showAlert(esc(xhr.responseJSON?.message ?? T.networkError), 'danger');
+                    btn.prop('disabled', false).html(BTN_CONFIRM_HTML);
                 }
             });
         }
@@ -984,7 +1032,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           ALERTS
+           ALERTS  (msg is inserted as HTML, so escape user text first)
         ═══════════════════════════════════════════════════════ */
         function showAlert(msg, type = 'info') {
             $('#alertBox').html(`
@@ -998,91 +1046,80 @@
         /* ═══════════════════════════════════════════════════════
            INIT
         ═══════════════════════════════════════════════════════ */
-        $(document).ready(function() {
+        $(document).ready(function () {
 
             buildCatTabs();
             filterProducts();
 
-            $('#paymentModal').on('shown.bs.modal', buildPaymentSummary);
-
-            $('#barcodeInput').on('keydown', function(e) {
-                if (e.key === 'Enter') addByBarcode();
+            // Delegated clicks for dynamically built tabs (safe with apostrophes)
+            $('#catScroller').on('click', '.pos-cat-tab', function () {
+                selectCat(this, attr(this, 'cat'));
+            });
+            $('#subcatScroller').on('click', '.pos-subcat-tab', function () {
+                selectSub(this, attr(this, 'sub'));
             });
 
-            $('#barcodeModal').on('shown.bs.modal', function() {
+            // Payment modal
+            $('#paymentModal').on('shown.bs.modal', buildPaymentSummary);
+            $('#receivedAmt').on('input', calcChange);
+
+            // Barcode modal
+            $('#barcodeInput').on('keydown', function (e) {
+                if (e.key === 'Enter') addByBarcode();
+            });
+            $('#barcodeModal').on('shown.bs.modal', function () {
                 $('#barcodeInput').focus();
                 $('#barcodeResult').html('');
             });
 
-            $('.pos-quick-cash').on('click', function() {
-                resetQuickCash();
-                $(this).addClass('active');
-                $('#receivedAmt').val(parseFloat($(this).data('val')).toFixed(2));
-                calcChange();
-            });
-
-            $('#clearQuick').on('click', function() {
-                resetQuickCash();
-                $('#receivedAmt').val('');
-                $('#changeAmt').val('');
-            });
-
-
+            // Add customer
             $('#customerForm').on('submit', function (e) {
                 e.preventDefault();
 
-                let formData = new FormData(this);
-
+                const form = this;
+                const formData = new FormData(form);
 
                 $('#customerMsg').html('').removeClass('text-danger text-success');
 
                 $.ajax({
-                    url: "{{ route('customers.store') }}",
+                    url: CUSTOMER_STORE_URL,
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
 
                     success: function (response) {
-                        $('#customerMsg')
-                            .addClass('text-success')
-                            .html(response.success);
-
-                        // Reset form
+                        $('#customerMsg').addClass('text-success').text(response.success ?? T.saved);
                         form.reset();
 
-                        // Close modal after 1s
+                        // Add the new customer to the dropdown and select it
+                        // (controller should return: ['success' => '...', 'customer' => ['id' => .., 'name' => ..]])
+                        if (response.customer) {
+                            const opt = new Option(response.customer.name, response.customer.id, true, true);
+                            $('#customerSelect').append(opt);
+                        }
+
                         setTimeout(() => {
-                            $('#addcustomerModal').modal('hide');
+                            bootstrap.Modal.getInstance(document.getElementById('addcustomerModal'))?.hide();
                         }, 1000);
                     },
 
                     error: function (xhr) {
-                        let errors = xhr.responseJSON.errors;
+                        const errors = xhr.responseJSON?.errors;
                         let errorHtml = '';
 
-                        $.each(errors, function (key, value) {
-                            errorHtml += value[0] + '<br>';
-                        });
+                        if (errors) {
+                            $.each(errors, function (key, value) {
+                                errorHtml += esc(value[0]) + '<br>';
+                            });
+                        } else {
+                            errorHtml = esc(xhr.responseJSON?.message ?? T.wentWrong);
+                        }
 
-                        $('#customerMsg')
-                            .addClass('text-danger')
-                            .html(errorHtml);
+                        $('#customerMsg').addClass('text-danger').html(errorHtml);
                     }
                 });
-
             });
-
-
-
-        });
-    </script>
-
-    <script id="8g3k2f">
-        const select = document.getElementById('warehouseSelect');
-
-        select.addEventListener('mousedown', function(e) {
-            e.preventDefault(); // stop opening dropdown
         });
     </script>
 @endpush

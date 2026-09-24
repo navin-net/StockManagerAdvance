@@ -208,15 +208,17 @@
                 <!-- Info Button -->
                 <button type="button"
                     class="btn btn-info text-white d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.register_detail') }}" style="width: 40px; height: 38px;">
-                    <i class="bi bi-info-circle"></i>
+                    title="{{ __('messages.register_detail') }}" style="width: 40px; height: 38px;"
+                        data-bs-toggle="modal" data-bs-target="#registerDetail">
+                    <i class="bi bi-clipboard-data"></i>
                 </button>
 
                 <!-- Add Expense -->
                 <button type="button"
                     class="btn btn-warning text-white d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.add_expense') }}" style="width: 40px; height: 38px;">
-                    <i class="bi bi-dash-circle"></i>
+                    title="{{ __('messages.add_cash') }}" style="width: 40px; height: 38px;"
+                        data-bs-toggle="modal" data-bs-target="#addCash">
+                    <i class="bi bi-database-fill-add"></i>
                 </button>
 
                 <!-- Calculator -->

@@ -1,148 +1,79 @@
 @extends('admin.layouts.master')
 @section('title', __('messages.overview_chart'))
+
+@push('styles')
+    <style>
+        .overview-stat { padding: 1.1rem 1.25rem; }
+        .overview-stat .label { color: var(--text-muted); font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+        .overview-stat .value { font-size: 1.5rem; font-weight: 700; }
+        .overview-chart { height: 320px; }
+    </style>
+@endpush
+
 @section('content')
-
-
-<h2 class="sr-only">Overview chart dashboard matching Blade template with 4 stat cards and chart</h2>
-
-<div style="padding: 1rem 0;">
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem;">
-
-    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden;">
-      <div style="padding: 1rem; display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; border-radius: var(--border-radius-md); background: #E6F1FB; display: flex; align-items: center; justify-content: center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#378ADD" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    <div class="container-fluid py-4">
+        <div class="pagetitle mb-4 d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6 fw-bold mb-2">{{ __('messages.overview_chart') }}</h1>
+                <nav>
+                    <ol class="breadcrumb rounded-3 p-2 mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-primary text-decoration-none">{{ __('messages.dashboard') }}</a></li>
+                        <li class="breadcrumb-item active text-muted">{{ __('messages.reports') }}</li>
+                    </ol>
+                </nav>
+            </div>
+            <form method="GET" action="{{ route('reports') }}" class="d-flex gap-2">
+                <label for="overview-year" class="visually-hidden">Report year</label>
+                <select id="overview-year" name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @for ($optionYear = now()->year; $optionYear >= now()->year - 4; $optionYear--)
+                        <option value="{{ $optionYear }}" @selected($year === $optionYear)>{{ $optionYear }}</option>
+                    @endfor
+                </select>
+                <noscript><button type="submit" class="btn btn-primary btn-sm">View</button></noscript>
+            </form>
         </div>
-        <div>
-          <div style="font-size: 12px; color: var(--color-text-secondary);">Total products</div>
-          <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">1,284</div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3"><div class="card overview-stat h-100"><div class="label"><i class="bi bi-box-seam me-1"></i>{{ __('messages.total_products') }}</div><div class="value">{{ number_format($summary['products']) }}</div></div></div>
+            <div class="col-6 col-md-3"><div class="card overview-stat h-100"><div class="label"><i class="bi bi-cash-coin me-1"></i>{{ __('messages.total_sales') }}</div><div class="value text-success">${{ number_format($summary['sales'], 2) }}</div></div></div>
+            <div class="col-6 col-md-3"><div class="card overview-stat h-100"><div class="label"><i class="bi bi-cart-check me-1"></i>{{ __('messages.product_sold') }}</div><div class="value">{{ number_format($summary['items']) }}</div></div></div>
+            <div class="col-6 col-md-3"><div class="card overview-stat h-100"><div class="label"><i class="bi bi-bag me-1"></i>Purchases</div><div class="value text-warning">${{ number_format($summary['purchases'], 2) }}</div></div></div>
         </div>
-      </div>
-      <div style="border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 1rem; text-align: center;">
-        <span style="font-size: 12px; color: #378ADD;">More info &#8594;</span>
-      </div>
+
+        <div class="card p-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div><h2 class="h5 mb-1">{{ $year }} performance</h2><div class="text-muted small">Sales, purchases, and units sold by month</div></div>
+                <div class="d-flex flex-wrap gap-3 small text-muted"><span><i class="bi bi-square-fill text-success me-1"></i>Sales</span><span><i class="bi bi-square-fill text-warning me-1"></i>Purchases</span><span><i class="bi bi-square-fill text-primary me-1"></i>Units sold</span></div>
+            </div>
+            <div class="overview-chart"><canvas id="overview-chart" aria-label="Monthly sales, purchases, and units sold chart"></canvas></div>
+        </div>
     </div>
-
-    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden;">
-      <div style="padding: 1rem; display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; border-radius: var(--border-radius-md); background: #EAF3DE; display: flex; align-items: center; justify-content: center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#639922" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9 7h6M9 17h6"/></svg>
-        </div>
-        <div>
-          <div style="font-size: 12px; color: var(--color-text-secondary);">Total sales</div>
-          <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">$84,320</div>
-        </div>
-      </div>
-      <div style="border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 1rem; text-align: center;">
-        <span style="font-size: 12px; color: #639922;">More info &#8594;</span>
-      </div>
-    </div>
-
-    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden;">
-      <div style="padding: 1rem; display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; border-radius: var(--border-radius-md); background: #E1F5EE; display: flex; align-items: center; justify-content: center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        </div>
-        <div>
-          <div style="font-size: 12px; color: var(--color-text-secondary);">Product sold</div>
-          <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">3,670</div>
-        </div>
-      </div>
-      <div style="border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 1rem; text-align: center;">
-        <span style="font-size: 12px; color: #1D9E75;">More info &#8594;</span>
-      </div>
-    </div>
-
-    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden;">
-      <div style="padding: 1rem; display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; border-radius: var(--border-radius-md); background: #FAEEDA; display: flex; align-items: center; justify-content: center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-        </div>
-        <div>
-          <div style="font-size: 12px; color: var(--color-text-secondary);">Purchases</div>
-          <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">920</div>
-        </div>
-      </div>
-      <div style="border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 1rem; text-align: center;">
-        <span style="font-size: 12px; color: #BA7517;">More info &#8594;</span>
-      </div>
-    </div>
-
-  </div>
-
-  <div style="display: flex; gap: 16px; margin-bottom: 10px; font-size: 12px; color: var(--color-text-secondary);">
-    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #639922;"></span>Total sales</span>
-    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #BA7517;"></span>Purchases</span>
-    <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #378ADD;"></span>Products sold</span>
-  </div>
-
-  <div style="position: relative; width: 100%; height: 260px;">
-    <canvas id="overviewChart" role="img" aria-label="Bar chart showing total sales, purchases, and products sold per month">Monthly overview data for Jan through Jun.</canvas>
-  </div>
-
-</div>
 @endsection
-@push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-new Chart(document.getElementById('overviewChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
-    datasets: [
-      {
-        label: 'Total sales',
-        data: [14000, 21000, 17000, 25000, 20000, 28000],
-        backgroundColor: 'rgba(99,153,34,0.75)',
-        borderRadius: 4,
-        borderSkipped: false
-      },
-      {
-        label: 'Purchases',
-        data: [8000, 12000, 9000, 14000, 11000, 16000],
-        backgroundColor: 'rgba(186,117,23,0.75)',
-        borderRadius: 4,
-        borderSkipped: false
-      },
-      {
-        label: 'Products sold',
-        data: [320, 480, 390, 560, 430, 610],
-        backgroundColor: 'rgba(55,138,221,0.75)',
-        borderRadius: 4,
-        borderSkipped: false,
-        yAxisID: 'y2'
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => {
-            if (ctx.datasetIndex === 2) return ' ' + ctx.parsed.y.toLocaleString() + ' units';
-            return ' $' + ctx.parsed.y.toLocaleString();
-          }
-        }
-      }
-    },
-    scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
-      y: {
-        grid: { color: 'rgba(128,128,128,0.1)' },
-        ticks: { font: { size: 11 }, callback: v => '$' + (v/1000) + 'k' }
-      },
-      y2: {
-        position: 'right',
-        grid: { display: false },
-        ticks: { font: { size: 11 }, callback: v => v + ' u' }
-      }
-    }
-  }
-});
-</script>
 
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script>
+        new Chart(document.getElementById('overview-chart'), {
+            type: 'bar',
+            data: {
+                labels: @json($chart['labels']),
+                datasets: [
+                    { label: 'Sales', data: @json($chart['sales']), backgroundColor: 'rgba(34, 197, 94, .75)', borderRadius: 4, yAxisID: 'currency' },
+                    { label: 'Purchases', data: @json($chart['purchases']), backgroundColor: 'rgba(245, 158, 11, .75)', borderRadius: 4, yAxisID: 'currency' },
+                    { label: 'Units sold', data: @json($chart['items']), backgroundColor: 'rgba(14, 165, 233, .75)', borderRadius: 4, yAxisID: 'units' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    currency: { beginAtZero: true, ticks: { callback: value => '$' + Number(value).toLocaleString() } },
+                    units: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { callback: value => Number(value).toLocaleString() } }
+                }
+            }
+        });
+    </script>
 @endpush

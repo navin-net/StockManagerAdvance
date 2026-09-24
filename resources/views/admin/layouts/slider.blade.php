@@ -202,6 +202,12 @@
                         <i class="bi bi-people-fill"></i>
                         <span>{{ __('messages.customers_list') }}</span>
                     </a>
+                    <a href="{{ url($prefix . '/suppliers') }}"
+                       class="nav-link d-flex align-items-center {{ request()->is($prefix . '/suppliers') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i>
+                        <span>{{ __('messages.suppliers_list') }}</span>
+                    </a>
+
                 </div>
             </div>
             {{-- Settings --}}
@@ -294,6 +300,11 @@
                     class="nav-link d-flex align-items-center {{ request()->is($prefix . '/reports/monthly-sales') ? 'active' : '' }}">
                     <i class="bi bi-calendar3"></i>
                     <span>{{ __('messages.monthly_sales') }}</span>
+                </a>
+                <a href="{{ route('reports.product-sales') }}"
+                    class="nav-link d-flex align-items-center {{ request()->is($prefix . '/reports/product-sales') ? 'active' : '' }}">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>Product Sales</span>
                 </a>
             </div>
         </div>

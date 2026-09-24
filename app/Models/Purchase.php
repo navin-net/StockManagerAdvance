@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\PurchaseItem;
+use App\Models\Payment;
+use App\Models\Companies;
 use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
@@ -21,5 +23,15 @@ class Purchase extends Model
     public function items()
     {
         return $this->hasMany(PurchaseItem::class, 'purchase_id');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Companies::class, 'supplier_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'purchase_id');
     }
 }

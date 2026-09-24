@@ -45,6 +45,13 @@ class Sale extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    public function cashRegister()
+    {
+        return $this->belongsTo(
+            PosRegister::class,
+            'cash_register_id'
+        );
+    }
 
     public function customer()
     {

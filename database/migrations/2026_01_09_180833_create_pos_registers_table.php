@@ -13,15 +13,18 @@ return new class extends Migration
     {
         Schema::create('pos_registers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            // $table->foreignId('user_id')->constrained('users');
-            $table->decimal('cash_in_hand', 10, 2)->default(0);
-            $table->decimal('total_cash', 10, 2)->nullable();
-            $table->string('status')->default('open'); // open or closed
-            $table->string('note',254)->nullable();
-            $table->integer('closed_by')->nullable();
-            $table->dateTime('date')->nullable();
-            $table->dateTime('closed_at')->nullable();
+            $table->string('reference', 50)->nullable();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->decimal('cash_in_hand', 15, 2)->default(0);
+            $table->decimal('total_cash', 15, 2)->nullable(); // filled in at close time
+            $table->enum('status', ['open', 'closed'])->default('open');
+            $table->string('note', 255)->nullable();
+            $table->foreignId('closed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('opened_at')->nullable();
+            $table->timestamp('closed_at')->nullable();
+
+            $table->index(['user_id', 'status']);
+
         });
     }
 
