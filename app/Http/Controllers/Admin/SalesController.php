@@ -119,7 +119,9 @@ class SalesController extends Controller
             $sale = Sale::create([
                 'customer_id' => $request->customer_id,
                 'total_amount' => $request->total_amount,
+                'status' => 'completed',
                 'status' => $request->status,
+                'payment_status' => 'pending',
                 'reference' => 'SALE-' . strtoupper(uniqid()),
                 'date' => $request->date,
             ]);

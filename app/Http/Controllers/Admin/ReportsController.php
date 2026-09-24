@@ -31,56 +31,58 @@ class ReportsController extends Controller
         ]);
     }
 
-    public function daily_sales()
-    {
-        return view('admin.reports.daily-sales', [
-            'pageTitle' => __('messages.daily_sales'),
-            'heading' => __('messages.daily_sales'),
-            'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
-                ['label' => __('messages.reports'), 'url' => '', 'active' => true],
-                ['label' => __('messages.daily_sales'), 'url' => '', 'active' => true],
-            ]
-        ]);
-    }
+
 
     public function dailySalesReport(Request $request)
     {
-        $date = $request->input('date', now()->format('Y-m-d'));
+        $date = $request->input('created_at', now()->format('Y-m-d'));
 
         $sales = $this->getFilteredDailySales($request, $date);
 
         // ----- Summary cards -----
         $totalSales = $sales->sum('total_amount');
-        $totalPaid  = $sales->sum(fn ($sale) => $sale->payments->sum('amount'));
+        $totalPaid = $sales->sum(fn($sale) => $sale->payments->sum('amount'));
 
         $summary = [
-            'total_sales'   => $totalSales,
-            'total_paid'    => $totalPaid,
+            'total_sales' => $totalSales,
+            'total_paid' => $totalPaid,
             'total_balance' => $totalSales - $totalPaid,
-            'total_orders'  => $sales->count(),
+            'total_orders' => $sales->count(),
         ];
 
         // ----- Hourly chart: bucket sales by hour of day (uses created_at, since
         // the `date` column is a DATE type with no time component) -----
-        $hourlyGrouped = $sales->groupBy(fn ($sale) => $sale->created_at->format('ga'));
+        $hourlyGrouped = $sales->groupBy(fn($sale) => $sale->created_at->format('ga'));
         $hourly = [
             'labels' => $hourlyGrouped->keys()->values(),
-            'values' => $hourlyGrouped->map(fn ($group) => $group->sum('total_amount'))->values(),
+            'values' => $hourlyGrouped->map(fn($group) => $group->sum('total_amount'))->values(),
         ];
 
         // ----- Payment status pie -----
         $paymentStatus = [
-            'completed' => $sales->where('payment_status', 'paid')->count(),
-            'pending'   => $sales->where('payment_status', '!=', 'paid')->count(),
+            'completed' => $sales->where('payment_status', 'completed')->count(),
+            'pending' => $sales->where('payment_status', 'pending')->count(),
         ];
 
         $warehouses = Warehouses::select('id', 'name')->get();
         $billers = Companies::select('id', 'name')->where('group_id', 4)->get();
 
-        return view('admin.reports.daily_sales', compact(
-            'sales', 'summary', 'hourly', 'paymentStatus', 'warehouses', 'billers', 'date'
-        ));
+        return view('admin.reports.daily_sales', [
+            'pageTitle' => __('messages.daily_report'),
+            'heading' => __('messages.stock_management_system'),
+            'description' => __('messages.dashboard_welcome'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
+                ['label' => __('messages.daily_sales'), 'url' => '', 'active' => true],
+            ],
+            'sales' => $sales,
+            'summary' => $summary,
+            'hourly' => $hourly,
+            'paymentStatus' => $paymentStatus,
+            'warehouses' => $warehouses,
+            'billers' => $billers,
+            'date' => $date,
+        ]);
     }
     public function dailySalesReportPdf(Request $request)
     {

@@ -17,6 +17,7 @@ return [
     'pos_sales' => 'ការលក់តាម POS',
     'dashboard_welcome' => 'សូមស្វាគមន៍មកកាន់ផ្ទាំងគ្រប់គ្រង',
     'stock_management_system' => 'ប្រព័ន្ធគ្រប់គ្រងស្តុក',
+    'daily_report' => 'របាយការណ៍ប្រចាំថ្ងៃ',
     'ip_address' => 'អាសយដ្ឋាន IP',
     'address' => 'អាសយដ្ឋាន',
     'avatar' => 'រូបតំណាង',

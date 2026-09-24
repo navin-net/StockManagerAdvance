@@ -19,6 +19,7 @@ return [
     'pos_sales' => 'Pos Sales',
     'dashboard_welcome' => 'Welcome to Dashboard',
     'stock_management_system' => 'Stock Management System',
+    'daily_report' => 'Daily Report',
     'sold_out' => 'Sold Out',
     'ip_address' => 'IP Address',
     'search' => 'Search',

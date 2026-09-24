@@ -50,10 +50,10 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="total_amount"
-                                            class="form-label fw-medium">{{ __('messages.total_amount') }} <span
+                                               class="form-label fw-medium">{{ __('messages.total_amount') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="total_amount" id="total_amount"
-                                            class="form-control rounded-3" readonly required>
+                                               class="form-control rounded-3" readonly required>
                                         <div class="invalid-feedback" id="total_amount-error"></div>
                                     </div>
                                     <div class="col-md-6">
@@ -73,7 +73,7 @@
                                             {{ __('messages.date') }} <span class="text-danger">*</span>
                                         </label>
                                         <input type="datetime-local" name="date" id="date" class="form-control rounded-3"
-                                            required>
+                                               required>
                                         <div class="invalid-feedback" id="date-error"></div>
                                     </div>
                                 </div>
@@ -84,19 +84,19 @@
                                         <label class="form-label fw-medium">{{ __('messages.product') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control product-search rounded-3"
-                                            placeholder="{{ __('messages.search_product') }}" autocomplete="off">
+                                               placeholder="{{ __('messages.search_product') }}" autocomplete="off">
                                         <div class="suggestions border position-absolute bg-white w-100 rounded-3 shadow-sm"
-                                            style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto;">
+                                             style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto;">
                                         </div>
                                     </div>
                                     <table class="table table-bordered table-hover" id="itemsTable">
                                         <thead>
-                                            <tr>
-                                                <th>{{ __('messages.product') }}</th>
-                                                <th>{{ __('messages.quantity') }}</th>
-                                                <th>{{ __('messages.sale_price') }}</th>
-                                                <th>{{ __('messages.action') }}</th>
-                                            </tr>
+                                        <tr>
+                                            <th>{{ __('messages.product') }}</th>
+                                            <th>{{ __('messages.quantity') }}</th>
+                                            <th>{{ __('messages.sale_price') }}</th>
+                                            <th>{{ __('messages.action') }}</th>
+                                        </tr>
                                         </thead>
                                         <tbody id="itemsBody"></tbody>
                                     </table>
@@ -104,9 +104,9 @@
 
                                 <div class="mt-3">
                                     <button type="submit"
-                                        class="btn btn-primary rounded-3">{{ __('messages.submit') }}</button>
+                                            class="btn btn-primary rounded-3">{{ __('messages.submit') }}</button>
                                     <a href="{{ route('sales.index') }}"
-                                        class="btn btn-secondary rounded-3">{{ __('messages.cancel') }}</a>
+                                       class="btn btn-secondary rounded-3">{{ __('messages.cancel') }}</a>
                                 </div>
                             </form>
                         </div>
@@ -117,7 +117,7 @@
 
         <!-- Submission Confirmation Modal -->
         <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-labelledby="confirmSubmitModalLabel"
-            aria-hidden="true">
+             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -130,9 +130,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('messages.no') }}</button>
+                                data-bs-dismiss="modal">{{ __('messages.no') }}</button>
                         <button type="button" class="btn btn-primary"
-                            id="confirmSubmitBtn">{{ __('messages.yes') }}</button>
+                                id="confirmSubmitBtn">{{ __('messages.yes') }}</button>
                     </div>
                 </div>
             </div>
@@ -140,7 +140,7 @@
 
         <!-- Add Product Confirmation Modal -->
         <div class="modal fade" id="confirmAddProductModal" tabindex="-1" aria-labelledby="confirmAddProductModalLabel"
-            aria-hidden="true">
+             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -153,9 +153,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('messages.no') }}</button>
+                                data-bs-dismiss="modal">{{ __('messages.no') }}</button>
                         <button type="button" class="btn btn-primary"
-                            id="confirmAddProductBtn">{{ __('messages.yes') }}</button>
+                                id="confirmAddProductBtn">{{ __('messages.yes') }}</button>
                     </div>
                 </div>
             </div>
@@ -190,7 +190,7 @@
                     const isSelected = existingRow.length > 0;
                     const currentQty = isSelected ? existingRow.find('.quantity').val() : 0;
 
-                        html += `<div class="suggestion-item px-3 py-2 border-bottom"
+                    html += `<div class="suggestion-item px-3 py-2 border-bottom"
                             data-id="${p.id}"
                             data-name="${p.name}"
                             data-code="${p.code}"
@@ -203,7 +203,7 @@
                                 Stock: <span class="${p.stock_quantity <= 0 ? 'text-danger' : ''}">${p.stock_quantity}</span>
                             </small>
                         </div>`;
-                    });
+                });
                 container.html(html).show();
             }
 

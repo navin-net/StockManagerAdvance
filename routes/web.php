@@ -43,6 +43,7 @@ Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
 Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
 
 Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:3,1');
@@ -73,4 +74,4 @@ Route::get('/test-mail', function () {
 
 
 require __DIR__ . '/admin.php';
-require __DIR__ . '/shop.php';
+//require __DIR__ . '/shop.php';

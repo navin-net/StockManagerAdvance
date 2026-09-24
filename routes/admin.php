@@ -139,5 +139,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         });
     });
 
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 });
 
