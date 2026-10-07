@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\PosRegisters;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,7 +16,8 @@ class Sale extends Model
         'user_id',
         'cash_register_id',
         'sale_type',
-
+        'biller_id',
+        'payment_method',
         // ── Before / After ─────────────────
         'subtotal',        // 👈 WAS MISSING
         'discount',
@@ -47,10 +49,7 @@ class Sale extends Model
     }
     public function cashRegister()
     {
-        return $this->belongsTo(
-            PosRegister::class,
-            'cash_register_id'
-        );
+        return $this->belongsTo(PosRegisters::class,'cash_register_id');
     }
 
     public function customer()

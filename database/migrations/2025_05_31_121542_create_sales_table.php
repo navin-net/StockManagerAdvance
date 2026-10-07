@@ -13,35 +13,43 @@ return new class extends Migration
      */
     public function up()
     {
-Schema::create('sales', function (Blueprint $table) {
-    $table->id();
-    $table->string('reference')->unique();
+        Schema::create('sales', function (Blueprint $table) {
+            $table->id();
+            $table->string('reference')->unique();
 
-    // Relationships (Foreign Keys)
-    $table->unsignedBigInteger('biller_id')->nullable();
-    $table->unsignedBigInteger('warehouse_id')->nullable(); // Added
-    $table->unsignedBigInteger('customer_id')->nullable();
-    $table->unsignedBigInteger('user_id')->nullable();      // Added
-    $table->unsignedBigInteger('cash_register_id')->nullable();
+            // Relationships
+            $table->unsignedBigInteger('biller_id')->nullable();
+            $table->unsignedBigInteger('warehouse_id')->nullable();
+            $table->unsignedBigInteger('customer_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('cash_register_id')->nullable();
 
-    // Financials & Status
-    $table->decimal('total_amount', 10, 2);
-    $table->string('status');               // e.g., Completed, Pending
-    $table->string('payment_status')->nullable(); // Added (e.g., Paid, Partial, Due)
+            $table->string('sale_type')->nullable();
 
-    // Date & System
-    $table->date('date');
-    $table->timestamps();
+            // Financials
+            $table->decimal('subtotal', 10, 2)->default(0);
+            $table->decimal('discount', 10, 2)->default(0);
+            $table->decimal('discount_value', 10, 2)->default(0);
+            $table->string('discount_type')->nullable();
+            $table->decimal('total_amount', 10, 2);
 
+            // Status
+            $table->string('status');
+            $table->string('payment_status')->nullable();
+            $table->string('payment_method')->nullable();
 
-});
+            $table->date('date');
+            $table->timestamps();
+        });
 
         Schema::create('sale_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sale_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
+            $table->string('product_name')->nullable();
             $table->integer('quantity');
             $table->decimal('sale_price', 10, 2);
+            $table->decimal('subtotal', 10, 2)->default(0);
             $table->timestamps();
         });
     }
