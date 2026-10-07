@@ -1121,5 +1121,101 @@
                 });
             });
         });
+
+
+
+
+        /* ═══════════════════════════════════════════════════════
+           CUSTOMER DISPLAY SYNC
+           Sends the cart, totals and payment state to /customer-display
+           (same browser, second window / second monitor).
+        ═══════════════════════════════════════════════════════ */
+        (function () {
+            const KEY = 'pos-cd-state', HELLO = 'pos-cd-hello';
+            const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pos-customer-display') : null;
+            let mode = 'order'; // order | payment | processing | thanks
+
+            function snapshot(extra) {
+                const t = calcTotals();
+                const stage = mode === 'order' ? (cart.length ? 'order' : 'idle') : mode;
+                return Object.assign({
+                    type: 'state',
+                    ts: Date.now(),
+                    stage: stage,
+                    ref: $('.pos-cart__subtitle').first().text().trim(),
+                    customer: $('#customerSelect').val() ? $('#customerSelect option:selected').text().trim() : '',
+                    items: cart.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, image: i.image })),
+                    subtotal: t.subtotal,
+                    discount: t.discAmt,
+                    grand: t.grand,
+                    payment: {
+                        method: $('#paymentMethod').val(),
+                        bank: $('#bankName').val() || '',
+                        received: parseFloat($('#receivedAmt').val()) || 0,
+                        change: parseFloat($('#changeAmt').val()) || 0
+                    }
+                }, extra || {});
+            }
+
+            function send(extra) {
+                const s = snapshot(extra);
+                try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+                if (ch) ch.postMessage(s);
+            }
+
+            // Open the customer window (only defined here if your project does not already have it)
+            if (typeof window.openCustomerDisplay !== 'function') {
+                window.openCustomerDisplay = function () {
+                    const w = window.open(@json(url('/customer-display')), 'posCustomerDisplay', 'width=1100,height=720');
+                    if (w) w.focus();
+                    setTimeout(send, 800);
+                };
+            }
+
+            // Wrap existing functions (called from inline onclick="" too, so we re-assign the globals)
+            const _renderCart = renderCart;
+            renderCart = function () { _renderCart.apply(this, arguments); send(); };
+
+            const _applyDiscount = applyDiscountModal;
+            applyDiscountModal = function () { _applyDiscount.apply(this, arguments); send(); };
+
+            const _selectMethod = selectPaymentMethod;
+            selectPaymentMethod = function () { _selectMethod.apply(this, arguments); send(); };
+
+            const _selectBank = selectBank;
+            selectBank = function () { _selectBank.apply(this, arguments); send(); };
+
+            // Events (registered after yours, so your handlers run first)
+            $(function () {
+                $('#customerSelect').on('change', () => send());
+                $('#receivedAmt').on('input', () => send());
+
+                $('#paymentModal')
+                    .on('shown.bs.modal', () => { mode = 'payment'; send(); })
+                    .on('hidden.bs.modal', () => { if (mode === 'payment') { mode = 'order'; send(); } });
+
+                send();                                // initial state
+                setInterval(() => send(), 5000);       // heartbeat so the display knows the POS is alive
+            });
+
+            // Sale request lifecycle
+            $(document)
+                .on('ajaxSend', function (e, xhr, opts) {
+                    if (opts.url === STORE_URL) { mode = 'processing'; send(); }
+                })
+                .on('ajaxSuccess', function (e, xhr, opts, data) {
+                    if (opts.url === STORE_URL && data && data.success) { mode = 'thanks'; send({ ref: data.reference }); }
+                })
+                .on('ajaxError', function (e, xhr, opts) {
+                    if (opts.url === STORE_URL) { mode = 'payment'; send(); }
+                });
+
+            // A customer window that just opened asks for the current state
+            if (ch) ch.onmessage = e => { if (e.data && e.data.type === 'hello') send(); };
+            addEventListener('storage', e => { if (e.key === HELLO) send(); });
+        })();
+
+
+
     </script>
 @endpush

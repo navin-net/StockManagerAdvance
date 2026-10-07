@@ -8,22 +8,19 @@
     </button>
 
     <!-- Footer -->
-    <footer class="footer mt-auto py-3 border-top">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start"></div>
-
-                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-                    <span class="text-muted">
-                        © {{ date('Y') }}
-                        <strong>{{ $shopInfo->name_shop ?? 'Stock Management System' }}</strong>.
-                        {{ __('messages.add_rights_reserved') }}
-                    </span>
-                </div>
+    <footer class="footer mt-auto py-3 no-print">
+        <div class="container-fluid px-3 px-lg-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-1">
+                <span>
+                    &copy; {{ date('Y') }}
+                    <strong class="text-body">{{ $shopInfo->name_shop ?? 'Stock Management System' }}</strong>.
+                    {{ __('messages.add_rights_reserved') }}
+                </span>
+                <span class="small">{{ config('app.name') }}</span>
             </div>
         </div>
     </footer>
-@endunless
+@endif
 
 
 @if (Request::is('admin/pos'))
@@ -314,6 +311,9 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
 <script>
+
+
+
     var projectName = "{{ config('app.name') }}";
     // console.log("Welcome to " + projectName);
 
@@ -404,23 +404,29 @@
             });
         });
 
-        const savedSidebarState = localStorage.getItem('sidebar-visible');
-        if (savedSidebarState === 'true') body.classList.add('sidebar-visible');
-
+        // Desktop (>=1200px, not POS): sidebar is an icon rail; the button pins it open.
+        // Mobile / tablet / POS: sidebar is an overlay; the button opens it.
+        const sbDesktop = () => window.innerWidth >= 1200 && !body.classList.contains('is-pos');
+        const sbOverlayMode = () => !sbDesktop();
+        if (localStorage.getItem('rail-pinned') === 'true' && sbDesktop()) body.classList.add('rail-pinned');
+        if (localStorage.getItem('sidebar-visible') === 'true' && !sbDesktop()) body.classList.add('sidebar-visible');
         sidebarToggle?.addEventListener('click', () => {
-            const isVisible = body.classList.toggle('sidebar-visible');
-            localStorage.setItem('sidebar-visible', isVisible);
+            if (sbDesktop()) {
+                const pinned = body.classList.toggle('rail-pinned');
+                localStorage.setItem('rail-pinned', pinned);
+            } else {
+                const isVisible = body.classList.toggle('sidebar-visible');
+                localStorage.setItem('sidebar-visible', isVisible);
+            }
         });
-
         sidebarOverlay?.addEventListener('click', () => {
             body.classList.remove('sidebar-visible');
             localStorage.setItem('sidebar-visible', false);
         });
-
         const sidebarThemeDropdowns = document.querySelectorAll('.sidebar .dropdown-menu');
         sidebarThemeDropdowns.forEach(dropdown => {
             dropdown.addEventListener('click', () => {
-                if (window.innerWidth < 992) {
+                if (sbOverlayMode()) {
                     body.classList.remove('sidebar-visible');
                     localStorage.setItem('sidebar-visible', false);
                 }
@@ -431,7 +437,7 @@
             '.sidebar .nav-link[href]:not([data-bs-toggle="collapse"]):not(.dropdown-toggle)');
         sidebarNavLinks.forEach(link => {
             link.addEventListener('click', () => {
-                if (window.innerWidth < 992) {
+                if (sbOverlayMode()) {
                     body.classList.remove('sidebar-visible');
                     localStorage.setItem('sidebar-visible', false);
                 }
@@ -442,7 +448,7 @@
         const mobileCloseLinks = document.querySelectorAll('.sidebar .nav-link.mobile-close');
         mobileCloseLinks.forEach(link => {
             link.addEventListener('click', () => {
-                if (window.innerWidth < 992) {
+                if (sbOverlayMode()) {
                     body.classList.remove('sidebar-visible');
                     localStorage.setItem('sidebar-visible', false);
                 }
@@ -459,12 +465,12 @@
                 alertList.innerHTML = '';
 
                 if (!products.length) {
-                    alertList.innerHTML = '<div class="text-center small">Null</div>';
+                    alertList.innerHTML = '<div class="text-center small text-muted py-2">No stock alerts</div>';
                     cartBadge.style.display = 'none';
                     return;
                 }
 
-                cartBadge.style.display = 'inline-block';
+                cartBadge.style.display = 'inline-flex';
                 cartBadge.textContent = products.length;
 
                 products.forEach(product => {
@@ -522,7 +528,7 @@
 
 
         });
-    @endunless
+    @endif
 
 
     function toggleCalc() {

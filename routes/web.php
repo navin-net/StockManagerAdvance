@@ -55,9 +55,8 @@ Route::post('/cookie/accept', [CookieController::class, 'accept'])
 Route::get('/lang/{lang}', [LanguageController::class, 'switch']);
 Route::get('/product-alerts', [BaseController::class, 'getAlerts']);
 
-Route::get('/customer-display', function () {
-    return view('customer-display');
-});
+Route::get('/customer-display', fn () => view('admin.pos.customer-display'))
+     ->middleware('auth')->name('customer.display');
 
 
 Route::get('/test-mail', function () {

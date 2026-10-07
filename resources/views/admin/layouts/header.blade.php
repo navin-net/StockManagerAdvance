@@ -1,283 +1,268 @@
-<header class="app-header shadow-sm" id="site-header">
-    <div class="container-fluid d-flex align-items-center justify-content-between h-100 px-3">
-        <div class="d-flex align-items-center gap-3">
+@php
+    $isPosPage = request()->is('admin/pos*');
+    $hdUser = Auth::user();
+    $hdAvatar = $hdUser && $hdUser->avatar ? asset('storage/' . $hdUser->avatar) : asset('assets/img/profile-img.jpg');
+    $locale = app()->getLocale();
+    $flag = $locale == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg');
+@endphp
 
-            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none  desktop-only">
-                <span class="fw-bold fs-4" style="color: #0ea5e9;">
-                    {{ $shopInfo->name_shop ?? 'Stock Management System' }}
-                </span>
-            </a>
-            <button id="sidebarToggle" class="btn btn-link p-0 text-body" type="button" aria-label="Toggle sidebar">
-                <i class="bi bi-list fs-4"></i>
+<header class="app-header" id="site-header">
+    <div class="hd-inner">
+
+        {{-- ============================ LEFT ============================ --}}
+        <div class="hd-left">
+            <button id="sidebarToggle" class="hd-btn" type="button" aria-label="Toggle sidebar">
+                <i class="bi bi-layout-sidebar-inset"></i>
             </button>
+
+            @if ($isPosPage)
+                {{-- The sidebar is hidden on POS, so keep a way back to the dashboard --}}
+                <a href="{{ route('admin.dashboard') }}" class="hd-brand">
+                    <span class="sb-mark" style="width:32px;height:32px"><i class="bi bi-grid-fill"></i></span>
+                    <span class="d-none d-sm-inline">{{ $shopInfo->name_shop ?? 'Stock Management System' }}</span>
+                </a>
+            @else
+                <div class="hd-heading">
+                    <h1 class="hd-title">@yield('title', __('messages.dashboard'))</h1>
+                    <span class="hd-sub d-none d-md-block">{{ $shopInfo->name_shop ?? 'Stock Management System' }}</span>
+                </div>
+            @endif
         </div>
-        @if (!Request::is('admin/pos*'))
-            <div class="d-flex align-items-center gap-2 ">
 
-                <!-- 🌐 Language Switch -->
-                <div class="btn-group desktop-only">
-                    <button class="btn nbt-outline-custom dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
-                            alt="Lang" width="20" height="14">
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
-                                href="/lang/en">
-                                <img src="{{ asset('flag/gb-eng.jpg') }}" class="me-2" width="20">
-                                {{ __('messages.english') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
-                                href="/lang/km">
-                                <img src="{{ asset('flag/kh.jpg') }}" class="me-2" width="20">
-                                {{ __('messages.khmer') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
 
-                <!-- 🎨 Theme Switch -->
-                <div class="btn-group desktop-only">
-                    <button class="btn btn-outline-custom dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-moon-stars me-2"></i>
-                        <span id="currentThemeLabel">Dark</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="dark">
-                                <i class="bi bi-moon-stars me-2"></i> {{ __('messages.dark') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="light">
-                                <i class="bi bi-sun me-2"></i> {{ __('messages.light') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- ⚠️ Alerts -->
-                <div class="btn-group desktop-only">
-                    <button class="btn btn-outline-danger position-relative dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            id="cartBadge" style="display:none;">0</span>
-                    </button>
-
-                    <div class="dropdown-menu dropdown-menu-end p-2 " style="width: 300px;">
-                        <h6 class="dropdown-header text-danger">Alerts</h6>
-                        <div id="alertList"></div>
-                        <hr class="dropdown-divider">
-                        <a class="dropdown-item text-center" href="{{ url('/products') }}">
-                            {{ __('messages.see_all') }}
-                        </a>
-                    </div>
-                </div>
-{{--                <div class="btn-group">--}}
-{{--                    <a href="{{ url('/') }}" class="btn btn-primary" title="{{ __('messages.shop') }}">--}}
-{{--                        <i class="bi bi-shop-window"></i>--}}
-{{--                    </a>--}}
-{{--                </div>--}}
-                <!-- POS Button -->
-                <div class="btn-group">
-                    <a href="{{ route('pos.index') }}" class="btn btn-success">
-                        <i class="bi bi-grid me-2"></i> POS
-                    </a>
-                </div>
-
-                <!-- 👤 User Menu -->
-                <div class="btn-group desktop-only">
-                    <button class="btn btn-outline-custom dropdown-toggle d-flex align-items-center"
-                        data-bs-toggle="dropdown">
-                        <img src="{{ Auth::user() && Auth::user()->avatar
-                            ? asset('storage/' . Auth::user()->avatar)
-                            : asset('assets/img/profile-img.jpg') }}"
-                            class="rounded-circle me-2" width="32" height="32">
-                        {{ Auth::user()->first_name }}
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit', Auth::user()->id) }}">
-                                <i class="bi bi-person me-2"></i> {{ __('messages.profile') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item"
-                                href="{{ route('profile.edit', ['id' => Auth::user()->id, 'tab' => 'change_password']) }}">
-                                <i class="bi bi-lock me-2"></i> {{ __('messages.change_password') }}
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST">
-                                @csrf
-                            </form>
-                            <a class="dropdown-item text-danger" href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                <i class="bi bi-box-arrow-right me-2"></i> {{ __('messages.logout') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
+        {{-- ======================== GLOBAL SEARCH ======================== --}}
+        @unless ($isPosPage)
+            <div class="hd-search d-none d-md-block" id="hdSearch" role="search">
+                <i class="bi bi-search"></i>
+                <input id="hdSearchInput" type="search" autocomplete="off"
+                    placeholder="Jump to a page or search products"
+                    aria-label="Search pages and products" aria-controls="hdResults" aria-expanded="false">
+                <kbd>Ctrl K</kbd>
+                <div class="hd-results" id="hdResults" role="listbox" hidden></div>
             </div>
         @endunless
-        @if (request()->is('admin/pos*'))
-            <div class="d-flex gap-1 align-items-center desktop-only">
 
+        {{-- ============================ RIGHT =========================== --}}
+        <div class="hd-right">
 
-                <div class="dropdown">
-                    <button
-                        class="btn btn-outline-custom dropdown-toggle-color d-flex align-items-center justify-content-between"
-                        type="button" id="themeDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div>
-                            <i class="bi bi-moon-stars me-2"></i>
-                            <span id="currentThemeLabel">Dark</span>
-                        </div>
+            {{-- ---------- POS-only tools (desktop) ---------- --}}
+            @if ($isPosPage)
+                <div class="d-none d-lg-flex align-items-center gap-2">
+                    <button type="button" class="hd-btn" title="{{ __('messages.customer') }}"
+                        aria-label="{{ __('messages.customer') }}" onclick="openCustomerDisplay()">
+                        <i class="bi bi-pc-display-horizontal"></i>
                     </button>
-                    <ul class="dropdown-menu w-100">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="dark">
-                                <i class="bi bi-moon-stars me-2"></i> {{ __('messages.dark') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#" data-theme="light">
-                                <i class="bi bi-sun me-2"></i> {{ __('messages.light') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <!-- 🌐 Language Switch -->
-                <div class="dropdown">
-                    <button class="btn btn-outline-custom d-flex align-items-center justify-content-center"
-                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="width: 40px; height: 38px;">
-                        <img src="{{ app()->getLocale() == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg') }}"
-                            alt="Lang" width="20" height="14">
+                    <button type="button" class="hd-btn" title="{{ __('messages.register_detail') }}"
+                        aria-label="{{ __('messages.register_detail') }}" data-bs-toggle="modal"
+                        data-bs-target="#registerDetail">
+                        <i class="bi bi-clipboard-data"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'en' ? 'active' : '' }}"
-                                href="/lang/en">
-                                <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2"
-                                    width="20" height="14">
-                                <span>{{ __('messages.english') }}</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() == 'km' ? 'active' : '' }}"
-                                href="/lang/km">
-                                <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2"
-                                    width="20" height="14">
-                                <span>{{ __('messages.khmer') }}</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <a href="{{ url('admin/pos/customer-display') }}" type="button" target="_blank"
-                    class="btn btn-primary text-white d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.customer') }}" style="width: 40px; height: 38px;">
-                    <i class="bi bi-pc-display-horizontal"></i>
-                </a>
-                <!-- Alerts / Cart -->
-                <div class="dropdown">
-                    <button class="btn btn-danger position-relative" id="cartIcon" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            id="cartBadge" style="display: none;">0</span>
+                    <button type="button" class="hd-btn" title="{{ __('messages.add_cash') }}"
+                        aria-label="{{ __('messages.add_cash') }}" data-bs-toggle="modal" data-bs-target="#addCash">
+                        <i class="bi bi-database-fill-add"></i>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-end p-2" style="width: 300px;" id="alertContainer">
-                        <h6 class="dropdown-header text-danger">
-                            <div id="alertList"></div>
-                        </h6>
-                        <hr class="dropdown-divider">
-                        <a class="dropdown-item text-center"
-                            href="{{ url('/products') }}">{{ __('messages.see_all') }}</a>
-                    </div>
+                    <button type="button" class="hd-btn" title="{{ __('messages.calculator') }}"
+                        aria-label="{{ __('messages.calculator') }}" onclick="toggleCalc()">
+                        <i class="bi bi-calculator"></i>
+                    </button>
+                    <button type="button" class="hd-btn danger" title="{{ __('messages.close_register') }}"
+                        aria-label="{{ __('messages.close_register') }}" data-bs-toggle="modal"
+                        data-bs-target="#closePos">
+                        <i class="bi bi-power"></i>
+                    </button>
+                    <span class="hd-sep"></span>
                 </div>
 
-                <!-- Info Button -->
-                <button type="button"
-                    class="btn btn-info text-white d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.register_detail') }}" style="width: 40px; height: 38px;"
-                        data-bs-toggle="modal" data-bs-target="#registerDetail">
-                    <i class="bi bi-clipboard-data"></i>
-                </button>
-
-                <!-- Add Expense -->
-                <button type="button"
-                    class="btn btn-warning text-white d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.add_cash') }}" style="width: 40px; height: 38px;"
-                        data-bs-toggle="modal" data-bs-target="#addCash">
-                    <i class="bi bi-database-fill-add"></i>
-                </button>
-
-                <!-- Calculator -->
-                <button type="button" class="btn btn-secondary d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.calculator') }}" onclick="toggleCalc()"
-                    style="width: 40px; height: 38px;">
-                    <i class="bi bi-calculator"></i>
-                </button>
-
-                <!-- View Bill -->
-
-
-                <!-- Close Register -->
-                <button type="button" class="btn btn-danger d-flex align-items-center justify-content-center"
-                    title="{{ __('messages.close_register') }}" style="width: 40px; height: 38px;"
-                    data-bs-toggle="modal" data-bs-target="#closePos">
-                    <i class="bi bi-power"></i>
-                </button>
-
-                <!-- User Profile Dropdown -->
-                <div class="dropdown desktop-only">
-                    <button class="btn btn-outline-custom dropdown-toggle d-flex align-items-center"
-                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="height: 38px; padding: 0 12px;">
-                        <img src="{{ Auth::check() && Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('assets/img/profile-img.jpg') }}"
-                            alt="Profile" class="rounded-circle" width="32" height="32">
-                        <span class="d-none d-md-inline">{{ Auth::user()?->first_name ?? 'User' }}</span>
+                {{-- ---------- POS tools (mobile overflow) ---------- --}}
+                <div class="dropdown d-lg-none">
+                    <button class="hd-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="POS tools">
+                        <i class="bi bi-three-dots-vertical"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li>
-                            <a class="dropdown-item {{ request()->routeIs('profile.edit') && request('tab') !== 'change_password' ? 'active' : '' }}"
-                                href="{{ route('profile.edit', Auth::user()->id) }}">
-                                <i class="bi bi-person me-2"></i>{{ __('messages.profile') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item {{ request('tab') === 'change_password' ? 'active' : '' }}"
-                                href="{{ route('profile.edit', ['id' => Auth::user()->id, 'tab' => 'change_password']) }}">
-                                <i class="bi bi-lock me-2"></i>{{ __('messages.change_password') }}
-                            </a>
-                        </li>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); openCustomerDisplay()"><i
+                                    class="bi bi-pc-display-horizontal me-2"></i>{{ __('messages.customer') }}</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#registerDetail"><i
+                                    class="bi bi-clipboard-data me-2"></i>{{ __('messages.register_detail') }}</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addCash"><i
+                                    class="bi bi-database-fill-add me-2"></i>{{ __('messages.add_cash') }}</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); toggleCalc()"><i
+                                    class="bi bi-calculator me-2"></i>{{ __('messages.calculator') }}</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                class="d-none">@csrf</form>
-                            <a class="dropdown-item text-danger" href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                <i class="bi bi-box-arrow-right me-2"></i> {{ __('messages.logout') }}
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#closePos"><i
+                                    class="bi bi-power me-2"></i>{{ __('messages.close_register') }}</a></li>
                     </ul>
                 </div>
+            @else
+                {{-- ---------- Open POS (admin pages) ---------- --}}
+                <a href="{{ route('pos.index') }}" class="hd-pos">
+                    <i class="bi bi-grid"></i><span class="d-none d-sm-inline">POS</span>
+                </a>
+            @endif
 
+            {{-- ---------- Stock alerts (JS fills #alertList / #cartBadge) ---------- --}}
+            <div class="dropdown">
+                <button class="hd-btn" id="cartIcon" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    aria-label="Alerts">
+                    <i class="bi bi-bell"></i>
+                    <span class="hd-badge" id="cartBadge">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-2" style="width: 320px;" id="alertContainer">
+                    <h6 class="dropdown-header px-2 text-danger">Alerts</h6>
+                    <div id="alertList"></div>
+                    <hr class="dropdown-divider">
+                    <a class="dropdown-item text-center fw-semibold" href="{{ url('/products') }}">
+                        {{ __('messages.see_all') }}
+                    </a>
+                </div>
             </div>
-        @endif
-</div>
-  <div class="progress-track">
-    <div class="progress-fill" id="scroll-bar"></div>
-  </div>
+
+            {{-- ---------- Language (desktop) ---------- --}}
+            <div class="dropdown desktop-only">
+                <button class="hd-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    aria-label="Language">
+                    <img src="{{ $flag }}" alt="Lang" width="20" height="14" class="rounded-1">
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center {{ $locale == 'en' ? 'active' : '' }}"
+                            href="/lang/en">
+                            <img src="{{ asset('flag/gb-eng.jpg') }}" alt="English" class="me-2 rounded-1"
+                                width="20" height="14">
+                            {{ __('messages.english') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center {{ $locale == 'km' ? 'active' : '' }}"
+                            href="/lang/km">
+                            <img src="{{ asset('flag/kh.jpg') }}" alt="Khmer" class="me-2 rounded-1" width="20"
+                                height="14">
+                            {{ __('messages.khmer') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- ---------- Theme (desktop) ---------- --}}
+            <div class="dropdown desktop-only">
+                <button class="hd-btn wide dropdown-toggle-color" type="button" id="themeDropdownButton"
+                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme">
+                    <i class="bi bi-moon-stars"></i>
+                    <span id="currentThemeLabel" class="d-none d-xl-inline">Dark</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" data-theme="dark"><i
+                                class="bi bi-moon-stars me-2"></i>{{ __('messages.dark') }}</a></li>
+                    <li><a class="dropdown-item" href="#" data-theme="light"><i
+                                class="bi bi-sun me-2"></i>{{ __('messages.light') }}</a></li>
+                </ul>
+            </div>
+
+            {{-- ---------- User menu (desktop) ---------- --}}
+            <div class="dropdown desktop-only">
+                <button class="hd-btn hd-user" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ $hdAvatar }}" alt="Profile">
+                    <span class="nm">{{ $hdUser?->first_name ?? 'User' }}</span>
+                    <i class="bi bi-chevron-down small"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 220px;">
+                    <li class="px-3 py-2">
+                        <div class="fw-bold">{{ $hdUser->name }}</div>
+                        <div class="small text-muted">{{ $hdUser->email }}</div>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request()->routeIs('profile.edit') && request('tab') !== 'change_password' ? 'active' : '' }}"
+                            href="{{ route('profile.edit', $hdUser->id) }}">
+                            <i class="bi bi-person me-2"></i>{{ __('messages.profile') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ request('tab') === 'change_password' ? 'active' : '' }}"
+                            href="{{ route('profile.edit', ['id' => $hdUser->id, 'tab' => 'change_password']) }}">
+                            <i class="bi bi-lock me-2"></i>{{ __('messages.change_password') }}
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        {{-- #logout-form lives in the sidebar include --}}
+                        <a class="dropdown-item text-danger" href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bi bi-box-arrow-right me-2"></i>{{ __('messages.logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="progress-track">
+        <div class="progress-fill" id="scroll-bar"></div>
+    </div>
 </header>
+
+@unless ($isPosPage)
+    @push('scripts')
+        <script>
+            // Header quick search: jumps to any sidebar page, or falls back to a product search.
+            document.addEventListener('DOMContentLoaded', () => {
+                const box = document.getElementById('hdSearch');
+                const input = document.getElementById('hdSearchInput');
+                const list = document.getElementById('hdResults');
+                if (!box || !input) return;
+
+                const productsUrl = @json(url('admin/products'));
+                const pages = [...document.querySelectorAll('.sidebar a.nav-link[href]:not([data-bs-toggle])')].map(a => {
+                    const group = a.closest('.collapse')
+                        ? document.querySelector('[href="#' + a.closest('.collapse').id + '"] span')?.textContent.trim() : '';
+                    return { label: a.querySelector('span')?.textContent.trim() || '', group, icon: a.querySelector('i')?.className || '', href: a.href };
+                }).filter(p => p.label);
+
+                let rows = [], active = -1;
+                const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+                const mark = () => rows.forEach((r, i) => r.el.classList.toggle('on', i === active));
+
+                function render() {
+                    const q = input.value.trim().toLowerCase();
+                    if (!q) return close();
+                    rows = pages.filter(p => (p.label + ' ' + p.group).toLowerCase().includes(q)).slice(0, 6)
+                        .map(p => ({ href: p.href, label: p.label, sub: p.group || 'Page', icon: p.icon }));
+                    rows.push({ href: productsUrl + '?search=' + encodeURIComponent(input.value.trim()),
+                        label: 'Search products for "' + input.value.trim() + '"', sub: 'Products', icon: 'bi bi-search' });
+                    list.innerHTML = '';
+                    rows.forEach(r => {
+                        const a = document.createElement('a');
+                        a.href = r.href; a.className = 'hd-res'; a.setAttribute('role', 'option');
+                        const i = document.createElement('i'); i.className = r.icon;
+                        const t = document.createElement('span'); t.textContent = r.label;
+                        const g = document.createElement('small'); g.textContent = r.sub;
+                        a.append(i, t, g); list.appendChild(a); r.el = a;
+                    });
+                    active = 0; mark(); list.hidden = false; input.setAttribute('aria-expanded', 'true');
+                }
+
+                input.addEventListener('input', render);
+                input.addEventListener('focus', render);
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(rows.length - 1, active + 1); mark(); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); mark(); }
+                    else if (e.key === 'Enter' && rows[active]) { e.preventDefault(); window.location = rows[active].href; }
+                    else if (e.key === 'Escape') { close(); input.blur(); }
+                });
+                document.addEventListener('click', e => { if (!box.contains(e.target)) close(); });
+                document.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); input.focus(); input.select(); }
+                });
+            });
+        </script>
+    @endpush
+@endunless
