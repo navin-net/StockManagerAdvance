@@ -32,7 +32,7 @@ class BillerController extends Controller
                 ->addColumn('action', function ($row) {
                     return '<div class="dropdown">
                                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton' . $row->id . '" data-bs-toggle="dropdown" aria-expanded="false">
-                                    ' . __("messages.action") . '
+                                ' . __('messages.actions') . '
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row->id . '">
 

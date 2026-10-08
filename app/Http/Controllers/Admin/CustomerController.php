@@ -31,7 +31,7 @@ class CustomerController extends Controller
                     return '
                     <div class="dropdown">
                         <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton' . $row->id . '" data-bs-toggle="dropdown" aria-expanded="false">
-                        ' . __('messages.action') . '
+                        ' . __('messages.actions') . '
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row->id . '">
                             <li>
@@ -77,7 +77,15 @@ class CustomerController extends Controller
 
     public function create()
     {
+        $companies = DB::table('companies')->select('*')->get();
+        $groups = DB::table('groups')->select('id', 'name')->get();
+        $warehouses = DB::table('warehouses')->select('id', 'name')->get();
+
+
         return view('admin.customers.create', [
+            'groups' => $groups,
+            'warehouse' => $warehouses,
+            'companies' => $companies,
             'pageTitle' => __('messages.create'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
@@ -94,8 +102,6 @@ class CustomerController extends Controller
             'email' => 'required|email|unique:companies,email',
             'address' => 'required|max:255',
             'phone' => 'required|max:20',
-            'warehouse_id' => 'required|exists:warehouses,id',
-
             'city' => 'nullable|string|max:255',
             'street' => 'nullable|string|max:255',
             'number_of_houses' => 'nullable|string|max:50',
@@ -119,12 +125,11 @@ class CustomerController extends Controller
             'group_id' => 4,
             'group_name' => 'Customer',
             'logo' => $logoPath,
-            'warehouse_id' => $request->warehouse_id,
         ]);
 
-        return response()->json([
-            'success' => __('messages.customer_created_successfully')
-        ]);
+        return redirect()->route('customers.index')->with('success', __('messages.customers_created_successfully'));
+
+
     }
 
     public function edit($id)

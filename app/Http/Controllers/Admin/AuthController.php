@@ -6,17 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Cookie, DB, Hash, RateLimiter, Storage};
-use App\Models\{Companies, Products, Purchase, Sale, User};
-use Carbon\CarbonPeriod;
-use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
+use App\Models\{Categories, Companies, Products, Purchase, Sale, User};
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-
-
-
-
     public function showLoginForm()
     {
         return view('admin.auth.login');
@@ -55,14 +49,11 @@ class AuthController extends Controller
             if ($ip === '127.0.0.1' || $ip === '::1') {
                 $ip = getHostByName(getHostName());
             }
-
-            $user->update([
-                'ip_address' => $ip,
+            $user->update(['ip_address' => $ip,
             ]);
 
             $request->session()->regenerate();
 
-            // return redirect()->route('admin.dashboard');
             return redirect()->intended('/admin');
 
 
@@ -102,43 +93,24 @@ class AuthController extends Controller
         $ipFromDB = $currentUser->ip_address;
 
         $productCount = Products::count();
-        $salesCount = Sale::count();
-        $saleTotal = Sale::sum('total_amount');
-        $Purchases = Purchase::count();
+        $salesCount   = Sale::count();
+        $saleTotal    = Sale::sum('total_amount');
+        $Purchases    = Purchase::count();
 
-        $brands = DB::table('brands')
-            ->join('products', 'products.brand_id', '=', 'brands.id')
-            ->select(
-                'brands.id',
-                'brands.name',
-                'brands.slug',
-                'brands.image',
-                DB::raw('COUNT(sma_products.id) as total')
-            )
-            ->groupBy(
-                'brands.id',
-                'brands.name',
-                'brands.slug',
-                'brands.image'
-            )
-            ->orderBy('brands.name')
+        $categories = Categories::query()
+            ->withCount(['products', 'subCategories'])
+            ->orderBy('name')
             ->get();
 
-        $labels = $brands->pluck('name');
-        $data = $brands->pluck('total');
-
-
-
         return view('admin.dashboard', [
-            'ipFromDB' => $ipFromDB,
-            'salesCount' => $salesCount,
-            'saleTotal' => $saleTotal,
-            'avg_sales' => $Purchases,
-            'labels' => $labels,
-            'data' => $data,
-            'brands' => $brands,
-            'productCount' => $productCount
-
+            'ipFromDB'     => $ipFromDB,
+            'salesCount'   => $salesCount,
+            'saleTotal'    => $saleTotal,
+            'avg_sales'    => $Purchases,
+            'productCount' => $productCount,
+            'categories'   => $categories,
+            'labels'       => $categories->pluck('name'),
+            'data'         => $categories->pluck('products_count'),
         ]);
     }
 

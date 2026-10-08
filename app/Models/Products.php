@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\{Brand, Categories, ProductImage, Qualitys, SubCategory, Units};
 
+/**
+ * @method static count()
+ */
 class Products extends Model
 {
     use HasFactory;

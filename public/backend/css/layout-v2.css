@@ -189,6 +189,43 @@ body {
 .hd-res.on i { color: var(--brand-text); }
 @media (max-width: 1100px) { .hd-search kbd { display: none; } }
 
+
+/* ---------- notification center ---------- */
+.ntf-menu { width: 390px; max-width: calc(100vw - 1.25rem); padding: 0; overflow: hidden; }
+.ntf-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .85rem 1rem .5rem; }
+.ntf-head h6 { margin: 0; font-weight: 800; font-size: 1rem; }
+.ntf-tools { display: flex; gap: .25rem; }
+.ntf-link { border: 0; background: transparent; color: var(--brand-text); font-weight: 600; font-size: .76rem; padding: .3rem .5rem; border-radius: 8px; white-space: nowrap; }
+.ntf-link:hover { background: var(--brand-soft); }
+.ntf-link.danger { color: #E5484D; }
+.ntf-link.danger:hover { background: rgba(229, 72, 77, .12); }
+.ntf-tabs { display: flex; gap: .25rem; padding: 0 .75rem .6rem; border-bottom: 1px solid var(--border-color); }
+.ntf-tabs button { border: 0; background: transparent; color: var(--text-muted); font-weight: 600; font-size: .82rem; padding: .35rem .75rem; border-radius: 999px; }
+.ntf-tabs button b { font-weight: 700; margin-left: .25rem; padding: 0 .4rem; border-radius: 999px; background: var(--hover-bg); font-size: .7rem; }
+.ntf-tabs button.on { background: var(--brand-soft); color: var(--brand-text); }
+.ntf-list { max-height: 420px; overflow-y: auto; padding: .35rem; }
+.ntf-item { position: relative; display: flex; gap: .75rem; padding: .7rem .6rem; border-radius: 12px; align-items: flex-start; }
+.ntf-item:hover { background: var(--hover-bg); }
+.ntf-item.unread::before { content: ""; position: absolute; left: 2px; top: 1.45rem; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+.ntf-ic { width: 38px; height: 38px; flex: none; border-radius: 11px; display: grid; place-items: center; font-size: 1.05rem; }
+.ntf-ic.red { background: rgba(229, 72, 77, .14); color: #E5484D; }
+.ntf-ic.amber { background: rgba(245, 158, 11, .16); color: #C47F06; }
+.ntf-ic.green { background: rgba(34, 197, 94, .14); color: #22A55B; }
+.ntf-ic.blue { background: rgba(14, 165, 233, .14); color: #0B8DC9; }
+.ntf-body { min-width: 0; flex: 1; }
+.ntf-t { font-weight: 600; font-size: .86rem; line-height: 1.3; overflow-wrap: anywhere; }
+.ntf-item:not(.unread) .ntf-t { font-weight: 500; color: var(--text-muted); }
+.ntf-s { color: var(--text-muted); font-size: .78rem; margin-top: .1rem; }
+.ntf-m { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem .6rem; margin-top: .3rem; font-size: .74rem; color: var(--text-muted); }
+.ntf-act { border: 0; background: transparent; padding: 0; color: var(--brand-text); font-weight: 700; font-size: .74rem; text-decoration: none; }
+.ntf-act:hover { text-decoration: underline; }
+.ntf-x { flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); opacity: .55; font-size: .7rem; }
+.ntf-item:hover .ntf-x, .ntf-x:focus-visible { opacity: 1; background: var(--hover-bg); }
+.ntf-empty { display: flex; flex-direction: column; align-items: center; gap: .3rem; text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
+.ntf-empty i { font-size: 1.8rem; }
+.ntf-foot { display: flex; justify-content: center; align-items: center; gap: .4rem; padding: .7rem; border-top: 1px solid var(--border-color); font-weight: 700; font-size: .84rem; color: var(--brand-text); text-decoration: none; }
+.ntf-foot:hover { background: var(--hover-bg); color: var(--brand-text); }
+
 /* ---------- sidebar ---------- */
 .sidebar {
     position: fixed; top: 0; bottom: 0; left: 0; width: var(--sidebar-width);

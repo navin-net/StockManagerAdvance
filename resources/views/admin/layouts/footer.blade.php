@@ -1,9 +1,32 @@
+@php
+    // Data for the notification center script below (kept out of <script> so editors parse the JS cleanly).
+    $nt = fn($k, $fb) => \Illuminate\Support\Facades\Lang::has('messages.' . $k) ? __('messages.' . $k) : $fb;
+    $ntLabels = [
+        'now' => $nt('just_now', 'Just now'),
+        'out' => $nt('out_of_stock', 'Out of stock'),
+        'low' => $nt('low_stock', 'Low stock'),
+        'left' => $nt('left', 'left'),
+        'view' => $nt('view', 'View'),
+        'read' => $nt('mark_read', 'Mark read'),
+        'dismiss' => $nt('dismiss', 'Dismiss'),
+        'empty' => $nt('no_notifications', "You're all caught up"),
+        'emptyHint' => $nt('no_notifications_hint', 'New alerts and activity will show up here.'),
+        'error' => $nt('alerts_error', 'Could not load stock alerts'),
+        'retry' => $nt('retry', 'Retry'),
+        'sale' => $nt('sale_complete', 'Sale :ref completed'),
+    ];
+    $ntFlash = array_values(array_filter([
+        session('success') ? ['success', session('success')] : null,
+        session('error') ? ['error', session('error')] : null,
+        session('status') ? ['info', session('status')] : null,
+    ]));
+@endphp
 @if (!Request::is('admin/pos*'))
     <!-- Back to Top Button -->
     <button type="button"
-        class="btn btn-primary back-to-top rounded-circle shadow d-flex align-items-center justify-content-center no-print"
-        id="backToTopBtn" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Back to top"
-        aria-label="Back to top">
+            class="btn btn-primary back-to-top rounded-circle shadow d-flex align-items-center justify-content-center no-print"
+            id="backToTopBtn" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Back to top"
+            aria-label="Back to top">
         <i class="bi bi-arrow-up fs-5"></i>
     </button>
 
@@ -455,79 +478,210 @@
             });
         });
 
-        // Product Alerts
-        const alertList = document.getElementById('alertList');
-        const cartBadge = document.getElementById('cartBadge');
+        // ═══════════════════════════════════════════════════════
+        // NOTIFICATION CENTER
+        //  - stock alerts (out of stock / low stock) from /product-alerts
+        //  - activity (create / edit success) with "1 minute ago"
+        //  - actions: view product, mark read, dismiss, mark all read, clear
+        //  Other scripts can add items:  window.notify('Product saved', 'success')
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const L = @json($ntLabels);
+            const LS_N = 'app-notifs', LS_S = 'app-stock-state';
+            const list = document.getElementById('alertList'), badge = document.getElementById('cartBadge');
+            const btn = document.getElementById('cartIcon');
+            if (!list || !badge) return;
 
-        fetch("{{ url('product-alerts') }}")
-            .then(res => res.json())
-            .then(products => {
-                alertList.innerHTML = '';
+            const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+            const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+            let acts = load(LS_N, []), state = load(LS_S, {}), stock = [], tab = 'all', failed = false;
 
-                if (!products.length) {
-                    alertList.innerHTML = '<div class="text-center small text-muted py-2">No stock alerts</div>';
-                    cartBadge.style.display = 'none';
-                    return;
-                }
+            const rtf = new Intl.RelativeTimeFormat(document.documentElement.lang || 'en', { numeric: 'auto' });
+            function ago(ts) {
+                const s = Math.round((ts - Date.now()) / 1000), a = Math.abs(s);
+                if (a < 45) return L.now;
+                if (a < 3600) return rtf.format(Math.round(s / 60), 'minute');
+                if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour');
+                return rtf.format(Math.round(s / 86400), 'day');
+            }
+            function el(tag, cls, text) {
+                const n = document.createElement(tag);
+                if (cls) n.className = cls;
+                if (text !== undefined) n.textContent = text;
+                return n;
+            }
 
-                cartBadge.style.display = 'inline-flex';
-                cartBadge.textContent = products.length;
+            // ---- data ----
+            function stockItems() {
+                return stock.map(p => {
+                    const q = Number(p.stock_quantity), st = state[p.id], same = st && st.q === q;
+                    return { kind: 'stock', id: p.id, p, q, out: q <= 0, read: !!(same && st.read), gone: !!(same && st.gone) };
+                }).filter(x => !x.gone).sort((a, b) => b.out - a.out);
+            }
+            function setStock(id, q, patch) { state[id] = Object.assign({ q: q, read: false, gone: false }, state[id] && state[id].q === q ? state[id] : {}, patch); save(LS_S, state); }
 
-                products.forEach(product => {
-                    const alertItem = document.createElement('a');
-                    alertItem.href = `/products/show/${product.id}`;
-                    alertItem.className =
-                        'dropdown-item d-flex justify-content-between align-items-center';
-                    alertItem.textContent = product.code;
+            window.notify = function (text, type) {
+                if (!text) return;
+                const now = Date.now();
+                if (acts[0] && acts[0].text === text && now - acts[0].ts < 2500) return; // de-dupe
+                acts.unshift({ id: now + Math.random(), type: type || 'success', text: String(text), ts: now, read: false });
+                acts = acts.slice(0, 30); save(LS_N, acts); render();
+            };
 
-                    const badge = document.createElement('span');
-                    badge.className = 'badge bg-danger rounded-pill';
-                    badge.textContent = `Stock: ${product.stock_quantity}`;
-
-                    alertItem.appendChild(badge);
-                    alertList.appendChild(alertItem);
+            // ---- render ----
+            function row(opts) {
+                const r = el('div', 'ntf-item' + (opts.read ? '' : ' unread'));
+                r.dataset.key = opts.key;
+                const ic = el('span', 'ntf-ic ' + opts.tone); ic.appendChild(el('i', 'bi bi-' + opts.icon));
+                const body = el('div', 'ntf-body');
+                body.appendChild(el('div', 'ntf-t', opts.title));
+                if (opts.sub) body.appendChild(el('div', 'ntf-s', opts.sub));
+                const meta = el('div', 'ntf-m');
+                if (opts.ts) { const t = el('span', 'ntf-time', ago(opts.ts)); meta.appendChild(t); }
+                (opts.actions || []).forEach(a => {
+                    const x = a.href ? el('a', 'ntf-act') : el('button', 'ntf-act'); if (a.href) x.href = a.href; else x.type = 'button';
+                    x.dataset.act = a.act; x.textContent = a.label; meta.appendChild(x);
                 });
-            })
-            .catch(err => {
-                console.error('Failed to fetch product alerts:', err);
-                alertList.innerHTML = '<div class="text-danger small">Error loading alerts</div>';
-                cartBadge.style.display = 'none';
+                body.appendChild(meta);
+                const close = el('button', 'ntf-x'); close.type = 'button'; close.dataset.act = 'dismiss'; close.title = L.dismiss; close.setAttribute('aria-label', L.dismiss);
+                close.appendChild(el('i', 'bi bi-x-lg'));
+                r.append(ic, body, close);
+                return r;
+            }
+
+            function render() {
+                const S = stockItems(), outs = S.filter(x => x.out), lows = S.filter(x => !x.out);
+                const unread = S.filter(x => !x.read).length + acts.filter(n => !n.read).length;
+                badge.textContent = unread > 99 ? '99+' : unread;
+                badge.style.display = unread ? 'inline-flex' : 'none';
+                document.querySelector('[data-n="all"]').textContent = S.length + acts.length;
+                document.querySelector('[data-n="stock"]').textContent = S.length;
+                document.querySelector('[data-n="act"]').textContent = acts.length;
+
+                const rows = [];
+                const stockRow = x => row({
+                    key: 's' + x.id, read: x.read, tone: x.out ? 'red' : 'amber', icon: x.out ? 'box-seam' : 'exclamation-triangle',
+                    title: (x.p.name || x.p.code) + (x.p.name && x.p.code ? ' (' + x.p.code + ')' : ''),
+                    sub: x.out ? L.out : L.low + ': ' + x.q + ' ' + L.left,
+                    actions: [{ href: '/products/show/' + x.id, act: 'view', label: L.view }].concat(x.read ? [] : [{ act: 'read', label: L.read }])
+                });
+                const actRow = n => row({
+                    key: 'a' + n.id, read: n.read, ts: n.ts, title: n.text,
+                    tone: n.type === 'error' ? 'red' : n.type === 'info' ? 'blue' : 'green',
+                    icon: n.type === 'error' ? 'x-circle' : n.type === 'info' ? 'info-circle' : 'check-circle',
+                    actions: n.read ? [] : [{ act: 'read', label: L.read }]
+                });
+
+                if (tab !== 'act') outs.forEach(x => rows.push(stockRow(x)));
+                if (tab !== 'stock') acts.forEach(n => rows.push(actRow(n)));
+                if (tab !== 'act') lows.forEach(x => rows.push(stockRow(x)));
+
+                list.innerHTML = '';
+                if (!rows.length) {
+                    const e = el('div', 'ntf-empty');
+                    if (failed && tab !== 'act') {
+                        e.appendChild(el('i', 'bi bi-wifi-off')); e.appendChild(el('div', 'fw-semibold', L.error));
+                        const r = el('button', 'ntf-act', L.retry); r.type = 'button'; r.dataset.act = 'retry'; e.appendChild(r);
+                    } else {
+                        e.appendChild(el('i', 'bi bi-bell-slash')); e.appendChild(el('div', 'fw-semibold', L.empty)); e.appendChild(el('small', '', L.emptyHint));
+                    }
+                    list.appendChild(e);
+                } else rows.forEach(r => list.appendChild(r));
+            }
+
+            // ---- actions (event delegation) ----
+            list.addEventListener('click', e => {
+                const t = e.target.closest('[data-act]'); const item = e.target.closest('.ntf-item');
+                if (t && t.dataset.act === 'retry') return loadStock();
+                if (!item) return;
+                const key = item.dataset.key, id = key.slice(1), act = t ? t.dataset.act : 'read';
+                if (act === 'view') return;                                // normal link
+                if (key[0] === 's') {
+                    const x = stockItems().find(i => String(i.id) === id); if (!x) return;
+                    setStock(x.id, x.q, act === 'dismiss' ? { gone: true, read: true } : { read: true });
+                } else {
+                    if (act === 'dismiss') acts = acts.filter(n => String(n.id) !== id);
+                    else acts.forEach(n => { if (String(n.id) === id) n.read = true; });
+                    save(LS_N, acts);
+                }
+                render();
             });
+            document.getElementById('ntfReadAll').addEventListener('click', () => {
+                stockItems().forEach(x => setStock(x.id, x.q, { read: true }));
+                acts.forEach(n => n.read = true); save(LS_N, acts); render();
+            });
+            document.getElementById('ntfClear').addEventListener('click', () => {
+                stockItems().forEach(x => setStock(x.id, x.q, { gone: true, read: true }));
+                acts = []; save(LS_N, acts); render();
+            });
+            document.querySelectorAll('.ntf-tabs [data-tab]').forEach(b => b.addEventListener('click', () => {
+                tab = b.dataset.tab;
+                document.querySelectorAll('.ntf-tabs [data-tab]').forEach(x => x.classList.toggle('on', x === b));
+                render();
+            }));
+
+            // ---- stock alerts from the server ----
+            function loadStock() {
+                fetch("{{ url('product-alerts') }}", { headers: { 'Accept': 'application/json' } })
+                    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                    .then(p => { stock = Array.isArray(p) ? p : []; failed = false; render(); })
+                    .catch(err => { console.error('Failed to fetch product alerts:', err); failed = true; render(); });
+            }
+
+            // ---- success messages become activity items ----
+            @json($ntFlash).forEach(function (f) { window.notify(f[1], f[0]); });
+
+            // ---- AJAX saves (customer added, sale completed...) ----
+            if (window.jQuery) {
+                jQuery(document).ajaxSuccess(function (e, xhr, opts, data) {
+                    if (String(opts.type || 'GET').toUpperCase() === 'GET' || !data || typeof data !== 'object') return;
+                    if (typeof data.success === 'string') window.notify(data.success, 'success');
+                    else if (data.success === true && data.reference) window.notify(L.sale.replace(':ref', data.reference), 'success');
+                });
+            }
+
+            // ---- keep in sync ----
+            window.addEventListener('storage', e => { if (e.key === LS_N) { acts = load(LS_N, []); render(); } if (e.key === LS_S) { state = load(LS_S, {}); render(); } });
+            if (btn) btn.addEventListener('shown.bs.dropdown', loadStock);
+            setInterval(() => { loadStock(); }, 60000);
+            setInterval(render, 30000);                                   // refresh "x minutes ago"
+            render(); loadStock();
+        })();
     });
     @if (!Request::is('admin/pos*'))
-        document.addEventListener('DOMContentLoaded', function() {
-            const backToTopBtn = document.getElementById('backToTopBtn');
-            const scrollThreshold = 400;
+    document.addEventListener('DOMContentLoaded', function() {
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        const scrollThreshold = 400;
 
-            // Initialize Bootstrap tooltip
-            const tooltip = new bootstrap.Tooltip(backToTopBtn);
+        // Initialize Bootstrap tooltip
+        const tooltip = new bootstrap.Tooltip(backToTopBtn);
 
-            function toggleBackToTopButton() {
-                if (window.pageYOffset > scrollThreshold) {
-                    backToTopBtn.classList.add('show');
-                } else {
-                    backToTopBtn.classList.remove('show');
-                }
+        function toggleBackToTopButton() {
+            if (window.pageYOffset > scrollThreshold) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
             }
+        }
 
-            function scrollToTop() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                tooltip.hide();
-            }
-            window.addEventListener('scroll', toggleBackToTopButton);
-            backToTopBtn.addEventListener('click', scrollToTop);
-            backToTopBtn.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    scrollToTop();
-                }
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
             });
-
-
+            tooltip.hide();
+        }
+        window.addEventListener('scroll', toggleBackToTopButton);
+        backToTopBtn.addEventListener('click', scrollToTop);
+        backToTopBtn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToTop();
+            }
         });
+
+
+    });
     @endif
 
 
@@ -611,11 +765,11 @@
     }
 
     window.addEventListener('scroll', () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight
-                    - document.documentElement.clientHeight;
-    const pct = (scrollTop / docHeight) * 100;
-    document.getElementById('scroll-bar').style.width = pct + '%';
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight
+            - document.documentElement.clientHeight;
+        const pct = (scrollTop / docHeight) * 100;
+        document.getElementById('scroll-bar').style.width = pct + '%';
     });
 
 

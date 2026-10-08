@@ -128,7 +128,7 @@
         </span>
         <span class="sb-name">
             {{ $shopInfo->name_shop ?? 'Stock Management System' }}
-            <small>{{ $t('menu_console', 'Management console') }}</small>
+{{--            <small>{{ $t('menu_console', 'Management console') }}</small>--}}
         </span>
     </a>
 

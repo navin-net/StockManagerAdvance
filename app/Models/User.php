@@ -9,6 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\{Companies, Profile};
 
+/**
+ * @property mixed $ip_address
+ * @property mixed $group_id
+ * @property mixed $status
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;

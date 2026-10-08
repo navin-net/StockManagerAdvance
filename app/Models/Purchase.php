@@ -7,6 +7,9 @@ use App\Models\Payment;
 use App\Models\Companies;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static count()
+ */
 class Purchase extends Model
 {
     protected $fillable = [

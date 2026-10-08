@@ -36,19 +36,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+          rel="stylesheet">
 
     <!-- CSS Files -->
     <link href="{{ asset('backend/css/bootstrap.min.css') }}" rel="stylesheet">
     {{-- Select2 --}}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
-        rel="stylesheet" />
+          rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('backend/DataTables/datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/style-custom.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     {{-- New shell design: must stay AFTER style-custom.css --}}
-    <link rel="stylesheet" href="{{ asset('backend/css/layout-v2.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('backend/css/layout-v2.css') }}?v={{ @filemtime(public_path('backend/css/layout-v2.css')) }}">
 
     <style>
         #paymentMethodGroup button.pos-method-btn,
@@ -82,20 +82,20 @@
 
 <body class="{{ $isPos ? 'is-pos' : '' }}">
 
-    <div class="sidebar-overlay"></div>
+<div class="sidebar-overlay"></div>
 
-    @if (!request()->is('customer-display'))
-        @include('admin.layouts.header')
-    @endif
-    @include('admin.layouts.slider')
+@if (!request()->is('customer-display'))
+    @include('admin.layouts.header')
+@endif
+@include('admin.layouts.slider')
 
-    <main class="{{ request()->routeIs('pos.*') ? 'main-content-pos' : 'main-content' }}">
-        @yield('content')
-    </main>
+<main class="{{ request()->routeIs('pos.*') ? 'main-content-pos' : 'main-content' }}">
+    @yield('content')
+</main>
 
-    @include('admin.layouts.footer')
+@include('admin.layouts.footer')
 
-    @stack('scripts')
+@stack('scripts')
 
 </body>
 

@@ -1,5 +1,5 @@
 @extends('admin.layouts.master')
-@section('title', __('messages.customers_list'))
+@section('title', __('messages.suppliers_list'))
 @section('content')
 
     <div class="row align-items-center mb-4">
@@ -47,7 +47,7 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('customers.store') }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('suppliers.store') }}" enctype="multipart/form-data">
                         @csrf
 
                         <div class="row">
@@ -70,21 +70,21 @@
                                 @enderror
                             </div>
 
-                            <!-- customers -->
-{{--                            <div class="col-md-6 mb-3">--}}
-{{--                                <label for="warehouse_id" class="form-label">{{ __('messages.warehouse') }}</label>--}}
-{{--                                <select name="warehouse_id" id="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>--}}
-{{--                                    <option value="">{{ __('messages.select_warehouse') }}</option>--}}
-{{--                                    @foreach ($warehouse as $warehouse)--}}
-{{--                                        <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>--}}
-{{--                                            {{ $warehouse->name }}--}}
-{{--                                        </option>--}}
-{{--                                    @endforeach--}}
-{{--                                </select>--}}
-{{--                                @error('warehouse_id')--}}
-{{--                                <div class="invalid-feedback">{{ $message }}</div>--}}
-{{--                                @enderror--}}
-{{--                            </div>--}}
+                            <!-- suppliers -->
+                            {{--                            <div class="col-md-6 mb-3">--}}
+                            {{--                                <label for="warehouse_id" class="form-label">{{ __('messages.warehouse') }}</label>--}}
+                            {{--                                <select name="warehouse_id" id="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>--}}
+                            {{--                                    <option value="">{{ __('messages.select_warehouse') }}</option>--}}
+                            {{--                                    @foreach ($warehouse as $warehouse)--}}
+                            {{--                                        <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>--}}
+                            {{--                                            {{ $warehouse->name }}--}}
+                            {{--                                        </option>--}}
+                            {{--                                    @endforeach--}}
+                            {{--                                </select>--}}
+                            {{--                                @error('warehouse_id')--}}
+                            {{--                                <div class="invalid-feedback">{{ $message }}</div>--}}
+                            {{--                                @enderror--}}
+                            {{--                            </div>--}}
 
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">{{ __('messages.phone') }}</label>
@@ -154,7 +154,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save"></i> {{ __('messages.submit') }}
                                 </button>
-                                <a href="{{ route('customers.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('suppliers.index') }}" class="btn btn-secondary">
                                     <i class="bi bi-x-circle"></i> {{ __('messages.cancel') }}
                                 </a>
                             </div>

@@ -8,6 +8,9 @@ use App\Models\Groups;
 use App\Models\Warehouses;
 use App\Models\User;
 
+/**
+ * @method static create(array $array)
+ */
 class Companies extends Model
 {
     use HasFactory;

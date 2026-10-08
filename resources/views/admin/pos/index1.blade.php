@@ -468,754 +468,2326 @@
 @endsection
 
 @push('scripts')
-    <script>
-        /* ═══════════════════════════════════════════════════════
-           STATE / CONSTANTS
-        ═══════════════════════════════════════════════════════ */
-        const STORE_URL          = @json(route('pos.store'));
-        const CUSTOMER_STORE_URL = @json(route('customers.store'));
-        const CSRF_TOKEN         = @json(csrf_token());
-        const NO_IMAGE           = @json(asset('noimage.png'));
+<script>
+    /* ═══════════════════════════════════════════════════════
+       STATE / CONSTANTS
+    ═══════════════════════════════════════════════════════ */
 
-        // All translated strings used by JS
-        const T = {
-            all:          @json(__('messages.all')),
-            added:        @json(__('messages.added')),
-            totalDue:     @json(__('messages.total_due')),
-            subtotal:     @json(__('messages.subtotal')),
-            discount:     @json(__('messages.discount')),
-            confirm:      @json(__('messages.CONFIRM_CHARGE')),
-            each:         @json(__('messages.each')),
-            processing:   @json(__('messages.processing')),
-            outOfStock:   @json(__('messages.out_of_stock')),
-            noMoreStock:  @json(__('messages.no_more_stock')),
-            stockLimit:   @json(__('messages.stock_limit')),
-            orderCleared: @json(__('messages.order_cleared')),
-            saleComplete: @json(__('messages.sale_complete')),   // contains :ref
-            saleFailed:   @json(__('messages.sale_failed')),
-            networkError: @json(__('messages.network_error')),
-            invalidTotal: @json(__('messages.invalid_total')),
-            enterReceived:@json(__('messages.enter_received')),
-            receivedLess: @json(__('messages.received_less')),
-            selectBank:   @json(__('messages.please_select_bank')),
-            invalidMethod:@json(__('messages.invalid_method')),
-            addedOk:      @json(__('messages.added_ok')),
-            noProduct:    @json(__('messages.no_product_code')),
-            saved:        @json(__('messages.saved')),
-            wentWrong:    @json(__('messages.something_wrong')),
-        };
+    const STORE_URL          = @json(route('pos.store'));
+    const CUSTOMER_STORE_URL = @json(route('customers.store'));
+    const CSRF_TOKEN         = @json(csrf_token());
+    const NO_IMAGE           = @json(asset('noimage.png'));
 
-        let cart = [];
-        let activeBrand = 'all';
-        let activeCat = 'all';
-        let activeSub = 'all';
+    const T = {
+        all:           @json(__('messages.all')),
+        added:         @json(__('messages.added')),
+        totalDue:      @json(__('messages.total_due')),
+        subtotal:      @json(__('messages.subtotal')),
+        discount:      @json(__('messages.discount')),
+        confirm:       @json(__('messages.CONFIRM_CHARGE')),
+        each:          @json(__('messages.each')),
+        processing:    @json(__('messages.processing')),
+        outOfStock:    @json(__('messages.out_of_stock')),
+        noMoreStock:   @json(__('messages.no_more_stock')),
+        stockLimit:    @json(__('messages.stock_limit')),
+        orderCleared:  @json(__('messages.order_cleared')),
+        saleComplete:  @json(__('messages.sale_complete')),
+        saleFailed:    @json(__('messages.sale_failed')),
+        networkError:  @json(__('messages.network_error')),
+        invalidTotal:  @json(__('messages.invalid_total')),
+        enterReceived: @json(__('messages.enter_received')),
+        receivedLess:  @json(__('messages.received_less')),
+        selectBank:    @json(__('messages.please_select_bank')),
+        invalidMethod: @json(__('messages.invalid_method')),
+        addedOk:       @json(__('messages.added_ok')),
+        noProduct:     @json(__('messages.no_product_code')),
+        saved:         @json(__('messages.saved')),
+        wentWrong:     @json(__('messages.something_wrong')),
+    };
 
-        /* ═══════════════════════════════════════════════════════
-           HELPERS
-        ═══════════════════════════════════════════════════════ */
-        function esc(str) {
-            return String(str ?? '').replace(/[&<>"']/g, ch => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[ch]));
-        }
+    let cart = [];
+    let activeBrand = 'all';
+    let activeCat = 'all';
+    let activeSub = 'all';
 
-        // Raw attribute as string (jQuery .data() converts "123" to a number)
-        function attr(el, name) {
-            return String($(el).attr('data-' + name) ?? '');
-        }
 
-        const toCents = n => Math.round((parseFloat(n) || 0) * 100);
+    /* ═══════════════════════════════════════════════════════
+       HELPERS
+    ═══════════════════════════════════════════════════════ */
 
-        const BTN_CONFIRM_HTML =
-            `<i class="bi bi-check-circle-fill"></i> <span>${esc(T.confirm)}</span>`;
+    function esc(str) {
+        return String(str ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[ch]));
+    }
 
-        function calcTotals() {
-            const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-            const discType = $('#discountType').val();
-            const discVal = parseFloat($('#discountValue').val()) || 0;
-            const discAmt = discType === 'percentage'
+    function attr(el, name) {
+        return String($(el).attr('data-' + name) ?? '');
+    }
+
+    const toCents = n =>
+        Math.round((parseFloat(n) || 0) * 100);
+
+    const BTN_CONFIRM_HTML =
+        `<i class="bi bi-check-circle-fill"></i>
+         <span>${esc(T.confirm)}</span>`;
+
+
+    /* ═══════════════════════════════════════════════════════
+       TOTAL CALCULATION
+    ═══════════════════════════════════════════════════════ */
+
+    function calcTotals() {
+
+        const subtotal = cart.reduce(
+            (s, i) => s + (i.price * i.qty),
+            0
+        );
+
+        const discType = $('#discountType').val();
+
+        const discVal =
+            parseFloat($('#discountValue').val()) || 0;
+
+        const discAmt =
+            discType === 'percentage'
                 ? subtotal * discVal / 100
                 : Math.min(discVal, subtotal);
-            return { subtotal, discAmt, grand: subtotal - discAmt };
-        }
 
-        /* ═══════════════════════════════════════════════════════
-           PAYMENT METHOD (cash / bank)
-        ═══════════════════════════════════════════════════════ */
-        function selectPaymentMethod(method) {
-            $('#paymentMethod').val(method);
+        const grand = Math.max(
+            0,
+            subtotal - discAmt
+        );
 
-            $('#paymentMethodGroup .pos-method-btn').each(function () {
-                $(this).toggleClass('active', $(this).data('method') === method);
+        return {
+            subtotal,
+            discAmt,
+            grand
+        };
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       PAYMENT METHOD
+       CASH / BANK
+    ═══════════════════════════════════════════════════════ */
+
+    function selectPaymentMethod(method) {
+
+        $('#paymentMethod').val(method);
+
+        $('#paymentMethodGroup .pos-method-btn')
+            .each(function () {
+
+                $(this).toggleClass(
+                    'active',
+                    $(this).data('method') === method
+                );
+
             });
 
-            const receivedField = $('#receivedAmt').closest('.col-md-4');
-            const changeField   = $('#changeAmt').closest('.col-md-4');
-            const bankWrap      = $('#bankSelectorWrap');
+        const receivedField =
+            $('#receivedAmt').closest('.col-md-4');
 
-            if (method === 'cash') {
-                receivedField.show();
-                changeField.show();
-                bankWrap.hide();
+        const changeField =
+            $('#changeAmt').closest('.col-md-4');
 
-                $('#bankName').val('');
-                $('#bankSelectorGroup .pos-method-btn').removeClass('active');
+        const bankWrap =
+            $('#bankSelectorWrap');
 
-                // Default: customer pays the exact amount
-                const total = parseFloat($('#payingAmt').val()) || 0;
-                $('#receivedAmt').val(total.toFixed(2));
-                calcChange();
-            } else {
-                // Bank transfer: no cash tendered, no change
-                receivedField.hide();
-                changeField.hide();
-                bankWrap.show();
 
-                $('#receivedAmt').val('');
-                $('#changeAmt').val('');
+        /* ─────────────────────────────────────────────
+           CASH
+        ───────────────────────────────────────────── */
+
+        if (method === 'cash') {
+
+            receivedField.show();
+            changeField.show();
+            bankWrap.hide();
+
+            $('#bankName').val('');
+
+            $('#bankSelectorGroup .pos-method-btn')
+                .removeClass('active');
+
+
+            /*
+             * Default received amount = total.
+             *
+             * IMPORTANT:
+             * This only happens when selecting CASH.
+             *
+             * If cashier manually changes:
+             *
+             * total = $9
+             * received = $10
+             *
+             * we DO NOT overwrite $10 during submit.
+             */
+
+            const total =
+                parseFloat($('#payingAmt').val()) || 0;
+
+            if (
+                !$('#receivedAmt').val() ||
+                parseFloat($('#receivedAmt').val()) <= 0
+            ) {
+                $('#receivedAmt')
+                    .val(total.toFixed(2));
             }
+
+            calcChange();
+
         }
 
-        function selectBank(bank) {
-            $('#bankName').val(bank);
-            $('#bankSelectorGroup .pos-method-btn').each(function () {
-                $(this).toggleClass('active', $(this).data('bank') === bank);
+
+        /* ─────────────────────────────────────────────
+           BANK
+        ───────────────────────────────────────────── */
+
+        else {
+
+            receivedField.hide();
+            changeField.hide();
+            bankWrap.show();
+
+            $('#receivedAmt').val('');
+            $('#changeAmt').val('');
+        }
+    }
+
+
+    function selectBank(bank) {
+
+        $('#bankName').val(bank);
+
+        $('#bankSelectorGroup .pos-method-btn')
+            .each(function () {
+
+                $(this).toggleClass(
+                    'active',
+                    $(this).data('bank') === bank
+                );
+
             });
-        }
+    }
 
-        function calcChange() {
-            const received = parseFloat($('#receivedAmt').val()) || 0;
-            const paying   = parseFloat($('#payingAmt').val()) || 0;
-            const change   = received - paying;
 
-            $('#changeAmt')
-                .val(change >= 0 ? change.toFixed(2) : '0.00')
-                .css('color', change >= 0 ? 'var(--green)' : 'var(--rose)');
-        }
+    /* ═══════════════════════════════════════════════════════
+       CASH CHANGE
+    ═══════════════════════════════════════════════════════ */
 
-        function validatePayment() {
-            const method = $('#paymentMethod').val();
-            const total  = parseFloat($('#payingAmt').val()) || 0;
+    function calcChange() {
 
-            if (total <= 0) {
-                showAlert(esc(T.invalidTotal), 'danger');
-                return false;
-            }
+        const received =
+            parseFloat($('#receivedAmt').val()) || 0;
 
-            if (method === 'cash') {
-                const received = parseFloat($('#receivedAmt').val()) || 0;
+        const paying =
+            parseFloat($('#payingAmt').val()) || 0;
 
-                if (received <= 0) {
-                    showAlert(esc(T.enterReceived), 'danger');
-                    $('#receivedAmt').focus();
-                    return false;
-                }
-                if (toCents(received) < toCents(total)) {
-                    showAlert(esc(T.receivedLess), 'danger');
-                    $('#receivedAmt').focus();
-                    return false;
-                }
-                return true;
-            }
+        const change =
+            received - paying;
 
-            if (method === 'bank') {
-                if (!$('#bankName').val()) {
-                    showAlert(esc(T.selectBank), 'danger');
-                    return false;
-                }
-                return true;
-            }
+        $('#changeAmt')
+            .val(
+                change >= 0
+                    ? change.toFixed(2)
+                    : '0.00'
+            )
+            .css(
+                'color',
+                change >= 0
+                    ? 'var(--green)'
+                    : 'var(--rose)'
+            );
+    }
 
-            showAlert(esc(T.invalidMethod), 'danger');
+
+    /* ═══════════════════════════════════════════════════════
+       PAYMENT VALIDATION
+    ═══════════════════════════════════════════════════════ */
+
+    function validatePayment() {
+
+        const method =
+            $('#paymentMethod').val();
+
+        const total =
+            parseFloat($('#payingAmt').val()) || 0;
+
+
+        if (total <= 0) {
+
+            showAlert(
+                esc(T.invalidTotal),
+                'danger'
+            );
+
             return false;
         }
 
-        function preparePaymentData() {
-            if (!validatePayment()) return null;
 
-            const method = $('#paymentMethod').val();
-            const total  = parseFloat($('#payingAmt').val()) || 0;
-            const isCash = method === 'cash';
+        /* CASH */
+
+        if (method === 'cash') {
+
+            const received =
+                parseFloat($('#receivedAmt').val()) || 0;
+
+
+            if (received <= 0) {
+
+                showAlert(
+                    esc(T.enterReceived),
+                    'danger'
+                );
+
+                $('#receivedAmt').focus();
+
+                return false;
+            }
+
+
+            if (
+                toCents(received) <
+                toCents(total)
+            ) {
+
+                showAlert(
+                    esc(T.receivedLess),
+                    'danger'
+                );
+
+                $('#receivedAmt').focus();
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /* BANK */
+
+        if (method === 'bank') {
+
+            if (!$('#bankName').val()) {
+
+                showAlert(
+                    esc(T.selectBank),
+                    'danger'
+                );
+
+                return false;
+            }
+
+            return true;
+        }
+
+
+        showAlert(
+            esc(T.invalidMethod),
+            'danger'
+        );
+
+        return false;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       PREPARE PAYMENT DATA
+       
+       IMPORTANT FIX:
+       
+       CASH:
+       total = $9
+       received = $10
+       change = $1
+       
+       received_amount stays $10.
+    ═══════════════════════════════════════════════════════ */
+
+    function preparePaymentData() {
+
+        if (!validatePayment()) {
+            return null;
+        }
+
+
+        const method =
+            $('#paymentMethod').val();
+
+        const total =
+            parseFloat($('#payingAmt').val()) || 0;
+
+
+        /* ─────────────────────────────────────────────
+           CASH
+        ───────────────────────────────────────────── */
+
+        if (method === 'cash') {
+
+            const received =
+                parseFloat($('#receivedAmt').val()) || 0;
+
+            const change =
+                received - total;
+
 
             return {
-                payment_method: method,
-                bank_name: isCash ? null : $('#bankName').val(),
+
+                payment_method: 'cash',
+
+                bank_name: null,
+
+                // Actual sale total
                 total_amount: total,
-                received_amount: isCash ? (parseFloat($('#receivedAmt').val()) || 0) : total,
-                change_amount: isCash ? (parseFloat($('#changeAmt').val()) || 0) : 0,
-                payment_note: $('#payNote').val().trim()
+
+                // IMPORTANT:
+                // Keep customer's actual cash
+                received_amount: received,
+
+                // Cash returned to customer
+                change_amount:
+                    change > 0
+                        ? change
+                        : 0,
+
+                payment_note:
+                    $('#payNote')
+                        .val()
+                        .trim()
             };
         }
 
-        /* ═══════════════════════════════════════════════════════
-           BRAND SIDEBAR
-        ═══════════════════════════════════════════════════════ */
-        function selectBrand(el, brand) {
-            activeBrand = String(brand);
-            activeCat = 'all';
-            activeSub = 'all';
 
-            $('.brand-btn').removeClass('active');
-            $(el).addClass('active');
+        /* ─────────────────────────────────────────────
+           BANK
+        ───────────────────────────────────────────── */
 
-            buildCatTabs();
-            filterProducts();
+        if (method === 'bank') {
+
+            return {
+
+                payment_method: 'bank',
+
+                bank_name:
+                    $('#bankName').val(),
+
+                total_amount: total,
+
+                // Bank payment = exact total
+                received_amount: total,
+
+                change_amount: 0,
+
+                payment_note:
+                    $('#payNote')
+                        .val()
+                        .trim()
+            };
         }
 
-        function filterBrands() {
-            const q = $('#brandSearch').val().toLowerCase().trim();
 
-            $('.brand-btn').each(function () {
+        return null;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       BRAND SIDEBAR
+    ═══════════════════════════════════════════════════════ */
+
+    function selectBrand(el, brand) {
+
+        activeBrand = String(brand);
+
+        activeCat = 'all';
+        activeSub = 'all';
+
+        $('.brand-btn')
+            .removeClass('active');
+
+        $(el)
+            .addClass('active');
+
+        buildCatTabs();
+        filterProducts();
+    }
+
+
+    function filterBrands() {
+
+        const q =
+            $('#brandSearch')
+                .val()
+                .toLowerCase()
+                .trim();
+
+        $('.brand-btn')
+            .each(function () {
+
                 $(this).toggle(
-                    $(this).find('.brand-btn__name').text().toLowerCase().includes(q)
+                    $(this)
+                        .find('.brand-btn__name')
+                        .text()
+                        .toLowerCase()
+                        .includes(q)
                 );
+
             });
-        }
+    }
 
-        /* ═══════════════════════════════════════════════════════
-           CATEGORY / SUBCATEGORY TABS
-        ═══════════════════════════════════════════════════════ */
-        function brandVisibleCards() {
-            const cards = $('.pos-pcard').toArray();
-            return activeBrand === 'all'
-                ? cards
-                : cards.filter(c => attr(c, 'brand') === activeBrand);
-        }
 
-        function buildCatTabs() {
-            const visible = brandVisibleCards();
-            const cats = [...new Set(visible.map(c => attr(c, 'cat')).filter(Boolean))].sort();
+    /* ═══════════════════════════════════════════════════════
+       CATEGORY / SUBCATEGORY
+    ═══════════════════════════════════════════════════════ */
 
-            $('#catScroller').html(
-                `<button class="pos-cat-tab active" data-cat="all">
-                    ${esc(T.all)} <span class="pos-cat-tab__cnt">${visible.length}</span>
-                </button>` +
-                cats.map(cat => {
-                    const cnt = visible.filter(c => attr(c, 'cat') === cat).length;
-                    return `<button class="pos-cat-tab" data-cat="${esc(cat)}">
-                        ${esc(cat)} <span class="pos-cat-tab__cnt">${cnt}</span>
-                    </button>`;
-                }).join('')
+    function brandVisibleCards() {
+
+        const cards =
+            $('.pos-pcard').toArray();
+
+        return activeBrand === 'all'
+            ? cards
+            : cards.filter(
+                c =>
+                    attr(c, 'brand') ===
+                    activeBrand
             );
+    }
+
+
+    function buildCatTabs() {
+
+        const visible =
+            brandVisibleCards();
+
+        const cats = [
+            ...new Set(
+                visible
+                    .map(c => attr(c, 'cat'))
+                    .filter(Boolean)
+            )
+        ].sort();
+
+
+        $('#catScroller').html(
+
+            `<button
+                class="pos-cat-tab active"
+                data-cat="all">
+
+                ${esc(T.all)}
+
+                <span class="pos-cat-tab__cnt">
+                    ${visible.length}
+                </span>
+
+            </button>` +
+
+            cats.map(cat => {
+
+                const cnt =
+                    visible.filter(
+                        c =>
+                            attr(c, 'cat') === cat
+                    ).length;
+
+                return `
+                    <button
+                        class="pos-cat-tab"
+                        data-cat="${esc(cat)}">
+
+                        ${esc(cat)}
+
+                        <span class="pos-cat-tab__cnt">
+                            ${cnt}
+                        </span>
+
+                    </button>
+                `;
+
+            }).join('')
+        );
+
+
+        buildSubcatTabs([]);
+    }
+
+
+    function selectCat(el, cat) {
+
+        activeCat = String(cat);
+        activeSub = 'all';
+
+        $('.pos-cat-tab')
+            .removeClass('active');
+
+        $(el)
+            .addClass('active');
+
+
+        if (activeCat !== 'all') {
+
+            const subs = [
+                ...new Set(
+
+                    brandVisibleCards()
+                        .filter(
+                            c =>
+                                attr(c, 'cat') ===
+                                activeCat
+                        )
+                        .map(
+                            c =>
+                                attr(c, 'subcat')
+                        )
+                        .filter(Boolean)
+
+                )
+            ].sort();
+
+            buildSubcatTabs(subs);
+
+        } else {
 
             buildSubcatTabs([]);
         }
 
-        function selectCat(el, cat) {
-            activeCat = String(cat);
-            activeSub = 'all';
 
-            $('.pos-cat-tab').removeClass('active');
-            $(el).addClass('active');
+        filterProducts();
+    }
 
-            if (activeCat !== 'all') {
-                const subs = [...new Set(
-                    brandVisibleCards()
-                        .filter(c => attr(c, 'cat') === activeCat)
-                        .map(c => attr(c, 'subcat'))
-                        .filter(Boolean)
-                )].sort();
-                buildSubcatTabs(subs);
-            } else {
-                buildSubcatTabs([]);
-            }
 
-            filterProducts();
+    function buildSubcatTabs(subs) {
+
+        const bar =
+            $('#subcatBar');
+
+
+        if (!subs.length) {
+
+            bar.removeClass('show');
+
+            $('#subcatScroller')
+                .empty();
+
+            return;
         }
 
-        function buildSubcatTabs(subs) {
-            const bar = $('#subcatBar');
 
-            if (!subs.length) {
-                bar.removeClass('show');
-                $('#subcatScroller').empty();
+        bar.addClass('show');
+
+
+        $('#subcatScroller').html(
+
+            `<button
+                class="pos-subcat-tab active"
+                data-sub="all">
+
+                ${esc(T.all)}
+
+            </button>` +
+
+            subs.map(s => `
+
+                <button
+                    class="pos-subcat-tab"
+                    data-sub="${esc(s)}">
+
+                    ${esc(s)}
+
+                </button>
+
+            `).join('')
+        );
+    }
+
+
+    function selectSub(el, sub) {
+
+        activeSub = String(sub);
+
+        $('.pos-subcat-tab')
+            .removeClass('active');
+
+        $(el)
+            .addClass('active');
+
+        filterProducts();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       PRODUCT FILTER
+    ═══════════════════════════════════════════════════════ */
+
+    function filterProducts() {
+
+        const q =
+            $('#searchInput')
+                .val()
+                .toLowerCase()
+                .trim();
+
+        let visible = 0;
+
+
+        $('.pos-pcard')
+            .each(function () {
+
+                const ok =
+
+                    (
+                        activeBrand === 'all' ||
+                        attr(this, 'brand') === activeBrand
+                    )
+
+                    &&
+
+                    (
+                        activeCat === 'all' ||
+                        attr(this, 'cat') === activeCat
+                    )
+
+                    &&
+
+                    (
+                        activeSub === 'all' ||
+                        attr(this, 'subcat') === activeSub
+                    )
+
+                    &&
+
+                    (
+                        !q ||
+                        attr(this, 'name')
+                            .toLowerCase()
+                            .includes(q)
+
+                        ||
+
+                        attr(this, 'code')
+                            .toLowerCase()
+                            .includes(q)
+                    );
+
+
+                $(this).toggle(ok);
+
+                if (ok) {
+                    visible++;
+                }
+            });
+
+
+        $('#resCount')
+            .text(visible);
+
+        $('#noResults')
+            .toggleClass(
+                'd-none',
+                visible > 0
+            );
+    }
+
+
+    function clearSearch() {
+
+        $('#searchInput').val('');
+
+        filterProducts();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       BARCODE
+    ═══════════════════════════════════════════════════════ */
+
+    function addByBarcode() {
+
+        const code =
+            $('#barcodeInput')
+                .val()
+                .toLowerCase()
+                .trim();
+
+        if (!code) {
+            return;
+        }
+
+
+        const card =
+            $('.pos-pcard')
+                .toArray()
+                .find(
+                    c =>
+                        attr(c, 'code')
+                            .toLowerCase() === code
+                );
+
+
+        if (card) {
+
+            addToCart(card);
+
+            $('#barcodeResult').html(`
+                <span style="color:var(--green)">
+                    ✓ ${esc(T.addedOk)}:
+                    <strong>
+                        ${esc(
+                            $(card)
+                                .find('.pos-pcard__name')
+                                .text()
+                                .trim()
+                        )}
+                    </strong>
+                </span>
+            `);
+
+            $('#barcodeInput')
+                .val('');
+
+        } else {
+
+            $('#barcodeResult').html(`
+                <span style="color:var(--rose)">
+                    ✗ ${esc(T.noProduct)}:
+                    <strong>${esc(code)}</strong>
+                </span>
+            `);
+        }
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       CART
+    ═══════════════════════════════════════════════════════ */
+
+    function addToCart(card) {
+
+        const id =
+            Number(attr(card, 'id'));
+
+        const name =
+            $(card)
+                .find('.pos-pcard__name')
+                .text()
+                .trim();
+
+        const price =
+            parseFloat(
+                attr(card, 'price')
+            ) || 0;
+
+        const stock =
+            parseInt(
+                attr(card, 'stock'),
+                10
+            ) || 0;
+
+        const image =
+            attr(card, 'image');
+
+
+        if (stock <= 0) {
+
+            showAlert(
+                esc(T.outOfStock),
+                'danger'
+            );
+
+            return;
+        }
+
+
+        const existing =
+            cart.find(i => i.id === id);
+
+
+        if (existing) {
+
+            if (
+                existing.qty >=
+                existing.stock
+            ) {
+
+                showAlert(
+                    esc(T.noMoreStock),
+                    'danger'
+                );
+
                 return;
             }
 
-            bar.addClass('show');
-            $('#subcatScroller').html(
-                `<button class="pos-subcat-tab active" data-sub="all">${esc(T.all)}</button>` +
-                subs.map(s => `<button class="pos-subcat-tab" data-sub="${esc(s)}">${esc(s)}</button>`).join('')
+            existing.qty++;
+
+        } else {
+
+            cart.push({
+                id,
+                name,
+                price,
+                qty: 1,
+                stock,
+                image
+            });
+        }
+
+
+        renderCart();
+
+        showAlert(
+            `${esc(name)} ${esc(T.added)}`,
+            'success'
+        );
+    }
+
+
+    function changeQty(id, delta) {
+
+        const item =
+            cart.find(i => i.id === id);
+
+        if (!item) {
+            return;
+        }
+
+
+        item.qty += delta;
+
+
+        if (item.qty > item.stock) {
+
+            item.qty = item.stock;
+
+            showAlert(
+                esc(T.stockLimit),
+                'warning'
             );
         }
 
-        function selectSub(el, sub) {
-            activeSub = String(sub);
-            $('.pos-subcat-tab').removeClass('active');
-            $(el).addClass('active');
-            filterProducts();
+
+        if (item.qty < 1) {
+
+            cart =
+                cart.filter(
+                    i => i.id !== id
+                );
         }
 
-        /* ═══════════════════════════════════════════════════════
-           PRODUCT FILTER
-        ═══════════════════════════════════════════════════════ */
-        function filterProducts() {
-            const q = $('#searchInput').val().toLowerCase().trim();
-            let visible = 0;
 
-            $('.pos-pcard').each(function () {
-                const ok =
-                    (activeBrand === 'all' || attr(this, 'brand') === activeBrand) &&
-                    (activeCat === 'all' || attr(this, 'cat') === activeCat) &&
-                    (activeSub === 'all' || attr(this, 'subcat') === activeSub) &&
-                    (!q || attr(this, 'name').includes(q) || attr(this, 'code').includes(q));
+        renderCart();
+    }
 
-                $(this).toggle(ok);
-                if (ok) visible++;
-            });
 
-            $('#resCount').text(visible);
-            $('#noResults').toggleClass('d-none', visible > 0);
+    function updateQty(id, newQty) {
+
+        const item =
+            cart.find(i => i.id === id);
+
+        if (!item) {
+            return;
         }
 
-        function clearSearch() {
-            $('#searchInput').val('');
-            filterProducts();
-        }
 
-        /* ═══════════════════════════════════════════════════════
-           BARCODE
-        ═══════════════════════════════════════════════════════ */
-        function addByBarcode() {
-            const code = $('#barcodeInput').val().toLowerCase().trim();
-            if (!code) return;
+        let qty =
+            parseInt(newQty, 10);
 
-            const card = $('.pos-pcard').toArray().find(c => attr(c, 'code') === code);
 
-            if (card) {
-                addToCart(card);
-                $('#barcodeResult').html(
-                    `<span style="color:var(--green)">✓ ${esc(T.addedOk)}: <strong>${esc($(card).find('.pos-pcard__name').text().trim())}</strong></span>`);
-                $('#barcodeInput').val('');
-            } else {
-                $('#barcodeResult').html(
-                    `<span style="color:var(--rose)">✗ ${esc(T.noProduct)}: <strong>${esc(code)}</strong></span>`);
-            }
-        }
+        if (
+            isNaN(qty) ||
+            qty < 1
+        ) {
 
-        /* ═══════════════════════════════════════════════════════
-           CART ACTIONS
-        ═══════════════════════════════════════════════════════ */
-        function addToCart(card) {
-            const id    = Number(attr(card, 'id'));
-            const name  = $(card).find('.pos-pcard__name').text().trim();
-            const price = parseFloat(attr(card, 'price')) || 0;
-            const stock = parseInt(attr(card, 'stock'), 10) || 0;
-            const image = attr(card, 'image');
+            cart =
+                cart.filter(
+                    i => i.id !== id
+                );
 
-            if (stock <= 0) {
-                showAlert(esc(T.outOfStock), 'danger');
-                return;
+        } else {
+
+            if (qty > item.stock) {
+
+                qty = item.stock;
+
+                showAlert(
+                    esc(T.stockLimit),
+                    'warning'
+                );
             }
 
-            const existing = cart.find(i => i.id === id);
-            if (existing) {
-                if (existing.qty >= existing.stock) {
-                    showAlert(esc(T.noMoreStock), 'danger');
-                    return;
-                }
-                existing.qty++;
-            } else {
-                cart.push({ id, name, price, qty: 1, stock, image });
-            }
-
-            renderCart();
-            showAlert(`${esc(name)} ${esc(T.added)}`, 'success');
+            item.qty = qty;
         }
 
-        function changeQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (!item) return;
 
-            item.qty += delta;
-            if (item.qty > item.stock) {
-                item.qty = item.stock;
-                showAlert(esc(T.stockLimit), 'warning');
-            }
-            if (item.qty < 1) cart = cart.filter(i => i.id !== id);
+        renderCart();
+    }
 
-            renderCart();
-        }
 
-        function updateQty(id, newQty) {
-            const item = cart.find(i => i.id === id);
-            if (!item) return;
+    function removeItem(id) {
 
-            let qty = parseInt(newQty, 10);
+        cart =
+            cart.filter(
+                i => i.id !== id
+            );
 
-            if (isNaN(qty) || qty < 1) {
-                cart = cart.filter(i => i.id !== id);
-            } else {
-                if (qty > item.stock) {
-                    qty = item.stock;
-                    showAlert(esc(T.stockLimit), 'warning');
-                }
-                item.qty = qty;
-            }
+        renderCart();
+    }
 
-            renderCart();
-        }
 
-        function removeItem(id) {
-            cart = cart.filter(i => i.id !== id);
-            renderCart();
-        }
+    function clearOrder() {
 
-        function clearOrder() {
-            cart = [];
-            $('#discountInput').val('');
-            $('#discountType').val('fixed');
-            $('#discountValue').val('0');
-            renderCart();
-            bootstrap.Modal.getInstance(document.getElementById('cancelModal'))?.hide();
-            showAlert(esc(T.orderCleared), 'warning');
-        }
+        cart = [];
 
-        /* ═══════════════════════════════════════════════════════
-           RENDER CART
-        ═══════════════════════════════════════════════════════ */
-        function renderCart() {
-            const container = $('#cartItems');
-            const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+        $('#discountInput').val('');
 
-            $('#cartCount').text(totalQty);
-            $('#fabCnt').text(totalQty);
+        $('#discountType')
+            .val('fixed');
 
-            container.find('.pos-cart-item').remove();
+        $('#discountValue')
+            .val('0');
 
-            if (!cart.length) {
-                $('#cartEmpty').css('display', 'flex');
-            } else {
-                $('#cartEmpty').hide();
-                cart.forEach(item => {
-                    container.append(`
-                        <div class="pos-cart-item">
-                            <div class="pos-cart-item__img">
-                                <img src="${esc(item.image)}" alt="${esc(item.name)}" onerror="this.src='${NO_IMAGE}'">
-                            </div>
-                            <div class="pos-cart-item__info">
-                                <div class="pos-cart-item__name">${esc(item.name)}</div>
-                                <div class="pos-cart-item__meta">$${item.price.toFixed(2)} ${esc(T.each)}</div>
-                            </div>
-                            <div class="pos-cart-item__qty">
-                                <button class="pos-qb" onclick="changeQty(${item.id}, -1)">−</button>
-                                <input type="number" class="pos-qv" id="qty_${item.id}" value="${item.qty}" min="1" onchange="updateQty(${item.id}, this.value)">
-                                <button class="pos-qb" onclick="changeQty(${item.id}, 1)">+</button>
-                            </div>
-                            <span class="pos-cart-item__total">$${(item.price * item.qty).toFixed(2)}</span>
-                            <button class="pos-del-btn" onclick="removeItem(${item.id})"><i class="bi bi-x-lg"></i></button>
+        renderCart();
+
+        bootstrap.Modal
+            .getInstance(
+                document.getElementById(
+                    'cancelModal'
+                )
+            )
+            ?.hide();
+
+        showAlert(
+            esc(T.orderCleared),
+            'warning'
+        );
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       RENDER CART
+    ═══════════════════════════════════════════════════════ */
+
+    function renderCart() {
+
+        const container =
+            $('#cartItems');
+
+        const totalQty =
+            cart.reduce(
+                (s, i) => s + i.qty,
+                0
+            );
+
+
+        $('#cartCount')
+            .text(totalQty);
+
+        $('#fabCnt')
+            .text(totalQty);
+
+
+        container
+            .find('.pos-cart-item')
+            .remove();
+
+
+        if (!cart.length) {
+
+            $('#cartEmpty')
+                .css('display', 'flex');
+
+        } else {
+
+            $('#cartEmpty')
+                .hide();
+
+
+            cart.forEach(item => {
+
+                container.append(`
+
+                    <div class="pos-cart-item">
+
+                        <div class="pos-cart-item__img">
+
+                            <img
+                                src="${esc(item.image)}"
+                                alt="${esc(item.name)}"
+                                onerror="this.src='${NO_IMAGE}'"
+                            >
+
                         </div>
-                    `);
-                });
-            }
 
-            recalcTotals();
+
+                        <div class="pos-cart-item__info">
+
+                            <div class="pos-cart-item__name">
+                                ${esc(item.name)}
+                            </div>
+
+                            <div class="pos-cart-item__meta">
+                                $${item.price.toFixed(2)}
+                                ${esc(T.each)}
+                            </div>
+
+                        </div>
+
+
+                        <div class="pos-cart-item__qty">
+
+                            <button
+                                class="pos-qb"
+                                onclick="changeQty(${item.id}, -1)">
+                                −
+                            </button>
+
+
+                            <input
+                                type="number"
+                                class="pos-qv"
+                                id="qty_${item.id}"
+                                value="${item.qty}"
+                                min="1"
+                                onchange="updateQty(${item.id}, this.value)"
+                            >
+
+
+                            <button
+                                class="pos-qb"
+                                onclick="changeQty(${item.id}, 1)">
+                                +
+                            </button>
+
+                        </div>
+
+
+                        <span class="pos-cart-item__total">
+                            $${(
+                                item.price *
+                                item.qty
+                            ).toFixed(2)}
+                        </span>
+
+
+                        <button
+                            class="pos-del-btn"
+                            onclick="removeItem(${item.id})">
+
+                            <i class="bi bi-x-lg"></i>
+
+                        </button>
+
+                    </div>
+                `);
+            });
         }
 
-        /* ═══════════════════════════════════════════════════════
-           TOTALS
-        ═══════════════════════════════════════════════════════ */
-        function recalcTotals() {
-            const { subtotal, discAmt, grand } = calcTotals();
 
-            $('#totSubtotal').text(`$${subtotal.toFixed(2)}`);
-            $('#totDiscount').text(`−$${discAmt.toFixed(2)}`);
-            $('#totGrand').text(`$${grand.toFixed(2)}`);
-            $('#chargeAmt').text(`$${grand.toFixed(2)}`);
-            $('#chargeBtn').prop('disabled', cart.length === 0);
+        recalcTotals();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       TOTALS
+    ═══════════════════════════════════════════════════════ */
+
+    function recalcTotals() {
+
+        const {
+            subtotal,
+            discAmt,
+            grand
+        } = calcTotals();
+
+
+        $('#totSubtotal')
+            .text(`$${subtotal.toFixed(2)}`);
+
+
+        $('#totDiscount')
+            .text(`−$${discAmt.toFixed(2)}`);
+
+
+        $('#totGrand')
+            .text(`$${grand.toFixed(2)}`);
+
+
+        $('#chargeAmt')
+            .text(`$${grand.toFixed(2)}`);
+
+
+        $('#chargeBtn')
+            .prop(
+                'disabled',
+                cart.length === 0
+            );
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       DISCOUNT
+    ═══════════════════════════════════════════════════════ */
+
+    function applyDiscountModal() {
+
+        const type =
+            $('#discountTypeModal').val();
+
+        const val =
+            parseFloat(
+                $('#discountValueModal').val()
+            ) || 0;
+
+
+        $('#discountType')
+            .val(type);
+
+        $('#discountValue')
+            .val(val);
+
+
+        recalcTotals();
+
+
+        bootstrap.Modal
+            .getInstance(
+                document.getElementById(
+                    'discountModal'
+                )
+            )
+            ?.hide();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       PAYMENT SUMMARY
+    ═══════════════════════════════════════════════════════ */
+
+    function buildPaymentSummary() {
+
+        const {
+            subtotal,
+            discAmt,
+            grand
+        } = calcTotals();
+
+
+        const rows =
+            cart.map(i => `
+
+                <div class="receipt-line">
+
+                    <span>
+                        ${esc(i.name)} × ${i.qty}
+                    </span>
+
+                    <strong>
+                        $${(
+                            i.price *
+                            i.qty
+                        ).toFixed(2)}
+                    </strong>
+
+                </div>
+
+            `).join('');
+
+
+        $('#paymentSummary').html(`
+
+            ${rows}
+
+            <div class="receipt-line mt-2">
+
+                <span>
+                    ${esc(T.subtotal)}
+                </span>
+
+                <strong>
+                    $${subtotal.toFixed(2)}
+                </strong>
+
+            </div>
+
+
+            <div class="receipt-line">
+
+                <span>
+                    ${esc(T.discount)}
+                </span>
+
+                <strong style="color:var(--green);">
+                    −$${discAmt.toFixed(2)}
+                </strong>
+
+            </div>
+
+
+            <div class="receipt-line total">
+
+                <span>
+                    ${esc(T.totalDue)}
+                </span>
+
+                <span>
+                    $${grand.toFixed(2)}
+                </span>
+
+            </div>
+
+        `);
+
+
+        $('#payingAmt')
+            .val(grand.toFixed(2));
+
+        $('#payNote')
+            .val('');
+
+
+        /*
+         * Reset submit button
+         */
+
+        $('#submitSaleBtn')
+            .prop('disabled', false)
+            .html(BTN_CONFIRM_HTML);
+
+
+        /*
+         * Always start with CASH.
+         *
+         * This sets received = total only
+         * when the payment modal opens.
+         */
+
+        $('#receivedAmt')
+            .val(grand.toFixed(2));
+
+        $('#changeAmt')
+            .val('0.00');
+
+
+        selectPaymentMethod('cash');
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       SUBMIT SALE
+       
+       IMPORTANT FIX
+       
+       Example:
+       
+       Total:    $9
+       Received: $10
+       Change:   $1
+       
+       Payload:
+       
+       amount_paid = 10
+       change_amount = 1
+    ═══════════════════════════════════════════════════════ */
+
+    function submitSale() {
+
+        const pay =
+            preparePaymentData();
+
+
+        if (!pay) {
+            return;
         }
 
-        /* ═══════════════════════════════════════════════════════
-           DISCOUNT
-        ═══════════════════════════════════════════════════════ */
-        function applyDiscountModal() {
-            const type = $('#discountTypeModal').val();
-            const val = parseFloat($('#discountValueModal').val()) || 0;
 
-            $('#discountType').val(type);
-            $('#discountValue').val(val);
-            recalcTotals();
+        const btn =
+            $('#submitSaleBtn');
 
-            bootstrap.Modal.getInstance(document.getElementById('discountModal'))?.hide();
-        }
 
-        /* ═══════════════════════════════════════════════════════
-           PAYMENT MODAL
-        ═══════════════════════════════════════════════════════ */
-        function buildPaymentSummary() {
-            const { subtotal, discAmt, grand } = calcTotals();
+        btn
+            .prop('disabled', true)
+            .html(`
 
-            const rows = cart.map(i =>
-                `<div class="receipt-line">
-                    <span>${esc(i.name)} × ${i.qty}</span>
-                    <strong>$${(i.price * i.qty).toFixed(2)}</strong>
-                 </div>`
-            ).join('');
+                <span
+                    class="spinner-border spinner-border-sm me-2">
+                </span>
 
-            $('#paymentSummary').html(`
-                ${rows}
-                <div class="receipt-line mt-2"><span>${esc(T.subtotal)}</span><strong>$${subtotal.toFixed(2)}</strong></div>
-                <div class="receipt-line"><span>${esc(T.discount)}</span><strong style="color:var(--green);">−$${discAmt.toFixed(2)}</strong></div>
-                <div class="receipt-line total"><span>${esc(T.totalDue)}</span><span>$${grand.toFixed(2)}</span></div>
+                ${esc(T.processing)}…
+
             `);
 
-            $('#payingAmt').val(grand.toFixed(2));
-            $('#payNote').val('');
 
-            // Reset button in case a previous attempt left it disabled
-            $('#submitSaleBtn').prop('disabled', false).html(BTN_CONFIRM_HTML);
+        const payload = {
 
-            // Always start on cash; this also fills received = total
-            selectPaymentMethod('cash');
+            customer_id:
+                $('#customerSelect').val()
+                    || null,
+
+
+            cart:
+                cart.map(i => ({
+                    id: i.id,
+                    qty: i.qty
+                })),
+
+
+            payment_method:
+                pay.payment_method,
+
+
+            bank_name:
+                pay.bank_name,
+
+
+            /*
+             * IMPORTANT
+             *
+             * This is the actual amount
+             * customer gave.
+             *
+             * Cash:
+             *
+             * total = 9
+             * received = 10
+             *
+             * amount_paid = 10
+             */
+
+            amount_paid:
+                pay.received_amount,
+
+
+            /*
+             * Cash change
+             */
+
+            change_amount:
+                pay.change_amount,
+
+
+            discount_type:
+                $('#discountType').val(),
+
+
+            discount_value:
+                parseFloat(
+                    $('#discountValue').val()
+                ) || 0,
+
+
+            note:
+                pay.payment_note
+        };
+
+
+        /*
+         * Useful for debugging.
+         * Open browser console with F12.
+         */
+
+        console.log(
+            'POS SALE PAYLOAD:',
+            payload
+        );
+
+
+        $.ajax({
+
+            url: STORE_URL,
+
+            method: 'POST',
+
+            contentType:
+                'application/json',
+
+            dataType:
+                'json',
+
+            headers: {
+
+                'Accept':
+                    'application/json',
+
+                'X-CSRF-TOKEN':
+                    CSRF_TOKEN
+
+            },
+
+            data:
+                JSON.stringify(payload),
+
+
+            /* ═══════════════════════════════════════
+               SUCCESS
+            ═══════════════════════════════════════ */
+
+            success: function (data) {
+
+                if (data.success) {
+
+                    showAlert(
+
+                        esc(
+                            T.saleComplete.replace(
+                                ':ref',
+                                data.reference
+                            )
+                        ),
+
+                        'success'
+                    );
+
+
+                    bootstrap.Modal
+                        .getInstance(
+                            document.getElementById(
+                                'paymentModal'
+                            )
+                        )
+                        ?.hide();
+
+
+                    setTimeout(
+                        () => {
+
+                            window.location.href =
+                                data.receipt_url;
+
+                        },
+                        600
+                    );
+
+
+                } else {
+
+                    showAlert(
+
+                        esc(
+                            data.message ??
+                            T.saleFailed
+                        ),
+
+                        'danger'
+                    );
+
+
+                    btn
+                        .prop(
+                            'disabled',
+                            false
+                        )
+                        .html(
+                            BTN_CONFIRM_HTML
+                        );
+                }
+            },
+
+
+            /* ═══════════════════════════════════════
+               ERROR
+            ═══════════════════════════════════════ */
+
+            error: function (xhr) {
+
+                console.error(
+                    'POS SALE ERROR:',
+                    xhr.responseJSON ||
+                    xhr.responseText
+                );
+
+
+                showAlert(
+
+                    esc(
+                        xhr.responseJSON?.message ??
+                        T.networkError
+                    ),
+
+                    'danger'
+                );
+
+
+                btn
+                    .prop(
+                        'disabled',
+                        false
+                    )
+                    .html(
+                        BTN_CONFIRM_HTML
+                    );
+            }
+
+        });
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       MOBILE CART
+    ═══════════════════════════════════════════════════════ */
+
+    function toggleMobileCart() {
+
+        const open =
+            $('#posCart')
+                .hasClass('open');
+
+
+        $('#posCart')
+            .toggleClass(
+                'open',
+                !open
+            );
+
+
+        $('#posBackdrop')
+            .toggleClass(
+                'show',
+                !open
+            );
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       ALERTS
+    ═══════════════════════════════════════════════════════ */
+
+    function showAlert(
+        msg,
+        type = 'info'
+    ) {
+
+        $('#alertBox').html(`
+
+            <div
+                class="alert alert-${type}
+                       alert-dismissible
+                       fade show shadow"
+                role="alert">
+
+                ${msg}
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+                </button>
+
+            </div>
+
+        `);
+
+
+        setTimeout(
+            () => {
+                $('#alertBox .alert')
+                    .remove();
+            },
+            2800
+        );
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════ */
+
+    $(document).ready(function () {
+
+        buildCatTabs();
+
+        filterProducts();
+
+
+        /* ─────────────────────────────────────────────
+           CATEGORY
+        ───────────────────────────────────────────── */
+
+        $('#catScroller')
+            .on(
+                'click',
+                '.pos-cat-tab',
+                function () {
+
+                    selectCat(
+                        this,
+                        attr(this, 'cat')
+                    );
+
+                }
+            );
+
+
+        /* ─────────────────────────────────────────────
+           SUBCATEGORY
+        ───────────────────────────────────────────── */
+
+        $('#subcatScroller')
+            .on(
+                'click',
+                '.pos-subcat-tab',
+                function () {
+
+                    selectSub(
+                        this,
+                        attr(this, 'sub')
+                    );
+
+                }
+            );
+
+
+        /* ─────────────────────────────────────────────
+           PAYMENT MODAL
+        ───────────────────────────────────────────── */
+
+        $('#paymentModal')
+            .on(
+                'shown.bs.modal',
+                buildPaymentSummary
+            );
+
+
+        /*
+         * Recalculate change whenever
+         * cashier changes received amount.
+         */
+
+        $('#receivedAmt')
+            .on(
+                'input',
+                calcChange
+            );
+
+
+        /* ─────────────────────────────────────────────
+           BARCODE
+        ───────────────────────────────────────────── */
+
+        $('#barcodeInput')
+            .on(
+                'keydown',
+                function (e) {
+
+                    if (e.key === 'Enter') {
+                        addByBarcode();
+                    }
+
+                }
+            );
+
+
+        $('#barcodeModal')
+            .on(
+                'shown.bs.modal',
+                function () {
+
+                    $('#barcodeInput')
+                        .focus();
+
+                    $('#barcodeResult')
+                        .html('');
+
+                }
+            );
+
+
+        /* ─────────────────────────────────────────────
+           ADD CUSTOMER
+        ───────────────────────────────────────────── */
+
+        $('#customerForm')
+            .on(
+                'submit',
+                function (e) {
+
+                    e.preventDefault();
+
+
+                    const form = this;
+
+                    const formData =
+                        new FormData(form);
+
+
+                    $('#customerMsg')
+                        .html('')
+                        .removeClass(
+                            'text-danger text-success'
+                        );
+
+
+                    $.ajax({
+
+                        url:
+                            CUSTOMER_STORE_URL,
+
+                        type:
+                            'POST',
+
+                        data:
+                            formData,
+
+                        processData:
+                            false,
+
+                        contentType:
+                            false,
+
+
+                        success:
+                            function (response) {
+
+                                $('#customerMsg')
+                                    .addClass(
+                                        'text-success'
+                                    )
+                                    .text(
+                                        response.success ??
+                                        T.saved
+                                    );
+
+
+                                form.reset();
+
+
+                                /*
+                                 * Add newly created
+                                 * customer to dropdown.
+                                 */
+
+                                if (
+                                    response.customer
+                                ) {
+
+                                    const opt =
+                                        new Option(
+
+                                            response.customer.name,
+
+                                            response.customer.id,
+
+                                            true,
+
+                                            true
+
+                                        );
+
+
+                                    $('#customerSelect')
+                                        .append(opt);
+                                }
+
+
+                                setTimeout(
+                                    () => {
+
+                                        bootstrap.Modal
+                                            .getInstance(
+                                                document.getElementById(
+                                                    'addcustomerModal'
+                                                )
+                                            )
+                                            ?.hide();
+
+                                    },
+                                    1000
+                                );
+                            },
+
+
+                        error:
+                            function (xhr) {
+
+                                const errors =
+                                    xhr.responseJSON
+                                        ?.errors;
+
+                                let errorHtml =
+                                    '';
+
+
+                                if (errors) {
+
+                                    $.each(
+                                        errors,
+                                        function (
+                                            key,
+                                            value
+                                        ) {
+
+                                            errorHtml +=
+                                                esc(
+                                                    value[0]
+                                                ) +
+                                                '<br>';
+
+                                        }
+                                    );
+
+                                } else {
+
+                                    errorHtml =
+                                        esc(
+                                            xhr.responseJSON
+                                                ?.message ??
+                                            T.wentWrong
+                                        );
+                                }
+
+
+                                $('#customerMsg')
+                                    .addClass(
+                                        'text-danger'
+                                    )
+                                    .html(
+                                        errorHtml
+                                    );
+                            }
+
+                    });
+
+                }
+            );
+    });
+
+
+    /* ═══════════════════════════════════════════════════════
+       CUSTOMER DISPLAY SYNC
+    ═══════════════════════════════════════════════════════ */
+
+    (function () {
+
+        const KEY =
+            'pos-cd-state';
+
+        const HELLO =
+            'pos-cd-hello';
+
+
+        const ch =
+            'BroadcastChannel' in window
+                ? new BroadcastChannel(
+                    'pos-customer-display'
+                )
+                : null;
+
+
+        let mode =
+            'order';
+
+
+        function snapshot(extra) {
+
+            const t =
+                calcTotals();
+
+
+            const stage =
+                mode === 'order'
+                    ? (
+                        cart.length
+                            ? 'order'
+                            : 'idle'
+                    )
+                    : mode;
+
+
+            return Object.assign({
+
+                type:
+                    'state',
+
+                ts:
+                    Date.now(),
+
+                stage:
+                    stage,
+
+                ref:
+                    $('.pos-cart__subtitle')
+                        .first()
+                        .text()
+                        .trim(),
+
+                customer:
+                    $('#customerSelect').val()
+                        ? $('#customerSelect option:selected')
+                            .text()
+                            .trim()
+                        : '',
+
+
+                items:
+                    cart.map(i => ({
+                        id: i.id,
+                        name: i.name,
+                        qty: i.qty,
+                        price: i.price,
+                        image: i.image
+                    })),
+
+
+                subtotal:
+                    t.subtotal,
+
+                discount:
+                    t.discAmt,
+
+                grand:
+                    t.grand,
+
+
+                payment: {
+
+                    method:
+                        $('#paymentMethod')
+                            .val(),
+
+                    bank:
+                        $('#bankName')
+                            .val() || '',
+
+                    received:
+                        parseFloat(
+                            $('#receivedAmt')
+                                .val()
+                        ) || 0,
+
+                    change:
+                        parseFloat(
+                            $('#changeAmt')
+                                .val()
+                        ) || 0
+
+                }
+
+            }, extra || {});
         }
 
-        /* ═══════════════════════════════════════════════════════
-           SUBMIT SALE
-        ═══════════════════════════════════════════════════════ */
-        function submitSale() {
-            const pay = preparePaymentData();
-            if (!pay) return;
 
-            const btn = $('#submitSaleBtn');
+        function send(extra) {
 
-            btn.prop('disabled', true)
-                .html(`<span class="spinner-border spinner-border-sm me-2"></span> ${esc(T.processing)}…`);
+            const s =
+                snapshot(extra);
 
-            const payload = {
-                customer_id: $('#customerSelect').val() || null,
-                cart: cart.map(i => ({ id: i.id, qty: i.qty })),
-                payment_method: pay.payment_method,   // 'cash' | 'bank'
-                bank_name: pay.bank_name,             // null for cash
-                amount_paid: pay.received_amount,
-                change_amount: pay.change_amount,
-                discount_type: $('#discountType').val(),
-                discount_value: parseFloat($('#discountValue').val()) || 0,
-                note: pay.payment_note,
+
+            try {
+
+                localStorage.setItem(
+                    KEY,
+                    JSON.stringify(s)
+                );
+
+            } catch (e) {}
+
+
+            if (ch) {
+                ch.postMessage(s);
+            }
+        }
+
+
+        /* ─────────────────────────────────────────────
+           CUSTOMER DISPLAY WINDOW
+        ───────────────────────────────────────────── */
+
+        if (
+            typeof window.openCustomerDisplay !==
+            'function'
+        ) {
+
+            window.openCustomerDisplay =
+                function () {
+
+                    const w =
+                        window.open(
+                            @json(url('/customer-display')),
+                            'posCustomerDisplay',
+                            'width=1100,height=720'
+                        );
+
+
+                    if (w) {
+                        w.focus();
+                    }
+
+
+                    setTimeout(
+                        send,
+                        800
+                    );
+                };
+        }
+
+
+        /* ─────────────────────────────────────────────
+           CART SYNC
+        ───────────────────────────────────────────── */
+
+        const _renderCart =
+            renderCart;
+
+
+        renderCart =
+            function () {
+
+                _renderCart.apply(
+                    this,
+                    arguments
+                );
+
+                send();
             };
 
-            $.ajax({
-                url: STORE_URL,
-                method: 'POST',
-                contentType: 'application/json',
-                dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': CSRF_TOKEN
-                },
-                data: JSON.stringify(payload),
 
-                success: function (data) {
-                    if (data.success) {
-                        showAlert(esc(T.saleComplete.replace(':ref', data.reference)), 'success');
-                        bootstrap.Modal.getInstance(document.getElementById('paymentModal'))?.hide();
-                        setTimeout(() => window.location.href = data.receipt_url, 600);
-                    } else {
-                        showAlert(esc(data.message ?? T.saleFailed), 'danger');
-                        btn.prop('disabled', false).html(BTN_CONFIRM_HTML);
+        /* ─────────────────────────────────────────────
+           DISCOUNT SYNC
+        ───────────────────────────────────────────── */
+
+        const _applyDiscount =
+            applyDiscountModal;
+
+
+        applyDiscountModal =
+            function () {
+
+                _applyDiscount.apply(
+                    this,
+                    arguments
+                );
+
+                send();
+            };
+
+
+        /* ─────────────────────────────────────────────
+           PAYMENT METHOD SYNC
+        ───────────────────────────────────────────── */
+
+        const _selectMethod =
+            selectPaymentMethod;
+
+
+        selectPaymentMethod =
+            function () {
+
+                _selectMethod.apply(
+                    this,
+                    arguments
+                );
+
+                send();
+            };
+
+
+        /* ─────────────────────────────────────────────
+           BANK SYNC
+        ───────────────────────────────────────────── */
+
+        const _selectBank =
+            selectBank;
+
+
+        selectBank =
+            function () {
+
+                _selectBank.apply(
+                    this,
+                    arguments
+                );
+
+                send();
+            };
+
+
+        /* ─────────────────────────────────────────────
+           EVENTS
+        ───────────────────────────────────────────── */
+
+        $(function () {
+
+            $('#customerSelect')
+                .on(
+                    'change',
+                    () => send()
+                );
+
+
+            $('#receivedAmt')
+                .on(
+                    'input',
+                    () => send()
+                );
+
+
+            $('#paymentModal')
+
+                .on(
+                    'shown.bs.modal',
+                    () => {
+
+                        mode =
+                            'payment';
+
+                        send();
                     }
-                },
+                )
 
-                error: function (xhr) {
-                    showAlert(esc(xhr.responseJSON?.message ?? T.networkError), 'danger');
-                    btn.prop('disabled', false).html(BTN_CONFIRM_HTML);
-                }
-            });
-        }
+                .on(
+                    'hidden.bs.modal',
+                    () => {
 
-        /* ═══════════════════════════════════════════════════════
-           MOBILE CART TOGGLE
-        ═══════════════════════════════════════════════════════ */
-        function toggleMobileCart() {
-            const open = $('#posCart').hasClass('open');
-            $('#posCart').toggleClass('open', !open);
-            $('#posBackdrop').toggleClass('show', !open);
-        }
+                        if (
+                            mode === 'payment'
+                        ) {
 
-        /* ═══════════════════════════════════════════════════════
-           ALERTS  (msg is inserted as HTML, so escape user text first)
-        ═══════════════════════════════════════════════════════ */
-        function showAlert(msg, type = 'info') {
-            $('#alertBox').html(`
-                <div class="alert alert-${type} alert-dismissible fade show shadow" role="alert">
-                    ${msg}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>`);
-            setTimeout(() => $('#alertBox .alert').remove(), 2800);
-        }
+                            mode =
+                                'order';
 
-        /* ═══════════════════════════════════════════════════════
-           INIT
-        ═══════════════════════════════════════════════════════ */
-        $(document).ready(function () {
-
-            buildCatTabs();
-            filterProducts();
-
-            // Delegated clicks for dynamically built tabs (safe with apostrophes)
-            $('#catScroller').on('click', '.pos-cat-tab', function () {
-                selectCat(this, attr(this, 'cat'));
-            });
-            $('#subcatScroller').on('click', '.pos-subcat-tab', function () {
-                selectSub(this, attr(this, 'sub'));
-            });
-
-            // Payment modal
-            $('#paymentModal').on('shown.bs.modal', buildPaymentSummary);
-            $('#receivedAmt').on('input', calcChange);
-
-            // Barcode modal
-            $('#barcodeInput').on('keydown', function (e) {
-                if (e.key === 'Enter') addByBarcode();
-            });
-            $('#barcodeModal').on('shown.bs.modal', function () {
-                $('#barcodeInput').focus();
-                $('#barcodeResult').html('');
-            });
-
-            // Add customer
-            $('#customerForm').on('submit', function (e) {
-                e.preventDefault();
-
-                const form = this;
-                const formData = new FormData(form);
-
-                $('#customerMsg').html('').removeClass('text-danger text-success');
-
-                $.ajax({
-                    url: CUSTOMER_STORE_URL,
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-
-                    success: function (response) {
-                        $('#customerMsg').addClass('text-success').text(response.success ?? T.saved);
-                        form.reset();
-
-                        // Add the new customer to the dropdown and select it
-                        // (controller should return: ['success' => '...', 'customer' => ['id' => .., 'name' => ..]])
-                        if (response.customer) {
-                            const opt = new Option(response.customer.name, response.customer.id, true, true);
-                            $('#customerSelect').append(opt);
+                            send();
                         }
 
-                        setTimeout(() => {
-                            bootstrap.Modal.getInstance(document.getElementById('addcustomerModal'))?.hide();
-                        }, 1000);
-                    },
-
-                    error: function (xhr) {
-                        const errors = xhr.responseJSON?.errors;
-                        let errorHtml = '';
-
-                        if (errors) {
-                            $.each(errors, function (key, value) {
-                                errorHtml += esc(value[0]) + '<br>';
-                            });
-                        } else {
-                            errorHtml = esc(xhr.responseJSON?.message ?? T.wentWrong);
-                        }
-
-                        $('#customerMsg').addClass('text-danger').html(errorHtml);
                     }
-                });
-            });
+                );
+
+
+            send();
+
+
+            /*
+             * Customer display heartbeat
+             */
+
+            setInterval(
+                () => send(),
+                5000
+            );
         });
 
 
+        /* ─────────────────────────────────────────────
+           SALE LIFECYCLE
+        ───────────────────────────────────────────── */
 
+        $(document)
 
-        /* ═══════════════════════════════════════════════════════
-           CUSTOMER DISPLAY SYNC
-           Sends the cart, totals and payment state to /customer-display
-           (same browser, second window / second monitor).
-        ═══════════════════════════════════════════════════════ */
-        (function () {
-            const KEY = 'pos-cd-state', HELLO = 'pos-cd-hello';
-            const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pos-customer-display') : null;
-            let mode = 'order'; // order | payment | processing | thanks
+            .on(
+                'ajaxSend',
+                function (
+                    e,
+                    xhr,
+                    opts
+                ) {
 
-            function snapshot(extra) {
-                const t = calcTotals();
-                const stage = mode === 'order' ? (cart.length ? 'order' : 'idle') : mode;
-                return Object.assign({
-                    type: 'state',
-                    ts: Date.now(),
-                    stage: stage,
-                    ref: $('.pos-cart__subtitle').first().text().trim(),
-                    customer: $('#customerSelect').val() ? $('#customerSelect option:selected').text().trim() : '',
-                    items: cart.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, image: i.image })),
-                    subtotal: t.subtotal,
-                    discount: t.discAmt,
-                    grand: t.grand,
-                    payment: {
-                        method: $('#paymentMethod').val(),
-                        bank: $('#bankName').val() || '',
-                        received: parseFloat($('#receivedAmt').val()) || 0,
-                        change: parseFloat($('#changeAmt').val()) || 0
+                    if (
+                        opts.url === STORE_URL
+                    ) {
+
+                        mode =
+                            'processing';
+
+                        send();
                     }
-                }, extra || {});
-            }
 
-            function send(extra) {
-                const s = snapshot(extra);
-                try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
-                if (ch) ch.postMessage(s);
-            }
+                }
+            )
 
-            // Open the customer window (only defined here if your project does not already have it)
-            if (typeof window.openCustomerDisplay !== 'function') {
-                window.openCustomerDisplay = function () {
-                    const w = window.open(@json(url('/customer-display')), 'posCustomerDisplay', 'width=1100,height=720');
-                    if (w) w.focus();
-                    setTimeout(send, 800);
+
+            .on(
+                'ajaxSuccess',
+                function (
+                    e,
+                    xhr,
+                    opts,
+                    data
+                ) {
+
+                    if (
+                        opts.url === STORE_URL &&
+                        data &&
+                        data.success
+                    ) {
+
+                        mode =
+                            'thanks';
+
+                        send({
+                            ref:
+                                data.reference
+                        });
+                    }
+
+                }
+            )
+
+
+            .on(
+                'ajaxError',
+                function (
+                    e,
+                    xhr,
+                    opts
+                ) {
+
+                    if (
+                        opts.url === STORE_URL
+                    ) {
+
+                        mode =
+                            'payment';
+
+                        send();
+                    }
+
+                }
+            );
+
+
+        /* ─────────────────────────────────────────────
+           CUSTOMER DISPLAY HELLO
+        ───────────────────────────────────────────── */
+
+        if (ch) {
+
+            ch.onmessage =
+                e => {
+
+                    if (
+                        e.data &&
+                        e.data.type ===
+                        'hello'
+                    ) {
+
+                        send();
+                    }
+
                 };
+        }
+
+
+        addEventListener(
+            'storage',
+            e => {
+
+                if (
+                    e.key === HELLO
+                ) {
+
+                    send();
+                }
+
             }
+        );
 
-            // Wrap existing functions (called from inline onclick="" too, so we re-assign the globals)
-            const _renderCart = renderCart;
-            renderCart = function () { _renderCart.apply(this, arguments); send(); };
+    })();
 
-            const _applyDiscount = applyDiscountModal;
-            applyDiscountModal = function () { _applyDiscount.apply(this, arguments); send(); };
-
-            const _selectMethod = selectPaymentMethod;
-            selectPaymentMethod = function () { _selectMethod.apply(this, arguments); send(); };
-
-            const _selectBank = selectBank;
-            selectBank = function () { _selectBank.apply(this, arguments); send(); };
-
-            // Events (registered after yours, so your handlers run first)
-            $(function () {
-                $('#customerSelect').on('change', () => send());
-                $('#receivedAmt').on('input', () => send());
-
-                $('#paymentModal')
-                    .on('shown.bs.modal', () => { mode = 'payment'; send(); })
-                    .on('hidden.bs.modal', () => { if (mode === 'payment') { mode = 'order'; send(); } });
-
-                send();                                // initial state
-                setInterval(() => send(), 5000);       // heartbeat so the display knows the POS is alive
-            });
-
-            // Sale request lifecycle
-            $(document)
-                .on('ajaxSend', function (e, xhr, opts) {
-                    if (opts.url === STORE_URL) { mode = 'processing'; send(); }
-                })
-                .on('ajaxSuccess', function (e, xhr, opts, data) {
-                    if (opts.url === STORE_URL && data && data.success) { mode = 'thanks'; send({ ref: data.reference }); }
-                })
-                .on('ajaxError', function (e, xhr, opts) {
-                    if (opts.url === STORE_URL) { mode = 'payment'; send(); }
-                });
-
-            // A customer window that just opened asks for the current state
-            if (ch) ch.onmessage = e => { if (e.data && e.data.type === 'hello') send(); };
-            addEventListener('storage', e => { if (e.key === HELLO) send(); });
-        })();
-
-
-
-    </script>
+</script>
 @endpush

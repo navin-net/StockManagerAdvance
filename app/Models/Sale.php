@@ -6,6 +6,10 @@ use App\Models\PosRegisters;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static count()
+ * @method static sum(string $string)
+ */
 class Sale extends Model
 {
     use HasFactory;
