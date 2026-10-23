@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SubCategory extends Model
 {
     use HasFactory;
-    public $timestamps = false; // ✅ Prevent Laravel from using created_at / updated_at
+
+    public $timestamps = false;
 
     protected $fillable = ['name', 'category_id'];
 

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\{Brand, Categories, ProductImage, Qualitys, SubCategory, Units};
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static count()
@@ -29,40 +31,40 @@ class Products extends Model
         'subcategory_id',
         'quality_id',
     ];
-    public function brand()
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
 
-    public function unit()
+    public function unit(): BelongsTo
     {
         return $this->belongsTo(Units::class);
     }
 
 
-    public function category()
+    public function category(): BelongsTo
     {
         // return $this->belongsTo(Categories::class);
         return $this->belongsTo(Categories::class, 'category_id');
 
     }
 
-    public function subCategory()
+    public function subCategory(): BelongsTo
     {
         return $this->belongsTo(SubCategory::class, 'subcategory_id');
     }
 
-    public function quality()
+    public function quality(): BelongsTo
     {
         return $this->belongsTo(Qualitys::class);
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'product_id');
     }
 
-    public function cartItems()
+    public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class, 'product_id');
     }

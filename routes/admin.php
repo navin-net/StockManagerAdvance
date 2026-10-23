@@ -28,6 +28,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             ->name('images.remove');
         Route::get('/export', [ProductController::class, 'export'])
             ->name('export');
+        Route::delete('bulk-destroy', [ProductController::class, 'bulkDestroy'])
+            ->name('bulk-destroy');
         Route::get('/import', [ProductController::class, 'showImportForm'])
             ->name('import.form');
         Route::post('/import', [ProductController::class, 'import'])
@@ -126,7 +128,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('reports/open-register',[ReportsController::class, 'openRegisterReport'])->name('reports.open-register');
     });
 
-    Route::prefix('shop')->group(function () {
+    Route::prefix('shop')->name('shop.')->group(function () {
         Route::get('settings', [ShopController::class, 'index'])->name('settings');
         Route::post('settings', [ShopController::class, 'update'])->name('settings.update');
         Route::get('banners', [ShopController::class, 'banners'])->name('banners');

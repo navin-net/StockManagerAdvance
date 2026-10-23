@@ -117,7 +117,10 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('settings.update') }}" enctype="multipart/form-data" id="shopForm">
+        <form method="POST"
+              action="{{ route('shop.settings.update') }}"
+              enctype="multipart/form-data"
+              id="shopForm">
             @csrf
 
             <div class="row g-4">

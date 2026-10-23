@@ -463,4 +463,14 @@ public function import(Request $request)
             ]
         ]);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $data = $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:products,id',
+        ]);
+        Products::whereIn('id', $data['ids'])->delete();
+        return response()->json(['message' => __('messages.deleted_successfully')]);
+    }
 }

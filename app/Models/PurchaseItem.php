@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\{Products, Purchase};
 
 class PurchaseItem extends Model
@@ -14,12 +15,12 @@ class PurchaseItem extends Model
         'cost_price'
     ];
 
-    public function purchase()
+    public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class, 'purchase_id');
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Products::class, 'product_id');
     }

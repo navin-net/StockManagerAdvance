@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\PosRegisters;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static count()
@@ -43,25 +45,25 @@ class Sale extends Model
         'total_amount'   => 'decimal:2',
     ];
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(SaleItem::class);
     }
-    public function payments()
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
-    public function cashRegister()
+    public function cashRegister(): BelongsTo
     {
         return $this->belongsTo(PosRegisters::class,'cash_register_id');
     }
 
-    public function customer()
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Companies::class,'customer_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class,'user_id');
     }

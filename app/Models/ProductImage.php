@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Products;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductImage extends Model
 {
@@ -20,7 +21,7 @@ class ProductImage extends Model
         'updated_at',
     ];
     // Each image belongs to one product
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Products::class);
     }

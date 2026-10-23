@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,6 +14,7 @@ use App\Models\{Companies, Profile};
  * @property mixed $ip_address
  * @property mixed $group_id
  * @property mixed $status
+ * @property mixed $company_id
  */
 class User extends Authenticatable
 {
@@ -58,7 +60,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function groups()
+    public function groups(): BelongsTo
     {
         return $this->belongsTo(Groups::class, 'group_id');
 
@@ -68,7 +70,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Profile::class);
     }
-    public function company()
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Companies::class);
     }

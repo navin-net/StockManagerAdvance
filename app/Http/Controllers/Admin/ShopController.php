@@ -28,40 +28,42 @@ class ShopController extends Controller
     {
         $shop = Shop::orderBy('id', 'asc')->firstOrFail();
 
-        $request->validate([
-            'name_shop' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:50',
-            'logo_shop' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        $validated = $request->validate([
+            'name_shop'      => 'required|string|max:255',
+            'email'          => 'nullable|email|max:255',
+            'address'        => 'nullable|string|max:255',
+            'phone'          => 'nullable|string|max:50',
+            'description'    => 'nullable|string',
+            'open_shop_time' => 'nullable|string|max:50',
+            'close_shop'     => 'nullable|string|max:50',
+            'facebook'       => 'nullable|url|max:255',
+            'x'              => 'nullable|url|max:255',
+            'instagram'      => 'nullable|url|max:255',
+            'youtube'        => 'nullable|url|max:255',
+            'linkedin'       => 'nullable|url|max:255',
+            'logo_shop'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->only([
-            'name_shop',
-            'email',
-            'address',
-            'phone',
-            'description',
-            'facebook',
-            'x',
-            'instagram',
-            'youtube',
-            'linkedin',
-        ]);
+        $data = collect($validated)->except('logo_shop')->all();
 
         if ($request->hasFile('logo_shop')) {
+            $newLogo = $request->file('logo_shop')
+                ->store('logo_shops', 'public');
+
             if ($shop->logo_shop) {
                 Storage::disk('public')->delete($shop->logo_shop);
             }
-            $data['logo_shop'] = $request
-                ->file('logo_shop')
-                ->store('logo_shops', 'public');
+
+            $data['logo_shop'] = $newLogo;
         }
+
         $shop->update($data);
-        return back()->with('success', __('messages.updated_successfully'));
+
+        return back()->with(
+            'success',
+            __('messages.updated_successfully')
+        );
     }
-
-
     public function banners()
     {
         $banners = Banner::orderBy('id', 'asc')->get();
