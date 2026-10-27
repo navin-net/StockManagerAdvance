@@ -56,6 +56,7 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
+        'account.active' => \App\Http\Middleware\EnsureAccountIsActive::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         // 'register.open' => \App\Http\Middleware\EnsureRegisterIsOpen::class,
         'register.open' => \App\Http\Middleware\RegisterOpen::class,

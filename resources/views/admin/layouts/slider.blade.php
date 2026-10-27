@@ -105,14 +105,13 @@
                         ['i' => 'images', 't' => 'banner', 'u' => 'shop/banners', 'm' => ['shop/banners*']],
                     ],
                 ],
-                ['i' => 'briefcase', 't' => 'portfolio', 'u' => 'shop/portfolio', 'm' => ['shop/portfolio*']],
             ],
         ],
     ];
 
     $href = fn($n) => isset($n['r']) ? route($n['r']) : url(trim($prefix . '/' . ($n['u'] ?? ''), '/'));
     $label = fn($n) => $n['x'] ?? __('messages.' . $n['t']);
-    $avatar = $sbUser->avatar ? asset('storage/' . $sbUser->avatar) : asset('assets/images/default-avatar.png');
+    $avatar = $sbUser->avatar_url;
 @endphp
 
 <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">

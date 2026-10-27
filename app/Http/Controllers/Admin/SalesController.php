@@ -32,9 +32,8 @@ class SalesController extends Controller
                 'sales.customer_id',
                 'sales.reference',
                 'sales.created_at',
+                'sales.total_amount',
                 'sales.total_amount AS grand_total',
-                DB::raw('COALESCE(SUM(sma_payments.amount), 0) AS paid'),
-                DB::raw('(sma_sales.total_amount - COALESCE(SUM(sma_payments.amount), 0)) AS balance'),
                 'companies.name AS customer',
                 'biller.name as biller',
                 'sales.status',
@@ -42,22 +41,14 @@ class SalesController extends Controller
             ])
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
             ->leftJoin('companies as biller', 'sales.biller_id', '=', 'biller.id')
-            ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', null)
 //            ->orWhereNull('sales.sale_type')
-            ->groupBy([
-                'sales.id',
-                'sales.customer_id',
-                'sales.reference',
-                'sales.created_at',
-                'sales.total_amount',
-                'companies.name',
-                'sales.status',
-            ]);
+            ->withSum(['payments as paid' => fn ($q) => $q->where('status', 'completed')], 'amount');
         if ($request->filled('warehouse_id')) {
             $data->where('sales.warehouse_id', $request->warehouse_id);
         }
         return DataTables::of($data)
+            ->addColumn('balance', fn ($sale) => round($sale->total_amount - ($sale->paid ?? 0), 2))
             ->editColumn('created_at', function ($row) {
                 // Format to your preferred date/time format
                 return $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '';
@@ -101,49 +92,8 @@ class SalesController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|string|max:255',
-            'date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.sale_price' => 'required|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        DB::transaction(function () use ($request) {
-            $sale = Sale::create([
-                'customer_id' => $request->customer_id,
-                'total_amount' => $request->total_amount,
-                'status' => 'completed',
-                'status' => $request->status,
-                'payment_status' => 'pending',
-                'reference' => 'SALE-' . strtoupper(uniqid()),
-                'date' => $request->date,
-            ]);
-
-            foreach ($request->items as $item) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'sale_price' => $item['sale_price'],
-                ]);
-
-                Products::where('id', $item['product_id'])->decrement('stock_quantity', $item['quantity']);
-            }
-        });
-
-        return response()->json(
-            [
-                'message' => __('messages.sale_created_successfully'),
-                'redirect' => route('sales.index'),
-            ]
-        );
+        $this->persistSale($request);
+        return response()->json(['message' => __('messages.sale_created_successfully'), 'redirect' => route('sales.index')]);
     }
 
     public function show($id)
@@ -165,87 +115,31 @@ class SalesController extends Controller
         $pageTitle = __('messages.edit');
         $breadcrumbs = [['label' => __('messages.sales_list'), 'url' => route('sales.index'), 'active' => false], ['label' => __('messages.edit'), 'url' => '', 'active' => true]];
 
-        return view('admin.sales.edit', compact('pageTitle', 'breadcrumbs', 'products', 'sale'));
+        $customers = \App\Models\Companies::where('group_id', 4)->get();
+        return view('admin.sales.edit', compact('pageTitle', 'breadcrumbs', 'products', 'sale', 'customers'));
     }
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|string|max:255',
-            'date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.sale_price' => 'required|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        DB::transaction(function () use ($request, $id) {
-            $sale = Sale::findOrFail($id);
-
-            foreach ($sale->items as $item) {
-                Products::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
-            }
-
-            $sale->update([
-                'total_amount' => $request->total_amount,
-                'status' => $request->status,
-                'date' => $request->date,
-            ]);
-
-            $sale->items()->delete();
-
-            foreach ($request->items as $item) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'sale_price' => $item['sale_price'],
-                ]);
-
-                Products::where('id', $item['product_id'])->decrement('stock_quantity', $item['quantity']);
-            }
-        });
-
-        return response()->json([
-            'message' => __('messages.sale_updated_successfully'),
-            'redirect' => route('sales.index'),
-        ]);
+        $this->persistSale($request, $id);
+        return response()->json(['message' => __('messages.sale_updated_successfully'), 'redirect' => route('sales.index')]);
     }
     public function destroy($id)
     {
-        DB::transaction(function () use ($id) {
-            $sale = Sale::findOrFail($id);
-            foreach ($sale->items as $item) {
-                Products::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
-            }
-            $sale->items()->delete();
-            $sale->delete();
-        });
-
+        DB::transaction(fn () => $this->deleteSale($id), 3);
         return response()->json(['message' => __('messages.sale_deleted_successfully')]);
     }
 
     public function bulkDelete(Request $request)
     {
-        $ids = $request->input('ids', []);
-        DB::transaction(function () use ($ids) {
+        $data = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'required|integer|distinct|exists:sales,id']);
+        DB::transaction(function () use ($data) {
+            $ids = $data['ids'];
+            sort($ids);
             foreach ($ids as $id) {
-                $sale = Sale::find($id);
-                if ($sale) {
-                    foreach ($sale->items as $item) {
-                        Products::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
-                    }
-                    $sale->items()->delete();
-                    $sale->delete();
-                }
+                $this->deleteSale($id);
             }
-        });
-
+        }, 3);
         return response()->json(['message' => __('messages.selected_sales_deleted_successfully')]);
     }
 
@@ -262,7 +156,7 @@ class SalesController extends Controller
             return redirect()->route('sales.index')
                 ->with('error', 'Sale not found.');
         }
-        $totalPaid = DB::table('payments')->where('sale_id', $id)->sum('amount');
+        $totalPaid = DB::table('payments')->where('sale_id', $id)->where('status', 'completed')->sum('amount');
         $balance = $sale->total_amount - $totalPaid;
         if ($balance <= 0) {
             return redirect()->route('sales.index')
@@ -274,79 +168,53 @@ class SalesController extends Controller
 
     public function storePayment(Request $request)
     {
-        $request->validate([
-            'sale_id' => 'nullable|exists:sales,id',
-            'amount' => 'required|numeric|min:0.01',
-            // 'method' => 'required|string',
+        $request->merge(['methods' => $request->input('method', $request->input('methods'))]);
+        $data = $request->validate([
+            'sale_id' => 'required|exists:sales,id',
+            'amount' => 'required|numeric|min:0.01|max:99999999.99',
+            'methods' => 'required|in:cash,card,qr,bank',
             'paid_at' => 'required|date',
             'reference' => 'nullable|string|max:255',
-            'attachment' => 'nullable|file|max:2048',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
-
-        $sale_id = $request->sale_id;
-
-        $sale = Sale::findOrFail($request->sale_id);
-
-        $totalPaid = DB::table('payments')
-            ->where('sale_id', $sale_id)
-            ->sum('amount');
-
-        $remainingBalance = $sale->total_amount - $totalPaid;
-
-        if ($remainingBalance <= 0) {
-            return back()->withErrors([
-                'amount' => 'This sale is already fully paid.'
-            ]);
+        $path = $request->hasFile('attachment') ? $request->file('attachment')->store('payments', 'public') : null;
+        try {
+            DB::transaction(function () use ($data, $path) {
+                // POS operations consistently lock register before sale.
+                $candidate = Sale::findOrFail($data['sale_id']);
+                $register = null;
+                if ($candidate->cash_register_id) {
+                    $register = DB::table('pos_registers')->where('id', $candidate->cash_register_id)->lockForUpdate()->first();
+                    abort_unless($register && $register->status === 'open' && (int) $register->user_id === (int) auth()->id(), 422, 'The sale register is closed or belongs to another user');
+                }
+                $sale = Sale::whereKey($data['sale_id'])->lockForUpdate()->firstOrFail();
+                abort_if($sale->status === 'cancelled', 422, 'Cannot pay a cancelled sale');
+                $paid = $sale->payments()->where('status', 'completed')->sum('amount');
+                $balance = round($sale->total_amount - $paid, 2);
+                if (round($data['amount'], 2) > $balance || $balance <= 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['amount' => 'Payment exceeds remaining balance']);
+                }
+                $sale->payments()->create([
+                    'amount' => round($data['amount'], 2),
+                    'method' => $data['methods'],
+                    'reference' => $data['reference'] ?? null,
+                    'paid_at' => $data['paid_at'],
+                    'attachment' => $path,
+                    'status' => 'completed',
+                    'created_by' => auth()->id(),
+                ]);
+                $sale->update(['payment_status' => round($balance - $data['amount'], 2) <= 0 ? 'completed' : 'partial']);
+                if ($register && $data['methods'] === 'cash') {
+                    DB::table('pos_registers')->where('id', $register->id)->update(['total_cash' => round(($register->total_cash ?? 0) + $data['amount'], 2)]);
+                }
+            }, 3);
+        } catch (\Throwable $e) {
+            if ($path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            }
+            throw $e;
         }
-        if ($request->amount > $remainingBalance) {
-            return back()->withErrors([
-                'amount' => 'Payment exceeds remaining balance.'
-            ]);
-        }
-
-        $newBalance = $remainingBalance - $request->amount;
-
-        if ($request->amount <= 0) {
-            // $status = 'pending';
-            $paymentStatus = 'unpaid';
-        } elseif ($newBalance <= 0) {
-            // $status = 'paid';
-            $paymentStatus = 'completed';
-        } else {
-            // $status = 'partial';
-            $paymentStatus = 'partial';
-        }
-
-
-        $data = [
-            'sale_id' => $sale_id,
-            'reference' => $request->reference,
-            'method' => $request->methods,
-            'amount' => $request->amount,
-            'paid_at' => $request->paid_at ?? now(),
-            // 'pos_paid'    => $totalPaid + $request->amount,
-            // 'pos_balance' => $remainingBalance - $request->amount,
-            'created_by' => auth()->id(),
-        ];
-
-        $sale_data = [
-            // 'status'         => $status,
-            'payment_status' => $paymentStatus,
-        ];
-
-
-        if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')
-                ->store('payments', 'public');
-        }
-
-        Payment::create($data);
-        Sale::where('id', $sale_id)->update($sale_data);
-
-
-        return redirect()
-            ->route('sales.index')
-            ->with('success', 'Payment saved successfully');
+        return redirect()->route('sales.index')->with('success', 'Payment saved successfully');
     }
 
 
@@ -381,9 +249,8 @@ class SalesController extends Controller
                 'sales.customer_id',
                 'sales.reference',
                 'sales.created_at',
+                'sales.total_amount',
                 'sales.total_amount AS grand_total',
-                DB::raw('COALESCE(SUM(sma_payments.amount), 0) AS paid'),
-                DB::raw('(sma_sales.total_amount - COALESCE(SUM(sma_payments.amount), 0)) AS balance'),
                 'companies.name AS customer',
                 'biller.name as biller',
                 'sales.status',
@@ -391,22 +258,14 @@ class SalesController extends Controller
             ])
             ->leftJoin('companies', 'sales.customer_id', '=', 'companies.id')
             ->leftJoin('companies as biller', 'sales.biller_id', '=', 'biller.id')
-            ->leftJoin('payments', 'sales.id', '=', 'payments.sale_id')
             ->where('sales.sale_type', 'pos')
 //            ->orWhereNull('sales.sale_type')
-            ->groupBy([
-                'sales.id',
-                'sales.customer_id',
-                'sales.reference',
-                'sales.created_at',
-                'sales.total_amount',
-                'companies.name',
-                'sales.status',
-            ]);
+            ->withSum(['payments as paid' => fn ($q) => $q->where('status', 'completed')], 'amount');
         if ($request->filled('warehouse_id')) {
             $data->where('sales.warehouse_id', $request->warehouse_id);
         }
         return DataTables::of($data)
+            ->addColumn('balance', fn ($sale) => round($sale->total_amount - ($sale->paid ?? 0), 2))
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '';
             })
@@ -436,4 +295,76 @@ class SalesController extends Controller
 
 
 
+    public function export()
+    {
+        return app(\App\Services\CsvExportService::class)->download('sales.csv',
+            ['Reference', 'Date', 'Total', 'Status', 'Payment status'],
+            Sale::orderBy('id')->cursor()->map(fn ($sale) => [$sale->reference, $sale->date?->toDateString(), $sale->total_amount, $sale->status, $sale->payment_status]));
+    }
+
+    private function persistSale(Request $request, $id = null): Sale
+    {
+        $data = $request->validate([
+            'customer_id' => 'nullable|exists:companies,id',
+            'status' => 'required|in:pending,completed,cancelled',
+            'date' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|distinct|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1|max:1000000',
+            'items.*.sale_price' => 'required|numeric|min:0|max:999999.99',
+        ]);
+        return DB::transaction(function () use ($data, $id) {
+            $sale = $id ? Sale::whereKey($id)->lockForUpdate()->firstOrFail() : new Sale();
+            abort_if($sale->sale_type === 'pos', 422, 'POS sales cannot be edited through normal sales');
+            $old = $sale->exists ? $sale->items()->get() : collect();
+            $ids = collect($data['items'])->pluck('product_id')->merge($old->pluck('product_id'))->unique()->sort()->values();
+            $products = Products::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            if ($sale->exists && $sale->status !== 'cancelled') {
+                foreach ($old as $item) {
+                    $products[$item->product_id]->increment('stock_quantity', $item->quantity);
+                }
+            }
+            $total = collect($data['items'])->sum(fn ($item) => round($item['quantity'] * $item['sale_price'], 2));
+            if ($total > 99999999.99) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Sale total is too large']);
+            }
+            $paid = $sale->exists ? $sale->payments()->where('status', 'completed')->sum('amount') : 0;
+            if ($paid > $total || ($paid > 0 && $data['status'] === 'cancelled')) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['total_amount' => 'Refund payments before reducing or cancelling a paid sale']);
+            }
+            $sale->fill([
+                'reference' => $sale->reference ?? Sale::generateReference(),
+                'user_id' => $sale->user_id ?? auth()->id(),
+                'customer_id' => $data['customer_id'] ?? $sale->customer_id,
+                'date' => $data['date'], 'status' => $data['status'],
+                'subtotal' => $total, 'total_amount' => $total,
+                'payment_status' => $paid >= $total ? 'completed' : ($paid > 0 ? 'partial' : 'pending'),
+            ])->save();
+            $sale->items()->delete();
+            foreach ($data['items'] as $item) {
+                $product = $products[$item['product_id']];
+                if ($data['status'] !== 'cancelled') {
+                    if ($product->stock_quantity < $item['quantity']) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Insufficient stock for ' . $product->name]);
+                    }
+                    $product->decrement('stock_quantity', $item['quantity']);
+                }
+                $sale->items()->create($item + ['product_name' => $product->name, 'subtotal' => round($item['quantity'] * $item['sale_price'], 2)]);
+            }
+            return $sale;
+        }, 3);
+    }
+
+    private function deleteSale($id): void
+    {
+        $sale = Sale::whereKey($id)->lockForUpdate()->firstOrFail();
+        abort_if($sale->sale_type === 'pos' || $sale->payments()->exists(), 422, 'Sales with register activity or payments must be retained');
+        if ($sale->status !== 'cancelled') {
+            foreach ($sale->items()->orderBy('product_id')->get() as $item) {
+                Products::whereKey($item->product_id)->lockForUpdate()->firstOrFail()->increment('stock_quantity', $item->quantity);
+            }
+        }
+        $sale->items()->delete();
+        $sale->delete();
+    }
 }

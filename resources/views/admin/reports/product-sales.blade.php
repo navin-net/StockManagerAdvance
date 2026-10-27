@@ -183,7 +183,7 @@
                 <h2>Sales by product</h2>
             </div>
             <div class="table-responsive">
-                <table class="table align-middle">
+                <table class="table align-middle dt-static-table">
                     <thead>
                     <tr>
                         <th style="width:3rem">Rank</th>

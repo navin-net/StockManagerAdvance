@@ -113,6 +113,7 @@ class BillerController extends Controller
         $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:companies,email',
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'address' => 'required|max:255',
             'phone' => 'required|max:20',
             'warehouse_id' => 'required|exists:warehouses,id',
@@ -136,7 +137,7 @@ class BillerController extends Controller
 
     public function edit($id)
     {
-        $biller = Companies::findOrFail($id);
+        $biller = Companies::where('group_id', 2)->findOrFail($id);
         $groups = DB::table('groups')->select('id', 'name')->get();
         $warehouses = DB::table('warehouses')->select('id', 'name')->get();
 
@@ -157,12 +158,13 @@ class BillerController extends Controller
         $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:companies,email,' . $id,
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'address' => 'required|max:255',
             'phone' => 'required|max:20',
             'warehouse_id' => 'required|exists:warehouses,id',
         ]);
 
-        $biller = Companies::findOrFail($id);
+        $biller = Companies::where('group_id', 2)->findOrFail($id);
         $biller->update([
             'name' => $request->name,
             'email' => $request->email,
@@ -171,7 +173,7 @@ class BillerController extends Controller
             'city' => $request->city,
             'number_of_houses' => $request->number_of_houses,
             'street' => $request->street,
-            'logo' => $request->logo ? $request->logo->store('logos', 'public') : null,
+            'logo' => $request->hasFile('logo') ? $request->file('logo')->store('logos', 'public') : $biller->logo,
             'note' => $request->note,
             'warehouse_id' => $request->warehouse_id,
         ]);
@@ -181,7 +183,7 @@ class BillerController extends Controller
 
     public function destroy($id)
     {
-        $biller = Companies::findOrFail($id);
+        $biller = Companies::where('group_id', 2)->findOrFail($id);
         $biller->delete();
 
         return response()->json(['success' => __('messages.selected_billers_deleted_successfully')]);
@@ -190,7 +192,7 @@ class BillerController extends Controller
     // User of Billers
     public function listUsers($id)
     {
-        $biller = Companies::with('users')->findOrFail($id);
+        $biller = Companies::where('group_id', 2)->with('users')->findOrFail($id);
 
 
         $biller->users->transform(function ($user) {
@@ -208,7 +210,7 @@ class BillerController extends Controller
 
     public function addUser($id)
     {
-        $biller = Companies::findOrFail($id);
+        $biller = Companies::where('group_id', 2)->findOrFail($id);
         // die($biller);
         return view('admin.billers.partials.add_user', [
             'biller' => $biller,
@@ -224,10 +226,10 @@ class BillerController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
-            'email' => 'required|email|unique:companies,email,' . $id,
-            'password' => 'required|min:6|confirmed',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
         ]);
-        $biller = Companies::findOrFail($id);
+        $biller = Companies::where('group_id', 2)->findOrFail($id);
         $user = $biller->users()->create([
             'name' => $request->name,
             'email' => $request->email,
@@ -242,7 +244,7 @@ class BillerController extends Controller
 
     public function editUser($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('group_id', 2)->whereHas('company', fn ($q) => $q->where('group_id', 2))->findOrFail($id);
         $groups = Groups::get();
         // die($user);
         return view('admin.billers.partials.edit_user', [
@@ -261,14 +263,14 @@ class BillerController extends Controller
         $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:6',
+            'password' => 'nullable|string|min:8',
         ]);
 
-        $user = User::findOrFail($id);
+        $user = User::where('group_id', 2)->whereHas('company', fn ($q) => $q->where('group_id', 2))->findOrFail($id);
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password,
+            ...($request->filled('password') ? ['password' => bcrypt($request->password)] : []),
         ]);
 
         return redirect()
@@ -278,7 +280,7 @@ class BillerController extends Controller
 
     public function deleteUser($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('group_id', 2)->whereHas('company', fn ($q) => $q->where('group_id', 2))->findOrFail($id);
         $user->delete();
         return response()->json(['success' => __('messages.selected_billers_deleted_successfully')]);
     }

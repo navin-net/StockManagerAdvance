@@ -16,7 +16,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
 
-        if (!auth()->check() || !in_array(auth()->user()->group_id, [1,2,3])) {
+        if (!auth()->check() || !auth()->user()->isActive() || !in_array((int) auth()->user()->group_id, [1, 2, 3], true)) {
             abort(403);
         }
         return $next($request);

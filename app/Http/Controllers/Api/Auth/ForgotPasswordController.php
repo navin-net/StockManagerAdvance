@@ -3,93 +3,64 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Mail\OtpMail;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\{DB, Hash, Mail};
+use Illuminate\Support\Facades\{DB, Hash, Mail, RateLimiter};
+use Illuminate\Validation\ValidationException;
 
 class ForgotPasswordController extends Controller
 {
     public function sendOtp(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email'
-        ]);
-
-        $now = Carbon::now();
-        $otpRecord = DB::table('password_otps')->where('email', $request->email)->first();
-
-        // Cooldown: 2 minutes
-        if ($otpRecord && $otpRecord->last_sent_at) {
-            $diff = $now->diffInSeconds(Carbon::parse($otpRecord->last_sent_at));
-            if ($diff < 120) {
-                $seconds = 120 - $diff;
-                return response()->json([
-                    'status' => false,
-                    'message' => "Please wait {$seconds} seconds before requesting a new OTP."
-                ], 429);
-            }
+        $data = $request->validate(['email' => 'required|email|max:255']);
+        $email = strtolower($data['email']);
+        $key = 'otp-send:' . hash('sha256', $email);
+        if (RateLimiter::tooManyAttempts($key, 1)) {
+            throw ValidationException::withMessages(['email' => 'Please wait before requesting another code']);
         }
-
-        // Generate OTP
-        $otp = random_int(100000, 999999);
-
-        DB::table('password_otps')->updateOrInsert(
-            ['email' => $request->email],
-            [
-                'otp' => Hash::make($otp),
-                'expires_at' => $now->copy()->addMinutes(5),
-                'last_sent_at' => $now,
-                'updated_at' => $now,
-                'created_at' => $now,
-            ]
-        );
-
-        Mail::to($request->email)->send(new OtpMail($otp));
-
-        return response()->json([
-            'status' => true,
-            'message' => 'OTP sent successfully'
-        ]);
+        RateLimiter::hit($key, 120);
+        if (User::where('email', $email)->exists()) {
+            $otp = (string) random_int(100000, 999999);
+            DB::transaction(function () use ($email, $otp) {
+                User::where('email', $email)->lockForUpdate()->firstOrFail();
+                DB::table('password_otps')->where('email', $email)->delete();
+                DB::table('password_otps')->insert([
+                    'email' => $email, 'otp' => Hash::make($otp),
+                    'expires_at' => now()->addMinutes(5), 'last_sent_at' => now(),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            });
+            Mail::raw('Your password reset code is ' . $otp . '. It expires in five minutes.', function ($message) use ($email) {
+                $message->to($email)->subject('Password reset code');
+            });
+        }
+        return response()->json(['status' => true, 'message' => 'If that account exists, a reset code has been sent']);
     }
 
     public function resetPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'otp' => 'required',
-            'password' => [
-                'required',
-                'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).+$/'
-            ]
+        $data = $request->validate([
+            'email' => 'required|email|max:255', 'otp' => 'required|digits:6',
+            'password' => 'required|string|min:8|max:255|confirmed',
         ]);
-
-        $record = DB::table('password_otps')
-            ->where('email', $request->email)
-            ->first();
-
-        if (!$record) {
-            return response()->json(['status'=>false,'message'=>'OTP not found'], 400);
+        $email = strtolower($data['email']);
+        $key = 'otp-reset:' . hash('sha256', $email);
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            DB::table('password_otps')->where('email', $email)->delete();
+            throw ValidationException::withMessages(['otp' => 'Too many attempts. Request a new code later']);
         }
-
-        if (now()->greaterThan(Carbon::parse($record->expires_at))) {
-            return response()->json(['status'=>false,'message'=>'OTP expired'], 400);
-        }
-
-        if (!Hash::check($request->otp, $record->otp)) {
-            return response()->json(['status'=>false,'message'=>'Invalid OTP'], 400);
-        }
-
-        $user = User::where('email', $request->email)->first();
-        $user->password = Hash::make($request->password);
-        $user->save();
-
-        DB::table('password_otps')->where('email', $request->email)->delete();
-
-        return response()->json(['status'=>true,'message'=>'Password reset successful']);
+        RateLimiter::hit($key, 600);
+        DB::transaction(function () use ($data, $email) {
+            $user = User::where('email', $email)->lockForUpdate()->first();
+            $record = DB::table('password_otps')->where('email', $email)->lockForUpdate()->first();
+            if (!$user || !$record || now()->greaterThan($record->expires_at) || !Hash::check($data['otp'], $record->otp)) {
+                throw ValidationException::withMessages(['otp' => 'Invalid or expired code']);
+            }
+            $user->forceFill(['password' => Hash::make($data['password']), 'remember_token' => null])->save();
+            $user->tokens()->delete();
+            DB::table('password_otps')->where('email', $email)->delete();
+        });
+        RateLimiter::clear($key);
+        return response()->json(['status' => true, 'message' => 'Password reset successful']);
     }
-
-
 }

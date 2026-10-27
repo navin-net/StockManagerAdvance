@@ -77,7 +77,9 @@
         }
     </style>
 
+    <link rel="stylesheet" href="{{ asset('backend/css/record-pages.css') }}?v={{ filemtime(public_path('backend/css/record-pages.css')) }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('backend/css/table-interface.css') }}?v={{ filemtime(public_path('backend/css/table-interface.css')) }}">
 </head>
 
 <body class="{{ $isPos ? 'is-pos' : '' }}">
@@ -95,6 +97,8 @@
 
 @include('admin.layouts.footer')
 
+<script src="{{ asset('backend/js/record-pages.js') }}?v={{ filemtime(public_path('backend/js/record-pages.js')) }}" defer></script>
+@include('admin.layouts.table-interface')
 @stack('scripts')
 
 </body>

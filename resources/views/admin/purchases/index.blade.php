@@ -160,7 +160,7 @@
                     },
                     {
                         data: 'supplier',
-                        name: 'companies.name'
+                        name: 'supplier.name'
                     },
                     {
                         data: 'status',
@@ -217,6 +217,18 @@
 
 
 
+            $(document).on('click', '.delete-purchase', function () {
+                if (!confirm('Delete this purchase and reverse its stock?')) return;
+                $.ajax({url: @json(url('admin/purchases')) + '/' + $(this).data('id'), type: 'DELETE', data: {_token: @json(csrf_token())}})
+                    .done(() => location.reload()).fail(xhr => alert(xhr.responseJSON?.message || 'Unable to delete purchase'));
+            });
+            $('#bulkDeleteBtn').on('click', function (event) {
+                event.preventDefault();
+                const ids = $('.purchaseCheckbox:checked').map(function () { return this.value; }).get();
+                if (!ids.length || !confirm('Delete selected purchases and reverse their stock?')) return;
+                $.post(@json(route('purchases.bulkDelete')), {_token: @json(csrf_token()), ids})
+                    .done(() => location.reload()).fail(xhr => alert(xhr.responseJSON?.message || 'Unable to delete purchases'));
+            });
         });
     </script>
 @endpush

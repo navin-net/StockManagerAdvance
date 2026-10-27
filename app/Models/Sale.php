@@ -73,19 +73,7 @@ class Sale extends Model
 
     public static function generateReference(): string
     {
-        $prefix = 'POS-' . now()->format('Ymd') . '-';
-
-        $last = static::where('reference', 'like', $prefix . '%')
-
-        ->orderByDesc('id')->value('reference');
-
-        $next = $last ? ((int) str_replace($prefix, '', $last)) + 1 : 1;
-
-        if ($next > 100) {
-            $next = 1;
-        }
-
-        return $prefix . str_pad($next, 3, '0', STR_PAD_LEFT);
+        return 'SALE-' . now()->format('Ymd') . '-' . \Illuminate\Support\Str::ulid();
     }
 
 

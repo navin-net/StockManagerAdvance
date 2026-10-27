@@ -85,11 +85,7 @@
                             <label class="form-label fw-medium">
                                 {{ __('messages.payment_status') }}
                             </label>
-                            <select name="payment_status" class="form-select" required>
-                                <option value="paid">{{ __('messages.paid') }}</option>
-                                <option value="unpaid">{{ __('messages.unpaid') }}</option>
-                                <option value="partial">{{ __('messages.partial') }}</option>
-                            </select>
+                            <div class="form-control-plaintext">Unpaid — payments are recorded separately.</div>
                         </div>
 
                     </div>
@@ -174,6 +170,10 @@
             // Auto set current date
             $('#date').val(new Date().toISOString().slice(0, 16));
 
+            const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+
             function renderSuggestions(matches, container) {
 
                 if (!matches.length) {
@@ -195,14 +195,14 @@
                     html += `
     <div class="suggestion-item px-3 py-2 border-bottom d-flex justify-content-between align-items-center ${exists ? 'text-color' : ''}"
         data-id="${p.id}"
-        data-name="${p.name}"
+        data-name="${escapeHtml(p.name)}"
         data-price="${p.cost_price ?? p.selling_price}"
         style="cursor:pointer">
 
         <div>
-                                <div class="fw-bold" style="color: var(--text-color);">${p.name}</div>
+                                <div class="fw-bold" style="color: var(--text-color);">${escapeHtml(p.name)}</div>
                                 <small style="color: var(--text-muted);">
-                                    Code: <span style="color: var(--primary-color);">${p.code}</span> |
+                                    Code: <span style="color: var(--primary-color);">${escapeHtml(p.code)}</span> |
                                     Stock: <span class="${p.stock_quantity <= 0 ? 'text-danger' : ''}">${p.stock_quantity}</span>
                                 </small>
         </div>
@@ -214,9 +214,9 @@
                 container.html(html).show();
             }
 
-            $('.product-search').on('keyup focus', function () {
+            $('.product-search').on('input keyup focus', function () {
                 const keyword = $(this).val().toLowerCase();
-                const filtered = products.filter(p => p.name.toLowerCase().includes(keyword));
+                const filtered = products.filter(p => String(p.name || '').toLowerCase().includes(keyword) || String(p.code || '').toLowerCase().includes(keyword));
                 renderSuggestions(filtered, $('.suggestions')); // fixed
             });
 
@@ -249,7 +249,7 @@
                 $('#itemsBody').append(`
                     <tr class="item-row">
                         <td>
-                            ${name}
+                            ${escapeHtml(name)}
                             <input type="hidden" name="items[${itemIndex}][product_id]" value="${id}">
                         </td>
                         <td>

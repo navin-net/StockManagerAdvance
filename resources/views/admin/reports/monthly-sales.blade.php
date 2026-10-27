@@ -86,7 +86,7 @@
 				<table id="ms-table" class="table table-hover align-middle w-100">
 					<thead><tr><th>Date</th><th>Reference</th><th>Customer</th><th class="text-end">Items</th><th class="text-end">Grand Total</th><th class="text-end">Paid</th><th class="text-end">Balance</th><th>Payment</th></tr></thead>
 					<tbody>
-						@forelse ($sales as $sale)
+						@foreach ($sales as $sale)
 							@php $paid = $sale->payments->sum('amount'); $balance = $sale->total_amount - $paid; @endphp
 							<tr>
 								<td>{{ $sale->date->format('Y-m-d') }}</td>
@@ -98,9 +98,8 @@
 								<td class="text-end {{ $balance > 0 ? 'text-warning' : ($balance < 0 ? 'text-danger' : '') }}">{{ $balance < 0 ? '-' : '' }}${{ number_format(abs($balance), 2) }}</td>
 								<td><span class="badge {{ in_array($sale->payment_status, ['paid', 'completed']) ? 'text-bg-success' : 'text-bg-warning' }}">{{ ucfirst($sale->payment_status) }}</span></td>
 							</tr>
-						@empty
-							<tr><td colspan="8" class="text-center text-muted py-4">No sales found for this month.</td></tr>
-						@endforelse
+
+						@endforeach
 					</tbody>
 				</table>
 			</div>

@@ -48,7 +48,7 @@
             </div> --}}
 
 
-            <form method="POST" action="{{ route('banners.update') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('shop.banners.update') }}" enctype="multipart/form-data">
                 @csrf
 
                 <div class="card-body">

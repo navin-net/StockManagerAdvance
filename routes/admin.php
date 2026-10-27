@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\{AuthController, BillerController,SupplierController, BrandController, CategoriesController, CustomerController, GroupsController, PortfolioController, PosController, ProductController, ProfileController, PurchasesController, QualitysController, ReportsController, SalesController, ShopController, SubCategoryController, UnitController, UserController, WarehouseController};
+use App\Http\Controllers\Admin\{AuthController, BillerController,SupplierController, BrandController, CategoriesController, CustomerController, GroupsController, PosController, ProductController, ProfileController, PurchasesController, QualitysController, ReportsController, SalesController, ShopController, SubCategoryController, UnitController, UserController, WarehouseController};
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
@@ -16,6 +16,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::put('/profile/upload-avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.upload-avatar');
     Route::put('/profile/updateInformation', [ProfileController::class, 'updateInformation'])->name('profile.updateInformation');
     //Products
+    Route::delete('products/bulk-destroy', [ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::resource('products', ProductController::class)->except(['show']);
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/getData', [ProductController::class, 'getData'])
@@ -24,18 +25,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             ->name('show');
         Route::get('/subcategories/{category}', [ProductController::class, 'getSubCategories'])
             ->name('subcategories');
-        Route::delete('/images/{id}', [ProductController::class, 'removeImage'])
+        Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])
             ->name('images.remove');
         Route::get('/export', [ProductController::class, 'export'])
             ->name('export');
-        Route::delete('bulk-destroy', [ProductController::class, 'bulkDestroy'])
-            ->name('bulk-destroy');
         Route::get('/import', [ProductController::class, 'showImportForm'])
             ->name('import.form');
         Route::post('/import', [ProductController::class, 'import'])
             ->name('import');
         Route::get('/code-label', [ProductController::class, 'barcodelabel'])
             ->name('barcodelabel');
+        Route::post('/adjustment', [ProductController::class, 'storeAdjustment'])->name('adjustment.store');
         Route::get('/adjustment', [ProductController::class, 'adjustment'])
             ->name('adjustment');
     });
@@ -58,13 +58,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('purchases')->group(function () {
         Route::post('/bulk-delete', [PurchasesController::class, 'bulkDelete'])->name('purchases.bulkDelete');
         Route::get('/export', [PurchasesController::class, 'export'])->name('purchases.export');
-        Route::get('/show', [PurchasesController::class, 'show'])->name('purchases.show');
+        Route::get('/show/{id}', [PurchasesController::class, 'show'])->name('purchases.show');
         Route::get('/getData', [PurchasesController::class, 'getData'])->name('purchases.getData');
     });
     // Megement Permission
-    Route::resource('users', UserController::class)->except(['show']);
-    Route::resource('billers', BillerController::class)->except(methods: ['show']);
-    Route::prefix('billers')->group(function () {
+    Route::resource('users', UserController::class)->except(['show'])->middleware('can:manage-users');
+    Route::resource('billers', BillerController::class)->except(['show'])->middleware('can:manage-users');
+    Route::prefix('billers')->middleware('can:manage-users')->group(function () {
         Route::get('/{id}/users', [BillerController::class, 'listUsers'])->name('billers.users');
         Route::get('/{id}/users/add', [BillerController::class, 'addUser'])
             ->name('billers.users.add');
@@ -78,7 +78,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     });
 
     Route::resource('customers', CustomerController::class)->except(['show']);
-    Route::prefix('customers')->group(function () {
+    Route::prefix('customers')->middleware('can:manage-users')->group(function () {
         Route::get('/{id}/users', [CustomerController::class, 'listUsers'])->name('customers.users');
         Route::get('/{id}/users/add', [CustomerController::class, 'addUser'])
             ->name('customers.users.add');
@@ -86,14 +86,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             ->name('customers.users.store');
         Route::get('/{id}/users/edit', [CustomerController::class, 'editUser'])
             ->name('customers.users.edit');
+        Route::put('/users/{id}', [CustomerController::class, 'updateUser'])->name('customers.users.update');
         Route::delete('/users/{id}/delete', [CustomerController::class, 'deleteUser'])->name('customers.users.delete');
     });
 
+    Route::post('suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])->name('suppliers.bulk-delete');
     Route::resource('suppliers',SupplierController::class)->except(['show']);
     // Setting system
     Route::prefix('system_settings')->group(function () {
-        Route::resource('/groups', GroupsController::class)->except(['show']);
-        Route::post('groups/bulkDelete', [GroupsController::class, 'bulkDelete'])->name('groups.bulkDelete');
+        Route::resource('/groups', GroupsController::class)->except(['show'])->middleware('can:manage-users');
+        Route::post('groups/bulkDelete', [GroupsController::class, 'bulkDelete'])->name('groups.bulkDelete')->middleware('can:manage-users');
         Route::resource('/brands', BrandController::class)->except(['show']);
         Route::post('brands/bulkDelete', [BrandController::class, 'bulkDelete'])->name('brands.bulkDelete');
         Route::resource('/categories', CategoriesController::class)->except(['show']);
@@ -116,16 +118,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('/product-sales', [ReportsController::class, 'productSalesReport'])
             ->name('reports.product-sales');
 
-        Route::get('reports/monthly-purchases', [ReportsController::class, 'monthly_purchases'])
+        Route::get('monthly-purchases', [ReportsController::class, 'monthly_purchases'])
             ->name('admin.reports.monthly-purchases');
 
-        Route::get('reports/daily-purchases', [ReportsController::class, 'dailyPurchasesReport'])
+        Route::get('daily-purchases', [ReportsController::class, 'dailyPurchasesReport'])
             ->name('admin.reports.daily-purchases');
 
-        Route::get('reports/daily-purchases/pdf', [ReportsController::class, 'dailyPurchasesReportPdf'])
+        Route::get('daily-purchases/pdf', [ReportsController::class, 'dailyPurchasesReportPdf'])
             ->name('admin.reports.daily-purchases.pdf');
 
-        Route::get('reports/open-register',[ReportsController::class, 'openRegisterReport'])->name('reports.open-register');
+        Route::get('open-register',[ReportsController::class, 'openRegisterReport'])->name('reports.open-register');
     });
 
     Route::prefix('shop')->name('shop.')->group(function () {
@@ -134,7 +136,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('banners', [ShopController::class, 'banners'])->name('banners');
         Route::post('/banners/update', [ShopController::class, 'bannersUpdate'])
             ->name('banners.update');
-        Route::resource('portfolio', PortfolioController::class)->except(['show']);
     });
 
     Route::prefix('pos')->name('pos.')->group(function () {
@@ -148,7 +149,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             Route::get('/', [PosController::class, 'index'])
                 ->name('index');
         });
-        Route::post('/store', [PosController::class, 'store'])->name('store');
+        Route::post('/store', [PosController::class, 'store'])->middleware('register.open')->name('store');
         Route::get('/receipt/{sale}',  [PosController::class, 'receipt'])->name('receipt');
         Route::post('add-cash',[PosController::class,'addCash'])->name('add-cash');
 

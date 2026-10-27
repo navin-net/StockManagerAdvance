@@ -119,7 +119,7 @@ class ShopController extends Controller
         }
 
         return redirect()
-            ->route('banners')
+            ->route('shop.banners')
             ->with('success', 'Shop banners updated successfully.');
     }
 

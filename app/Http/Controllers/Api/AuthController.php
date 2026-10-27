@@ -18,7 +18,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'group_id' => $request->group_id,
+            'group_id' => 4,
+            'status' => 'active',
             // 'company_id' => $request->company_id,
             'ip_address' => $request->ip(),
         ]);
@@ -29,15 +30,12 @@ class AuthController extends Controller
     }
     public function login(LoginRequest $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid Login'], 401);
+        $user = User::where('email', $request->email)->first();
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Invalid login'], 401);
         }
-
-        $user = Auth::user();
-
-        // block customer
-        if ($user->group_id == 4) {
-            return response()->json(['message' => 'Customer not allowed'], 403);
+        if (!$user->isActive()) {
+            return response()->json(['message' => 'Account disabled'], 403);
         }
 
         $user->ip_address = $request->ip();

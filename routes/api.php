@@ -43,7 +43,7 @@ Route::prefix('cart')->group(function () {
 });
 
 
-Route::prefix('shop')->middleware('auth:sanctum')->group(function () {
+Route::prefix('shop')->middleware(['auth:sanctum', 'account.active'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/checkout', [CheckoutController::class, 'checkout']);
 

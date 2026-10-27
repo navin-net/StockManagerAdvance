@@ -51,11 +51,11 @@
                                         <i class="bi bi-gear-fill me-1"></i> Actions
                                     </button>
                                     <ul class="dropdown-menu shadow-sm rounded-3">
-                                        <li><a class="dropdown-item" href="{{ __('suppliers/create') }}" id="addProductBtn">
+                                        <li><a class="dropdown-item" href="{{ route('suppliers.create') }}" id="addProductBtn">
                                                 <i class="bi bi-plus-circle me-2"></i>{{ __('messages.add') }}</a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#" id="bulkDeleteBtn" disabled>
+                                        <li><a class="dropdown-item text-danger" href="#" id="bulkDeleteBtn">
                                                 <i class="bi bi-trash me-2"></i>{{ __('messages.delete') }}</a>
                                         </li>
                                     </ul>
@@ -142,6 +142,36 @@
                     zeroRecords: "{{ __('messages.no_matching_records') }}",
                     infoEmpty: "{{ __('messages.showing_0_to_0_of_0_entries') }}",
                     infoFiltered: "{{ __('messages.filtered_from_total_entries', ['total' => '_MAX_']) }}"
+                }
+            });
+
+            function showError(xhr) {
+                $('#alertsContainer').empty().append($('<div class="alert alert-danger" role="alert">').text(xhr.responseJSON?.message || 'Unable to delete supplier.'));
+            }
+            function removeSuppliers(url, method, data) {
+                $.ajax({url, type: method, data,
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json'},
+                    success: function(response) {
+                        table.ajax.reload(null, false);
+                        $('#selectAll').prop('checked', false);
+                        $('#alertsContainer').empty().append($('<div class="alert alert-success" role="status">').text(response.success));
+                    }, error: showError
+                });
+            }
+            $('#suppliersTable').on('click', '.deleteBillerBtn', function(e) {
+                e.preventDefault();
+                if (confirm(@json(__('messages.confirm_delete')))) {
+                    removeSuppliers(@json(url('/admin/suppliers')) + '/' + $(this).data('id'), 'DELETE', {});
+                }
+            });
+            $('#selectAll').on('change', function() {
+                $('#suppliersTable .selectRow').prop('checked', this.checked);
+            });
+            $('#bulkDeleteBtn').on('click', function(e) {
+                e.preventDefault();
+                const ids = $('#suppliersTable .selectRow:checked').map(function() { return this.value; }).get();
+                if (ids.length && confirm(@json(__('messages.confirm_delete')))) {
+                    removeSuppliers(@json(route('suppliers.bulk-delete')), 'POST', {ids});
                 }
             });
         });

@@ -18,7 +18,7 @@ Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm']
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 
-Route::get('/portfolio', [MainController::class, 'portfolio'])->name('shop.portfolio');
+
 
 
 Route::post('/contact', [MainController::class, 'store'])

@@ -21,7 +21,7 @@ class MainController extends Controller
           ->select('id', 'title')
           ->where('status',1 )
            ->get();
-        return json_decode($user);
+        return response()->json($user);
         // return response()->json($user);
     }
 
@@ -32,12 +32,12 @@ class MainController extends Controller
 
     // 2. Check if a category filter was sent
     if ($request->has('category_id')) {
-        $query->where('category_id', $request->request->get('category_id'));
+        $query->where('category_id', $request->input('category_id'));
     }
 
     // 3. Optional: Add a price filter while you're at it
     if ($request->has('min_price')) {
-        $query->where('price', '>=', $request->min_price);
+        $query->where('selling_price', '>=', $request->min_price);
     }
 
     // 4. Return the data (Laravel handles JSON automatically)

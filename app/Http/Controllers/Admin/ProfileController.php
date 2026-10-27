@@ -22,7 +22,7 @@ class ProfileController extends BaseController
     {
         $user = Auth::user();
         $id = $user->id;
-        $company = Companies::find($id);
+        $company = $user->company;
         // die($user);
         return view('admin.profile.edit1', [
             'pageTitle' => __('messages.my_account'),
@@ -40,7 +40,7 @@ class ProfileController extends BaseController
     {
         $request->validate([
             'current_password' => 'required',
-            // 'password' => 'required|min:8|confirmed',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = Auth::user();
@@ -65,7 +65,7 @@ class ProfileController extends BaseController
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email,' . $user->id,
         ]);
 
         $user->update($request->only('name', 'email'));
@@ -96,7 +96,7 @@ class ProfileController extends BaseController
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'gender' => 'required',
-            'dob' => 'required|date|after:today',
+            'dob' => 'required|date|before_or_equal:today',
             'phone' => 'nullable|string|max:20',
         ]);
 
@@ -108,7 +108,6 @@ class ProfileController extends BaseController
         // $user->country = $request->country;
         // $user->city = $request->city;
         $user->dob = $request->dob;
-        $user->gender = $request->gender;
         $user->save();
 
         return back()->with('success', __('messages.profile_updated'));

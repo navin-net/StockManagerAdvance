@@ -130,28 +130,36 @@ class ProductController extends Controller
             'cost_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'second_name' => 'nullable|string|max:191',
+            'second_name' => 'required|string|max:191',
+            'expiry_date' => 'nullable|date',
+            'subcategory_id' => ['nullable', \Illuminate\Validation\Rule::exists('sub_categories', 'id')->where('category_id', $request->category_id)],
             'unit_id' => 'required|exists:units,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image_review' => 'nullable|array|max:10',
             'image_review.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        $data = $request->except('image', 'image_review');
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')
-                ->store('products', 'public');
-        }
-        $product = Products::create($data);
-        if ($request->hasFile('image_review')) {
-            foreach ($request->file('image_review') as $img) {
-                $path = $img->store('products/review', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_review' => $path,
-                ]);
-            }
+        $paths = [];
+        try {
+            $product = DB::transaction(function () use ($request, $validator, &$paths) {
+                $data = collect($validator->validated())->except(['image', 'image_review'])->all();
+                if ($request->hasFile('image')) {
+                    $data['image'] = $request->file('image')->store('products', 'public');
+                    $paths[] = $data['image'];
+                }
+                $product = Products::create($data);
+                foreach ($request->file('image_review', []) as $img) {
+                    $path = $img->store('products/review', 'public');
+                    $paths[] = $path;
+                    $product->images()->create(['image_review' => $path]);
+                }
+                return $product;
+            });
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($paths);
+            throw $e;
         }
         // session()->flash('success', __('messages.product_created'));
         return response()->json([
@@ -201,7 +209,9 @@ class ProductController extends Controller
             'cost_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'second_name' => 'nullable|string|max:191',
+            'second_name' => 'required|string|max:191',
+            'expiry_date' => 'nullable|date',
+            'subcategory_id' => ['nullable', \Illuminate\Validation\Rule::exists('sub_categories', 'id')->where('category_id', $request->category_id)],
             'unit_id' => 'required|exists:units,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image_review' => 'nullable|array',
@@ -215,62 +225,36 @@ class ProductController extends Controller
             ], 422);
         }
 
-        DB::beginTransaction();
-
+        $newPaths = [];
+        $oldPaths = [];
         try {
-            $data = $request->except('image', 'image_review');
-
-            // Main image upload
-            if ($request->hasFile('image')) {
-                $newMainImage = $request->file('image')->store('products', 'public');
-
-                // delete old image after new upload success
-                if ($product->image && Storage::disk('public')->exists($product->image)) {
-                    Storage::disk('public')->delete($product->image);
-                }
-
-                $data['image'] = $newMainImage;
-            }
-
-            $product->update($data);
-
-            // Review images upload
-            if ($request->hasFile('image_review')) {
-
-                // delete old review images
-                foreach ($product->images as $oldImage) {
-                    if ($oldImage->image_review && Storage::disk('public')->exists($oldImage->image_review)) {
-                        Storage::disk('public')->delete($oldImage->image_review);
+            DB::transaction(function () use ($id, $request, $validator, &$newPaths, &$oldPaths) {
+                $product = Products::whereKey($id)->lockForUpdate()->firstOrFail();
+                $data = collect($validator->validated())->except(['image', 'image_review'])->all();
+                if ($request->hasFile('image')) {
+                    $data['image'] = $request->file('image')->store('products', 'public');
+                    $newPaths[] = $data['image'];
+                    if ($product->image) {
+                        $oldPaths[] = $product->image;
                     }
-                    $oldImage->delete();
                 }
-
-                // store new review images
-                foreach ($request->file('image_review') as $img) {
-                    $path = $img->store('products/review', 'public');
-
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_review' => $path,
-                    ]);
+                $product->update($data);
+                if ($request->hasFile('image_review')) {
+                    $oldPaths = array_merge($oldPaths, $product->images()->pluck('image_review')->all());
+                    $product->images()->delete();
+                    foreach ($request->file('image_review') as $img) {
+                        $path = $img->store('products/review', 'public');
+                        $newPaths[] = $path;
+                        $product->images()->create(['image_review' => $path]);
+                    }
                 }
-            }
-
-            DB::commit();
-
-            return redirect()->route('products.index')
-                ->with('success', __('messages.product_updated') . ' - ' . $product->name);
-
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Update failed',
-                'error' => $e->getMessage()
-            ], 500);
+            });
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($newPaths);
+            throw $e;
         }
+        Storage::disk('public')->delete(array_filter($oldPaths));
+        return redirect()->route('products.index')->with('success', __('messages.product_updated'));
     }
 
 
@@ -286,13 +270,15 @@ class ProductController extends Controller
                 'qualitys.name as quality_name'
             )
             ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
-            ->join('units', 'products.unit_id', '=', 'units.id')
+            ->leftJoin('units', 'products.unit_id', '=', 'units.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->leftJoin('sub_categories', 'products.subcategory_id', '=', 'sub_categories.id')
             ->leftJoin('qualitys', 'products.quality_id', '=', 'qualitys.id')
             ->where('products.id', $id)
             ->first();
 
+
+        abort_unless($product, 404);
 
         // dd($product);
         $products = Products::with('images')->findOrFail($id);
@@ -317,43 +303,22 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Products::with('images')->findOrFail($id);
-
-        if (SaleItem::where('product_id', $product->id)->exists()) {
-            return response()->json([
-                'message' => __('messages.product_cannot_be_deleted_has_sales')
-            ], 400);
-        }
-
-        if (!empty($product->image)) {
-            Storage::disk('public')->delete($product->image);
-        }
-        foreach ($product->images as $img) {
-            if (!empty($img->image)) {
-                Storage::disk('public')->delete($img->image);
-            }
-        }
-        $product->images()->delete();
-
-        $product->delete();
-
-        return response()->json([
-            'message' => __('messages.product_deleted_successfully'),
-            'redirect' => route('products.index'),
-        ], 200);
+        $this->deleteProducts([$id]);
+        return response()->json(['message' => __('messages.product_deleted_successfully'), 'redirect' => route('products.index')]);
     }
 
     public function deleteImage($id)
     {
-        $image = ProductImage::findOrFail($id);
-        if ($image->image_review) {
-            Storage::disk('public')->delete($image->image_review);
+        $path = DB::transaction(function () use ($id) {
+            $image = ProductImage::whereKey($id)->lockForUpdate()->firstOrFail();
+            $path = $image->image_review;
+            $image->delete();
+            return $path;
+        });
+        if ($path) {
+            Storage::disk('public')->delete($path);
         }
-        $image->delete();
-        return response()->json([
-            'status' => true,
-            'message' => 'Image deleted successfully'
-        ]);
+        return response()->json(['status' => true, 'message' => 'Image deleted successfully']);
     }
 
     public function getSubCategories($categoryId)
@@ -449,6 +414,8 @@ public function import(Request $request)
     public function adjustment(Request $request)
     {
         return view('admin.products.adjustment', [
+            'products' => Products::orderBy('name')->get(['id', 'name', 'code', 'stock_quantity']),
+            'adjustments' => DB::table('stock_adjustments')->orderByDesc('id')->paginate(20),
             'pageTitle' => __('messages.add_adjustment'),
             'heading' => __('messages.add_adjustment'),
             'description' => __('messages.dashboard_welcome'),
@@ -464,13 +431,67 @@ public function import(Request $request)
         ]);
     }
 
+    public function storeAdjustment(Request $request)
+    {
+        $data = $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+            'type' => 'required|in:increase,decrease',
+            'quantity' => 'required|integer|min:1|max:1000000',
+            'reason' => 'required|string|max:1000',
+        ]);
+        DB::transaction(function () use ($data) {
+            $product = Products::whereKey($data['product_id'])->lockForUpdate()->firstOrFail();
+            $before = (int) $product->stock_quantity;
+            $delta = $data['type'] === 'increase' ? $data['quantity'] : -$data['quantity'];
+            $after = $before + $delta;
+            if ($after < 0 || $after > 2147483647) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'quantity' => __('messages.invalid_stock_adjustment'),
+                ]);
+            }
+            $product->update(['stock_quantity' => $after]);
+            DB::table('stock_adjustments')->insert([
+                'product_id' => $product->id, 'product_name' => $product->name,
+                'product_code' => $product->code, 'user_id' => auth()->id(),
+                'quantity_before' => $before, 'quantity_change' => $delta,
+                'quantity_after' => $after, 'reason' => $data['reason'],
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }, 3);
+        return redirect()->route('products.adjustment')->with('success', __('messages.stock_adjusted'));
+    }
+
     public function bulkDestroy(Request $request)
     {
         $data = $request->validate([
             'ids'   => 'required|array|min:1',
             'ids.*' => 'integer|exists:products,id',
         ]);
-        Products::whereIn('id', $data['ids'])->delete();
+        $this->deleteProducts($data['ids']);
         return response()->json(['message' => __('messages.deleted_successfully')]);
+    }
+    public function export(\App\Services\CsvExportService $export)
+    {
+        return $export->download('products.csv', ['Code', 'Name', 'Stock', 'Cost price', 'Selling price'],
+            Products::orderBy('id')->cursor()->map(fn ($p) => [$p->code, $p->name, $p->stock_quantity, $p->cost_price, $p->selling_price]));
+    }
+
+    private function deleteProducts(array $ids): void
+    {
+        $paths = DB::transaction(function () use ($ids) {
+            $paths = [];
+            foreach (Products::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get() as $product) {
+                if ($product->cartItems()->exists() || SaleItem::where('product_id', $product->id)->exists()
+                    || \App\Models\PurchaseItem::where('product_id', $product->id)->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['ids' => 'Products referenced by carts, sales, or purchases cannot be deleted']);
+                }
+                $paths[] = $product->image;
+                $paths = array_merge($paths, $product->images()->pluck('image_review')->all());
+                $product->images()->delete();
+                $product->delete();
+            }
+            return $paths;
+        });
+        Storage::disk('public')->delete(array_filter($paths));
     }
 }

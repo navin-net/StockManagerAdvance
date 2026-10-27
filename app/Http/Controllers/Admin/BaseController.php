@@ -15,7 +15,7 @@ class BaseController extends Controller
 
     public function __construct()
     {
-        $shop = Shop::first();
+        $shop = Shop::first() ?? new Shop();
 
         $this->shopDetail = (object) [
             'id' => $shop->id,
@@ -67,6 +67,7 @@ class BaseController extends Controller
 
     public function import(Request $request)
     {
+        $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv|max:5120']);
         $import = new UsersImport();
         Excel::import($import, $request->file('file'));
 

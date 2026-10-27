@@ -2,197 +2,180 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Validator};
-use App\Models\{Companies, Products, Purchase, PurchaseItem};
 use App\Http\Controllers\Controller;
+use App\Models\{Companies, Products, Purchase};
+use App\Services\CsvExportService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
 class PurchasesController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->ajax()) {
-            $data = DB::table('purchases')
-                ->select(
-                    'purchases.id',
-                    'purchases.total_amount',
-                    'purchases.date',
-                    DB::raw('COUNT(sma_purchase_items.id) as item_count'),
-                    DB::raw('SUM(sma_purchase_items.quantity) as total_quantity')
-                )
-                ->leftJoin('purchase_items', 'purchases.id', '=', 'purchase_items.purchase_id')
-                ->groupBy('purchases.id', 'purchases.total_amount', 'purchases.date');
-
-            return DataTables::of($data)
-                ->addColumn('action', function ($row) {
-                    return view('admin.purchases.partials.actions', compact('row'))->render();
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        $products = Products::select('id', 'name', 'code')->get();
-
-        return view('admin.purchases.index', [
-            'pageTitle' => __('messages.purchases_list'),
-            'heading' => __('messages.purchases_list'),
-            'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
-                ['label' => __('messages.purchases'), 'url' => '', 'active' => true],
-            ],
-            'products' => $products
-        ]);
+        return view('admin.purchases.index', $this->viewData());
     }
 
     public function getData()
     {
-        $data = Purchase::query()
-            ->select([
-                'purchases.id',
-                'purchases.supplier_id',
-                'purchases.reference',
-                'purchases.payment_status',
-                'purchases.date',
-                'purchases.status',
-                'purchases.total_amount AS grand_total',
-                DB::raw('COALESCE(SUM(sma_payments.amount), 0) AS paid'),
-                DB::raw('(sma_purchases.total_amount - COALESCE(SUM(sma_payments.amount), 0)) AS balance'),
-                'companies.name AS supplier',
-            ])
-            ->leftJoin('companies', 'purchases.supplier_id', '=', 'companies.id')
-            ->leftJoin('payments', 'purchases.id', '=', 'payments.sale_id')
-            ->groupBy([
-                'purchases.id',
-                'purchases.supplier_id',
-                'purchases.reference',
-                'purchases.date',
-                'purchases.total_amount',
-                'purchases.payment_status',
-                'companies.name',
-            ]);
-
-        return DataTables::of($data)
-            ->addColumn('action', function ($data) {
-                return '<div class="dropdown">
-                    <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                        ' . __('messages.actions') . '
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="' . route('purchases.show', $data->id) . '">
-                            <i class="bi bi-eye"></i> ' . __('messages.show') . '</a></li>
-                        <li><a class="dropdown-item" href="' . route('purchases.edit', $data->id) . '">
-                            <i class="bi bi-pencil"></i> ' . __('messages.edit') . '</a></li>
-                        <li><a class="dropdown-item list-payment-sale" data-id="' . $data->id . '">
-                            <i class="bi bi-list-columns"></i> ' . __('messages.list_payment') . '</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><button class="dropdown-item text-danger delete-sale" data-id="' . $data->id . '">
-                            <i class="bi bi-trash"></i> ' . __('messages.delete') . '</button></li>
-                    </ul>
-                </div>';
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+        $query = Purchase::with('supplier')->withSum(['payments as paid' => fn ($q) => $q->where('status', 'completed')], 'amount');
+        return DataTables::of($query)
+            ->addColumn('grand_total', fn ($purchase) => $purchase->total_amount)
+            ->addColumn('balance', fn ($purchase) => round($purchase->total_amount - ($purchase->paid ?? 0), 2))
+            ->addColumn('supplier', fn ($purchase) => $purchase->supplier?->name)
+            ->addColumn('action', fn ($row) => view('admin.purchases.partials.actions', compact('row'))->render())
+            ->rawColumns(['action'])->make(true);
     }
-
 
     public function create()
     {
-        $products = Products::select('id', 'name', 'code', 'stock_quantity', 'cost_price')->get();
-        $suppliers = Companies::select('*')->where('group_id', 5)->get();
-
-        // die($suppliers);
-        return view('admin.purchases.create', [
-            'products' => $products,
-            'suppliers' => $suppliers,
-            'pageTitle' => __('messages.add_purchase'),
-            'heading' => __('messages.add_purchase'),
-            'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
-                ['label' => __('messages.purchases'), 'url' => route('purchases.index'), 'active' => false],
-                ['label' => __('messages.create'), 'url' => '', 'active' => true],
-            ]
-        ]);
+        return view('admin.purchases.create', $this->viewData());
     }
-
-
 
     public function edit($id)
     {
-        $products = Products::select('id', 'name', 'code', 'stock_quantity', 'cost_price')->get();
-        $suppliers = Companies::select('*');
-
-        // die($suppliers);
-        return view('admin.purchases.edit', [
-            'products' => $products,
-            'pageTitle' => __('messages.edit_purchase'),
-            'heading' => __('messages.edit_purchase'),
-            'breadcrumbs' => [
-                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
-                ['label' => __('messages.purchases'), 'url' => route('purchases.index'), 'active' => false],
-                ['label' => __('messages.edit'), 'url' => '', 'active' => true],
-            ]
-        ]);
+        return view('admin.purchases.edit', $this->viewData() + ['purchase' => Purchase::with('items.product')->findOrFail($id)]);
     }
 
+    public function show($id)
+    {
+        return view('admin.purchases.show', $this->viewData() + ['purchase' => Purchase::with('items.product', 'supplier', 'payments')->findOrFail($id)]);
+    }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'supplier_id' => 'required',
-            'total_amount' => 'required|numeric|min:0',
-            'payment_status' => 'required|string|max:255',
-            'status' => 'required|string|max:255',
-            'date' => 'required|date',
-            'note' => 'nullable|string',
-            'attachments' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.cost_price' => 'required|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $attachmentPath = null;
-
-        if ($request->hasFile('attachments')) {
-            $attachmentPath = $request->file('attachments')
-                ->store('purchases', 'public');
-        }
-
-        DB::transaction(function () use ($request, $attachmentPath) {
-
-            $purchase = Purchase::create([
-                'supplier_id' => $request->supplier_id,
-                'total_amount' => $request->total_amount,
-                'payment_status' => $request->payment_status,
-                'status' => $request->status,
-                'reference' => 'PUR-' . strtoupper(uniqid()),
-                'date' => $request->date,
-                'note' => $request->note,
-                'attachments' => $attachmentPath,
-            ]);
-
-            foreach ($request->items as $item) {
-
-                PurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'cost_price' => $item['cost_price'],
-                ]);
-
-                Products::where('id', $item['product_id'])
-                    ->increment('stock_quantity', $item['quantity']);
-            }
-        });
-
-        return redirect()
-            ->route('purchases.index')
-            ->with('success', __('messages.purchase_created_successfully'));
+        $this->persist($request);
+        return redirect()->route('purchases.index')->with('success', __('messages.purchase_created_successfully'));
     }
 
+    public function update(Request $request, $id)
+    {
+        $this->persist($request, $id);
+        return redirect()->route('purchases.index')->with('success', 'Purchase updated');
+    }
+
+    public function destroy($id)
+    {
+        DB::transaction(fn () => $this->deletePurchase($id), 3);
+        return response()->json(['message' => 'Purchase deleted']);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $data = $request->validate(['ids' => 'required|array|min:1', 'ids.*' => 'required|integer|distinct|exists:purchases,id']);
+        DB::transaction(function () use ($data) {
+            $ids = $data['ids'];
+            sort($ids);
+            foreach ($ids as $id) {
+                $this->deletePurchase($id);
+            }
+        }, 3);
+        return response()->json(['message' => 'Purchases deleted']);
+    }
+
+    public function export(CsvExportService $export)
+    {
+        return $export->download('purchases.csv', ['Reference', 'Date', 'Total', 'Status'],
+            Purchase::orderBy('id')->cursor()->map(fn ($p) => [$p->reference, $p->date, $p->total_amount, $p->status]));
+    }
+
+    private function viewData(): array
+    {
+        return [
+            'products' => Products::select('id', 'name', 'code', 'stock_quantity', 'cost_price')->get(),
+            'suppliers' => Companies::where('group_id', 5)->get(),
+            'pageTitle' => __('messages.purchases_list'),
+            'heading' => __('messages.purchases_list'),
+            'breadcrumbs' => [
+                ['label' => __('messages.dashboard'), 'url' => route('admin.dashboard'), 'active' => false],
+                ['label' => __('messages.purchases'), 'url' => route('purchases.index'), 'active' => true],
+            ],
+        ];
+    }
+
+    private function persist(Request $request, $id = null): Purchase
+    {
+        $data = $request->validate([
+            'supplier_id' => 'required|exists:companies,id',
+            'status' => 'required|in:pending,completed,cancelled',
+            'date' => 'required|date',
+            'note' => 'nullable|string|max:5000',
+            'attachments' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|distinct|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1|max:1000000',
+            'items.*.cost_price' => 'required|numeric|min:0|max:999999.99',
+        ]);
+        abort_unless(Companies::whereKey($data['supplier_id'])->where('group_id', 5)->exists(), 422, 'Select a supplier');
+        $path = $request->hasFile('attachments') ? $request->file('attachments')->store('purchases', 'public') : null;
+        try {
+            return DB::transaction(function () use ($data, $id, $path) {
+                $purchase = $id ? Purchase::whereKey($id)->lockForUpdate()->firstOrFail() : new Purchase();
+                $old = $purchase->exists ? $purchase->items()->get() : collect();
+                $ids = collect($data['items'])->pluck('product_id')->merge($old->pluck('product_id'))->unique()->sort()->values();
+                $products = Products::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+                $deltas = [];
+                if ($purchase->exists && $purchase->status === 'completed') {
+                    foreach ($old as $item) {
+                        $deltas[$item->product_id] = ($deltas[$item->product_id] ?? 0) - $item->quantity;
+                    }
+                }
+                if ($data['status'] === 'completed') {
+                    foreach ($data['items'] as $item) {
+                        $deltas[$item['product_id']] = ($deltas[$item['product_id']] ?? 0) + $item['quantity'];
+                    }
+                }
+                foreach ($deltas as $productId => $delta) {
+                    if ($products[$productId]->stock_quantity + $delta < 0) {
+                        throw ValidationException::withMessages(['items' => 'This purchase stock has already been sold; its quantity cannot be reduced']);
+                    }
+                    $products[$productId]->increment('stock_quantity', $delta);
+                }
+                $total = collect($data['items'])->sum(fn ($item) => round($item['quantity'] * $item['cost_price'], 2));
+                if ($total > 99999999.99) {
+                    throw ValidationException::withMessages(['items' => 'Purchase total is too large']);
+                }
+                $paid = $purchase->exists ? $purchase->payments()->where('status', 'completed')->sum('amount') : 0;
+                if ($paid > $total || ($paid > 0 && $data['status'] === 'cancelled')) {
+                    throw ValidationException::withMessages(['items' => 'Refund payments before reducing or cancelling a paid purchase']);
+                }
+                $purchase->fill([
+                    'reference' => $purchase->reference ?? 'PUR-' . \Illuminate\Support\Str::ulid(),
+                    'supplier_id' => $data['supplier_id'], 'status' => $data['status'],
+                    'date' => $data['date'], 'total_amount' => $total,
+                    'note' => $data['note'] ?? null,
+                    'attachments' => $path ?? $purchase->attachments,
+                    'payment_status' => $paid >= $total ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
+                ])->save();
+                $purchase->items()->delete();
+                foreach ($data['items'] as $item) {
+                    $purchase->items()->create($item);
+                }
+                return $purchase;
+            }, 3);
+        } catch (\Throwable $e) {
+            if ($path) {
+                Storage::disk('public')->delete($path);
+            }
+            throw $e;
+        }
+    }
+
+    private function deletePurchase($id): void
+    {
+        $purchase = Purchase::whereKey($id)->lockForUpdate()->firstOrFail();
+        abort_if($purchase->payments()->exists(), 422, 'Purchases with payments must be retained');
+        foreach ($purchase->items()->orderBy('product_id')->get() as $item) {
+            $product = Products::whereKey($item->product_id)->lockForUpdate()->firstOrFail();
+            if ($purchase->status === 'completed') {
+                if ($product->stock_quantity < $item->quantity) {
+                    throw ValidationException::withMessages(['purchase' => 'Purchase stock has already been sold']);
+                }
+                $product->decrement('stock_quantity', $item->quantity);
+            }
+        }
+        $purchase->items()->delete();
+        $purchase->delete();
+    }
 }

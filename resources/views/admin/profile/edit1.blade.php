@@ -4,7 +4,7 @@
 
 @php
     $isAdmin   = auth()->user()->group_id == 1;
-    $avatarUrl = $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/profiles/noimage.png');
+    $avatarUrl = $user->avatar_url;
     $dash      = fn ($v) => filled($v) ? $v : '—';
     $initials  = strtoupper(mb_substr($user->first_name ?? 'U', 0, 1) . mb_substr($user->last_name ?? '', 0, 1));
 
@@ -229,7 +229,7 @@
 
                     <div class="pf-chips">
                         <span class="pf-chip">{{ $isAdmin ? 'Admin' : 'Staff' }}</span>
-                        @filled($user->gender)<span class="pf-chip neutral">{{ $user->gender }}</span>@endfilled
+                        @if(filled($user->gender))<span class="pf-chip neutral">{{ $user->gender }}</span>@endif
                     </div>
 
                     <div class="pf-stats">

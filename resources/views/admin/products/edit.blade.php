@@ -1,238 +1,47 @@
 @extends('admin.layouts.master')
-@section('title', $pageTitle)
+@section('title', __('Edit product'))
 @section('content')
-    <div class="container-fluid">
-        <div class="row align-items-center mb-4">
-            <div class="col-md-6">
-                <div class="pagetitle">
-                    <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            @foreach ($breadcrumbs as $breadcrumb)
-                                @if (!$breadcrumb['active'])
-                                    <li class="breadcrumb-item">
-                                        <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
-                                            {{ $breadcrumb['label'] }}
-                                        </a>
-                                    </li>
-                                @else
-                                    <li class="breadcrumb-item active text-muted" aria-current="page">
-                                        {{ $breadcrumb['label'] }}
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <small class="text-muted fw-semibold">
-                    {{ __('messages.ip_address') }}:
-                </small>
-                <span class="fw-semibold text-primary">
-                    {{ auth()->user()->ip_address }}
-                </span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div id="formError" class="alert alert-danger d-none" role="alert"></div>
-<form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    @method('PUT')
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label">{{ __('messages.name') }}</label>
-                                    <input type="text" name="name" id="name"
-                                        value="{{ $product->name ?? 'N/A' }}" class="form-control" required>
-                                    <div class="invalid-feedback" id="name_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="code" class="form-label">{{ __('messages.code') }}</label>
-                                    <div class="input-group">
-                                        <input type="text" name="code" id="code"
-                                            value="{{ $product->code ?? 'N/A' }}" class="form-control">
-                                    </div>
-                                    <div class="invalid-feedback" id="code_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="second_name" class="form-label">{{ __('messages.second_name') }}</label>
-                                    <input type="text" name="second_name" id="second_name"
-                                        value="{{ $product->second_name }}" class="form-control" required>
-                                    <div class="invalid-feedback" id="second_name_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="brand_id" class="form-label">{{ __('messages.brand') }}</label>
-                                    <select name="brand_id" id="brand_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_brand') }}</option>
-                                        @foreach ($brands as $brand)
-                                            <option value="{{ $brand->id }}" @selected(old('brand_id', $product->brand_id ?? null) == $brand->id)>
-                                                {{ $brand->name }}
-                                            </option>
-                                        @endforeach
-
-                                    </select>
-                                    <div class="invalid-feedback" id="brand_id_error"></div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="category_id" class="form-label">{{ __('messages.categories') }}</label>
-
-                                    <select name="category_id" id="category_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_category') }}</option>
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="subcategory_id"
-                                        class="form-label">{{ __('messages.sub_categories') }}</label>
-
-                                    <select name="subcategory_id" id="subcategory_id" class="form-select"
-                                        {{ empty($subcategories) ? 'disabled' : '' }}>
-                                        <option value="">{{ __('messages.select_subcategory') }}</option>
-
-                                        @foreach ($subcategories as $subcategory)
-                                            <option value="{{ $subcategory->id }}"
-                                                {{ old('subcategory_id', $product->subcategory_id ?? '') == $subcategory->id ? 'selected' : '' }}>
-                                                {{ $subcategory->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="quality_id" class="form-label">{{ __('messages.quality') }}</label>
-                                    <select name="quality_id" id="quality_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_quality') }}</option>
-                                        @foreach ($qualities as $quality)
-                                            <option value="{{ $quality->id }}" @selected(old('brand_id', $product->quality_id ?? null) == $quality->id)>
-                                                {{ $quality->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback" id="quality_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="unit_id" class="form-label">{{ __('messages.unit') }}</label>
-                                    <select name="unit_id" id="unit_id" class="form-select" required>
-                                        <option value="">{{ __('messages.select_unit') }}</option>
-                                        @foreach ($units as $unit)
-                                            <option value="{{ $unit->id }}" @selected(old('brand_id', $product->unit_id ?? null) == $unit->id)>
-                                                {{ $unit->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="invalid-feedback" id="unit_id_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="cost_price" class="form-label">{{ __('messages.cost_price') }}</label>
-                                    <input type="number" name="cost_price" id="cost_price"
-                                        value="{{ $product->cost_price ?? 'N/A' }}" class="form-control" step="0.01"
-                                        min="0" required>
-                                    <div class="invalid-feedback" id="cost_price_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="selling_price"
-                                        class="form-label">{{ __('messages.selling_price') }}</label>
-                                    <input type="number" name="selling_price" id="selling_price"
-                                        value="{{ $product->selling_price ?? 'N/A' }}" class="form-control"
-                                        step="0.01" min="0" required>
-                                    <div class="invalid-feedback" id="selling_price_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="image" class="form-label">{{ __('messages.image') }}</label>
-                                    <input type="file" name="image" id="image" class="form-control"
-                                        accept="image/jpeg,image/png,image/jpg">
-                                    <div class="invalid-feedback" id="image_error"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="image" class="form-label">{{ __('messages.image_review') }}</label>
-                                    {{-- <label for="image_review" class="form-label">{{ __('messages.image_review') }}</label> --}}
-                                    <input type="file" name="image_review[]" multiple class="form-control"
-                                        accept="image/jpeg,image/png,image/jpg">
-                                    <div class="invalid-feedback" id="image_review.0_error"></div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Description</label>
-
-                                <textarea name="description" id="description" class="form-control" rows="5">{{ old('description', $product->description ?? '') }}</textarea>
-                            </div>
-
-                            <div class="mb-3 text-md-end">
-                                <a href="{{ url()->previous() }}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left"></i> Back
-                                </a>
-                                <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="bi bi-save"></i> {{ __('messages.submit') }}
-                                </button>
-                            </div>
-                        </form>
+<x-admin.page :title="__('Edit product')" :subtitle="__('Keep product information, pricing, and images up to date.')" eyebrow="Products" :back="route('products.index')">
+    <x-slot:actions><a class="btn record-button" href="{{ route('products.show', $product->id) }}"><i class="bi bi-eye" aria-hidden="true"></i>{{ __('View product') }}</a></x-slot:actions>
+    <form action="{{ route('products.update', $product->id) }}" method="POST" enctype="multipart/form-data" data-record-form data-success-url="{{ route('products.show', $product->id) }}">
+        @csrf @method('PUT')
+        <div class="record-feedback record-feedback-error" data-record-feedback tabindex="-1" role="alert" hidden></div>
+        <div class="record-layout">
+            <div class="record-stack">
+                <x-admin.panel :title="__('Product information')" :subtitle="__('The essentials used to identify this product.')" icon="bi-box-seam">
+                    <div class="record-fields">
+                        <x-admin.field name="name" :label="__('Product name')" :value="$product->name" required maxlength="191" />
+                        <x-admin.field name="code" :label="__('Product code')" :value="$product->code" required maxlength="191" :hint="__('Use a unique code for stock and sales.')" />
+                        <x-admin.field name="second_name" :label="__('Second name')" :value="$product->second_name" required maxlength="191" />
+                        <x-admin.field name="brand_id" :label="__('Brand')" required><select id="brand_id" name="brand_id" class="form-select" required><option value="">{{ __('Select a brand') }}</option>@foreach($brands as $brand)<option value="{{ $brand->id }}" @selected(old('brand_id', $product->brand_id) == $brand->id)>{{ $brand->name }}</option>@endforeach</select></x-admin.field>
+                        <x-admin.field name="category_id" :label="__('Category')" required><select id="category_id" name="category_id" class="form-select" required data-category-picker data-subcategories-url="{{ route('products.subcategories', '__ID__') }}"><option value="">{{ __('Select a category') }}</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select></x-admin.field>
+                        <x-admin.field name="subcategory_id" :label="__('Subcategory')"><select id="subcategory_id" name="subcategory_id" class="form-select"><option value="">{{ __('Select a subcategory') }}</option>@foreach($subcategories as $subcategory)<option value="{{ $subcategory->id }}" @selected(old('subcategory_id', $product->subcategory_id) == $subcategory->id)>{{ $subcategory->name }}</option>@endforeach</select></x-admin.field>
+                        <x-admin.field name="unit_id" :label="__('Unit')" required><select id="unit_id" name="unit_id" class="form-select" required>@foreach($units as $unit)<option value="{{ $unit->id }}" @selected(old('unit_id', $product->unit_id) == $unit->id)>{{ $unit->name }}</option>@endforeach</select></x-admin.field>
+                        <x-admin.field name="quality_id" :label="__('Quality')" required><select id="quality_id" name="quality_id" class="form-select" required>@foreach($qualities as $quality)<option value="{{ $quality->id }}" @selected(old('quality_id', $product->quality_id) == $quality->id)>{{ $quality->name }}</option>@endforeach</select></x-admin.field>
+                        <x-admin.field name="description" :label="__('Description')" wide><textarea class="form-control" id="description" name="description" rows="5" placeholder="{{ __('Add useful details about this product…') }}">{{ old('description', $product->description) }}</textarea></x-admin.field>
                     </div>
-                </div>
+                </x-admin.panel>
+                <x-admin.panel :title="__('Pricing & inventory')" :subtitle="__('Set prices and review current stock availability.')" icon="bi-tag">
+                    <div class="record-fields">
+                        <x-admin.field name="cost_price" :label="__('Cost price')" type="number" :value="$product->cost_price" required min="0" max="999999.99" step="0.01" />
+                        <x-admin.field name="selling_price" :label="__('Selling price')" type="number" :value="$product->selling_price" required min="0" max="999999.99" step="0.01" />
+                        <x-admin.field name="expiry_date" :label="__('Expiry date')" type="date" :value="$product->expiry_date ? \Carbon\Carbon::parse($product->expiry_date)->toDateString() : ''" />
+                        <div class="record-field"><label for="stock_display">{{ __('Available stock') }}</label><input class="form-control" id="stock_display" value="{{ $product->stock_quantity }}" readonly><small class="record-hint">{{ __('Stock is updated through purchases and sales.') }}</small></div>
+                    </div>
+                </x-admin.panel>
+                <x-admin.panel :title="__('Product images')" :subtitle="__('JPG or PNG, up to 2 MB per image.')" icon="bi-images">
+                    <div class="record-fields">
+                        <x-admin.field name="image" :label="__('Main image')"><div class="record-upload"><img class="record-upload-preview" id="product-preview" src="{{ $product->image ? Storage::url($product->image) : asset('placeholder.svg') }}" alt="{{ $product->name }}"><input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png" data-image-preview="product-preview"></div></x-admin.field>
+                        <x-admin.field name="image_review" :label="__('Gallery images')" :hint="__('Selecting new gallery images replaces the current gallery.')"><div class="record-upload"><i class="bi bi-images fs-2 text-brand" aria-hidden="true"></i><p class="record-hint mt-2">{{ trans_choice(':count current image|:count current images', $product->images->count()) }}</p><input type="file" name="image_review[]" id="image_review" class="form-control" multiple accept="image/jpeg,image/png">@if($product->images->isNotEmpty())<div class="record-thumbnails">@foreach($product->images as $image)<div class="record-thumbnail"><img src="{{ Storage::url($image->image_review) }}" alt="{{ __('Current gallery image :number', ['number' => $loop->iteration]) }}" loading="lazy"></div>@endforeach</div>@endif</div></x-admin.field>
+                    </div>
+                </x-admin.panel>
             </div>
+            <aside class="record-sidebar">
+                <section class="record-panel record-summary"><div class="record-summary-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></div><h2>{{ $product->name }}</h2><p>{{ $product->code }}</p><x-admin.status :value="$product->stock_quantity > 0 ? 'in stock' : 'out of stock'" /><dl class="record-meta"><div><dt>{{ __('Stock on hand') }}</dt><dd>{{ $product->stock_quantity }}</dd></div><div><dt>{{ __('Selling price') }}</dt><dd>{{ number_format($product->selling_price, 2) }}</dd></div><div><dt>{{ __('Gallery images') }}</dt><dd>{{ $product->images->count() }}</dd></div></dl></section>
+                <div class="record-note"><strong><i class="bi bi-info-circle" aria-hidden="true"></i> {{ __('Keep your catalog consistent') }}</strong>{{ __('Product codes must be unique. Changes to prices apply to future sales; existing sale items keep their recorded prices.') }}</div>
+            </aside>
         </div>
-    </div>
+        <x-admin.form-actions :back="route('products.index')" label="Save product" />
+    </form>
+</x-admin.page>
 @endsection
-
-@push('scripts')
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
-
-    <script>
-        ClassicEditor.create(document.querySelector('#description'), {
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', '|',
-                'link', 'bulletedList', 'numberedList', '|',
-                'blockQuote', 'insertTable', '|',
-                'undo', 'redo'
-            ],
-            table: {
-                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-            }
-        }).catch(error => {
-            console.error(error);
-        });
-
-        $(document).ready(function() {
-
-            $('#category_id').on('change', function() {
-                let categoryId = $(this).val();
-                let subcategorySelect = $('#subcategory_id');
-
-                subcategorySelect.prop('disabled', true);
-                subcategorySelect.html('<option value="">{{ __('messages.Loading') }}</option>');
-
-                if (!categoryId) {
-                    subcategorySelect.html(
-                        '<option value="">{{ __('messages.select_subcategory') }}</option>'
-                    );
-                    return;
-                }
-
-                $.ajax({
-                    url: "{{ route('products.subcategories', ':id') }}".replace(':id', categoryId),
-                    type: 'GET',
-                    success: function(data) {
-                        subcategorySelect.prop('disabled', false);
-                        subcategorySelect.html(
-                            '<option value="">{{ __('messages.select_sub_categories') }}</option>'
-                        );
-
-                        $.each(data, function(key, subcategory) {
-                            subcategorySelect.append(
-                                `<option value="${subcategory.id}">${subcategory.name}</option>`
-                            );
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-@endpush

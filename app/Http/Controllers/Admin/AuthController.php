@@ -33,7 +33,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-            if ($user->status == 0) {
+            if (!$user->isActive()) {
                 Auth::logout();
                 return back()->withErrors([
                     'login' => 'Your account access has been denied.'

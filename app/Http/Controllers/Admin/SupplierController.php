@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Companies;
 use App\Models\Groups;
 use App\Models\Warehouses;
+use App\Models\Purchase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
@@ -103,71 +105,78 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|max:255',
-            'email' => 'required|email|unique:companies,email',
-            'address' => 'required|max:255',
-            'phone' => 'required|max:20',
-            'city' => 'nullable|string|max:255',
-            'street' => 'nullable|string|max:255',
-            'number_of_houses' => 'nullable|string|max:50',
-            'logo' => 'nullable|image|max:2048',
-        ]);
-
-        $logoPath = null;
-
+        $data = $this->validatedData($request);
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $data['logo'] = $request->file('logo')->store('logos', 'public');
         }
-
-        Companies::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'city' => $request->city,
-            'number_of_houses' => $request->number_of_houses,
-            'street' => $request->street,
-            'address' => $request->address,
-            'phone' => $request->phone,
-            'group_id' => 5,
-            'group_name' => 'Supplier',
-            'logo' => $logoPath,
-        ]);
-
+        Companies::create($data + ['group_id' => 5, 'group_name' => 'Supplier']);
         return redirect()->route('suppliers.index')->with('success', __('messages.suppliers_created_successfully'));
-
-
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        //
+        $supplier = Companies::where('group_id', 5)->findOrFail($id);
+        return view('admin.suppliers.edit', compact('supplier'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $supplier = Companies::where('group_id', 5)->findOrFail($id);
+        $data = $this->validatedData($request, $supplier->id);
+        $oldLogo = $supplier->logo;
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('logos', 'public');
+        }
+        $supplier->update($data);
+        if (isset($data['logo']) && $oldLogo) {
+            Storage::disk('public')->delete($oldLogo);
+        }
+        return redirect()->route('suppliers.index')->with('success', __('messages.updated_successfully'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $this->deleteSuppliers([(int) $id]);
+        return response()->json(['success' => __('messages.supplier_deleted')]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|distinct|exists:companies,id',
+        ]);
+        $this->deleteSuppliers($data['ids']);
+        return response()->json(['success' => __('messages.supplier_deleted')]);
+    }
+
+    private function validatedData(Request $request, $id = null): array
+    {
+        return $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('companies', 'email')->ignore($id)],
+            'address' => 'required|string|max:255', 'phone' => 'required|string|max:20',
+            'city' => 'nullable|string|max:255', 'street' => 'nullable|string|max:255',
+            'number_of_houses' => 'nullable|string|max:50', 'note' => 'nullable|string|max:5000',
+            'logo' => 'nullable|image|max:2048',
+        ]);
+    }
+
+    private function deleteSuppliers(array $ids): void
+    {
+        $logos = DB::transaction(function () use ($ids) {
+            $logos = [];
+            foreach (collect($ids)->sort()->values() as $id) {
+                $supplier = Companies::where('group_id', 5)->whereKey($id)->lockForUpdate()->firstOrFail();
+                abort_if($supplier->users()->exists() || Purchase::where('supplier_id', $id)->exists(),
+                    422, __('messages.supplier_has_transactions'));
+                if ($supplier->logo) {
+                    $logos[] = $supplier->logo;
+                }
+                $supplier->delete();
+            }
+            return $logos;
+        });
+        Storage::disk('public')->delete($logos);
     }
 }

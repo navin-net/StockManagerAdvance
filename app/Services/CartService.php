@@ -2,80 +2,84 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Str;
+use App\Models\{Cart, CartItem, Products, User};
 use Illuminate\Support\Facades\DB;
-use App\Models\{Cart, CartItem, Products};
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CartService
 {
     public function getOrCreateCart($user = null, ?string $cartKey = null): Cart
     {
         if ($user) {
-            return Cart::firstOrCreate(['user_id' => $user->id]);
+            abort_unless($user->isActive(), 403, 'Account disabled');
+            return DB::transaction(function () use ($user, $cartKey) {
+                // Serialize cart creation and guest-cart adoption for this user.
+                User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+                $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+                if ($cartKey) {
+                    $guest = Cart::where('cart_key', $cartKey)->whereNull('user_id')->lockForUpdate()->firstOrFail();
+                    foreach ($guest->items()->orderBy('product_id')->get() as $item) {
+                        $this->addToCart($cart, Products::findOrFail($item->product_id), $item->quantity);
+                    }
+                    $guest->items()->delete();
+                    $guest->delete();
+                }
+                return $cart;
+            });
         }
 
-        if (empty($cartKey)) {
-            $cartKey = Str::uuid()->toString();
+        if ($cartKey) {
+            // A caller cannot choose a predictable key for a newly created cart.
+            return Cart::where('cart_key', $cartKey)->whereNull('user_id')->firstOrFail();
         }
-
-        return Cart::firstOrCreate(['cart_key' => $cartKey]);
+        return Cart::create(['cart_key' => Str::uuid()->toString()]);
     }
 
     public function addToCart(Cart $cart, Products $product, int $quantity = 1)
     {
-        if ($product->stock_quantity < $quantity) {
-            throw new \Exception("Insufficient stock for product: " . $product->name);
-        }
-
         return DB::transaction(function () use ($cart, $product, $quantity) {
-
-            $cartItem = CartItem::where('cart_id', $cart->id)
-                                ->where('product_id', $product->id)
-                                ->first();
-
-            if ($cartItem) {
-                // Update existing item
-                $newQty = $cartItem->quantity + $quantity;
-                if ($newQty > $product->stock_quantity) {
-                    $newQty = $product->stock_quantity;
-                }
-                $cartItem->update([
-                    'quantity' => $newQty,
-                    'price'    => $product->selling_price,
-                ]);
-                return $cartItem;
-            } else {
-                // Create new item
-                $finalQty = min($quantity, $product->stock_quantity);
-                return CartItem::create([
-                    'cart_id'    => $cart->id,
-                    'product_id' => $product->id,
-                    'quantity'   => $finalQty,
-                    'price'      => $product->selling_price,
-                ]);
+            Cart::whereKey($cart->id)->lockForUpdate()->firstOrFail();
+            $product = Products::whereKey($product->id)->lockForUpdate()->firstOrFail();
+            $item = $cart->items()->where('product_id', $product->id)->first();
+            $newQuantity = ($item?->quantity ?? 0) + $quantity;
+            if ($quantity < 1 || $newQuantity > $product->stock_quantity) {
+                throw ValidationException::withMessages(['quantity' => 'Insufficient stock for ' . $product->name]);
             }
+            return $cart->items()->updateOrCreate(['product_id' => $product->id], [
+                'quantity' => $newQuantity,
+                'price' => $product->selling_price,
+            ]);
         });
     }
 
     public function updateQuantity(CartItem $item, int $quantity): CartItem
     {
-        $quantity = max(1, $quantity);
-
-        if ($quantity > $item->product->stock_quantity) {
-            $quantity = $item->product->stock_quantity;
-        }
-
-        $item->update(['quantity' => $quantity]);
-        return $item;
+        return DB::transaction(function () use ($item, $quantity) {
+            Cart::whereKey($item->cart_id)->lockForUpdate()->firstOrFail();
+            $item = CartItem::findOrFail($item->id);
+            $product = Products::whereKey($item->product_id)->lockForUpdate()->firstOrFail();
+            if ($quantity < 1 || $quantity > $product->stock_quantity) {
+                throw ValidationException::withMessages(['quantity' => 'Insufficient stock']);
+            }
+            $item->update(['quantity' => $quantity, 'price' => $product->selling_price]);
+            return $item;
+        });
     }
 
     public function removeItem(CartItem $item): bool
     {
-        return $item->delete();
+        return DB::transaction(function () use ($item) {
+            Cart::whereKey($item->cart_id)->lockForUpdate()->firstOrFail();
+            return (bool) $item->delete();
+        });
     }
 
     public function clearCart(Cart $cart): void
     {
-        $cart->items()->delete();
+        DB::transaction(function () use ($cart) {
+            Cart::whereKey($cart->id)->lockForUpdate()->firstOrFail();
+            $cart->items()->delete();
+        });
     }
 }

@@ -69,7 +69,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:1|confirmed',
+            'password' => 'required|string|min:8|confirmed',
             'group_id' => 'required|exists:groups,id',
         ]);
 
@@ -77,7 +77,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'group_id' => $request->group_id,
-            'company_id' => 2, // Ensure company_id is included
+            'company_id' => null,
             'password' => Hash::make($request->password),
         ]);
 
@@ -95,8 +95,9 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
-            // 'email' => 'required|email|unique:users,email',
-            // 'password' => 'required|min:6|confirmed',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+            'status' => 'sometimes|in:active,inactive,1,0',
             'group_id' => 'required|exists:groups,id',
         ]);
 
@@ -105,8 +106,12 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'group_id' => $request->group_id,
-            'password' => Hash::make($request->password)
+            ...($request->filled('password') ? ['password' => Hash::make($request->password)] : []),
+            ...($request->has('status') ? ['status' => $request->status] : []),
         ]);
+        if (!$user->isActive() || $request->filled('password')) {
+            $user->tokens()->delete();
+        }
         return response()->json(['success' => 'User updated successfully.']);
     }
 

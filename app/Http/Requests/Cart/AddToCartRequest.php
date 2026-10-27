@@ -24,7 +24,7 @@ class AddToCartRequest extends FormRequest
         return [
             'product_id' => 'required|exists:products,id',
             'quantity'   => 'integer|min:1|max:100',
-            'cart_key'   => 'nullable|string|max:255',
+            'cart_key'   => 'nullable|uuid',
         ];
     }
 }

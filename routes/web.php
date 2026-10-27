@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\Shop\CartController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/cartas', [CartController::class, 'getCartByToken']);
+Route::get('/cartas', [CartController::class, 'index']);
 
 // Route::get('/',function(){
 //     return view('admin-v2.dashbord.index');
@@ -33,16 +33,12 @@ Route::get('/checkout', function () {
 });
 
 
-Route::get('/testingsa',[BaseController::class, 'testing']);
-
-Route::get('/users/import', [BaseController::class, 'showImportForm'])
-    ->name('users.import.form');
-Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
-
-Route::get('/customer/import', [BaseController::class, 'showImportGroup']);
-Route::post('/customer/import', [BaseController::class, 'importExcelGroup']);
-
-Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('product.image.delete');
+Route::middleware(['auth', 'admin', 'can:manage-users'])->group(function () {
+    Route::get('/users/import', [BaseController::class, 'showImportForm'])->name('users.import.form');
+    Route::post('/users/import', [BaseController::class, 'import'])->name('users.import');
+});
+Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])
+    ->middleware(['auth', 'admin'])->name('product.image.delete');
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
@@ -53,23 +49,10 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::post('/cookie/accept', [CookieController::class, 'accept'])
     ->name('cookie.accept');
 Route::get('/lang/{lang}', [LanguageController::class, 'switch']);
-Route::get('/product-alerts', [BaseController::class, 'getAlerts']);
+Route::get('/product-alerts', [BaseController::class, 'getAlerts'])->middleware(['auth', 'admin']);
 
 Route::get('/customer-display', fn () => view('admin.pos.customer-display'))
      ->middleware('auth')->name('customer.display');
-
-
-Route::get('/test-mail', function () {
-    Mail::raw('Test Email From Laravel', function ($message) {
-        $message->to('naaven60@gmail.com')
-                ->subject('Laravel Mail Test');
-    });
-
-    return 'Mail Sent!';
-});
-
-
-
 
 
 require __DIR__ . '/admin.php';

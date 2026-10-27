@@ -28,15 +28,19 @@ class UsersImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithUpsert
             return null;
         }
 
+        validator($row, ['email' => 'required|email|max:255', 'name' => 'nullable|string|max:255'])->validate();
+
         $user = User::where('email', $row['email'])->first();
 
         if ($user) {
             $this->messages[] = "Data already exists: {$row['email']}";
         } else {
             User::create([
-                'name'     => $row['name'] ?? null,
+                'name'     => $row['name'] ?? $row['email'],
+                'group_id' => 4,
+                'status' => 'active',
                 'email'    => $row['email'],
-                'password' => bcrypt('password'),
+                'password' => bcrypt(\Illuminate\Support\Str::random(64)),
             ]);
 
             $this->messages[] = "Data inserted successfully: {$row['email']}";

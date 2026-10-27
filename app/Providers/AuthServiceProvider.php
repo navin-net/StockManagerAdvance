@@ -21,6 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Gate::define('manage-users', function ($user) {
+            return $user->isActive() && (int) $user->group_id === 1;
+        });
     }
 }

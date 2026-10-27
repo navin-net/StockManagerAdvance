@@ -1,7 +1,7 @@
 @php
     $isPosPage = request()->is('admin/pos*');
     $hdUser = Auth::user();
-    $hdAvatar = $hdUser && $hdUser->avatar ? asset('storage/' . $hdUser->avatar) : asset('assets/img/profile-img.jpg');
+    $hdAvatar = $hdUser?->avatar_url;
     $locale = app()->getLocale();
     $flag = $locale == 'en' ? asset('flag/gb-eng.jpg') : asset('flag/kh.jpg');
 @endphp

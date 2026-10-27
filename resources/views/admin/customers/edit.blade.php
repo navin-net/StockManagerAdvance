@@ -1,43 +1,17 @@
 @extends('admin.layouts.master')
-@section('title', __('messages.customers_list'))
 @section('content')
-<div class="container-fluid py-4">
-<div class="row align-items-center mb-4">
-
-    <div class="col-md-6">
-        <div class="pagetitle">
-            <h1 class="h3 fw-bold mb-2">{{ $pageTitle }}</h1>
-
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    @foreach ($breadcrumbs as $breadcrumb)
-                        @if (!$breadcrumb['active'])
-                            <li class="breadcrumb-item">
-                                <a href="{{ $breadcrumb['url'] }}" class="text-decoration-none">
-                                    {{ $breadcrumb['label'] }}
-                                </a>
-                            </li>
-                        @else
-                            <li class="breadcrumb-item active text-muted" aria-current="page">
-                                {{ $breadcrumb['label'] }}
-                            </li>
-                        @endif
-                    @endforeach
-                </ol>
-            </nav>
-        </div>
-    </div>
-
-    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-        <small class="text-muted fw-semibold">
-            {{ __('messages.ip_address') }}:
-        </small>
-        <span class="fw-semibold text-primary">
-            {{ auth()->user()->ip_address }}
-        </span>
-    </div>
-
+<div class="container py-4">
+    <h1 class="h3">Edit customer</h1>
+    @if ($errors->any())
+        <div class="alert alert-danger"><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+    @endif
+    <form method="POST" action="{{ route('customers.update', $customer->id) }}">
+        @csrf @method('PUT')
+        @foreach (['name', 'email', 'phone', 'address', 'city', 'street', 'number_of_houses'] as $field)
+            <label class="form-label mt-3" for="{{ $field }}">{{ ucfirst(str_replace('_', ' ', $field)) }}</label>
+            <input id="{{ $field }}" name="{{ $field }}" class="form-control" value="{{ old($field, $customer->$field) }}" {{ in_array($field, ['name', 'email', 'phone', 'address']) ? 'required' : '' }}>
+        @endforeach
+        <button class="btn btn-primary mt-3">Save customer</button>
+    </form>
 </div>
-
-
 @endsection

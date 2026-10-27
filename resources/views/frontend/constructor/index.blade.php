@@ -1863,7 +1863,7 @@
     <section id="showcase">
         <div class="showcase-intro fu">
             <div>
-                <div class="stag">Portfolio</div>
+                <div class="stag">Projects</div>
                 <h2 class="sec-title">RECENT <em>PROJECTS</em></h2>
             </div>
             <span class="showcase-count">SHOWING 4 OF 180+ PROJECTS</span>

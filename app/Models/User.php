@@ -60,6 +60,18 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function getAvatarUrlAttribute(): string
+    {
+        return $this->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->avatar)
+            ? asset('storage/' . $this->avatar)
+            : asset('placeholder.svg');
+    }
+
+    public function isActive(): bool
+    {
+        return in_array(strtolower((string) $this->status), ['1', 'active'], true);
+    }
+
     public function groups(): BelongsTo
     {
         return $this->belongsTo(Groups::class, 'group_id');

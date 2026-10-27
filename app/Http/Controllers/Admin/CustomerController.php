@@ -134,7 +134,9 @@ class CustomerController extends Controller
 
     public function edit($id)
     {
+        $customer = Companies::where('group_id', 4)->findOrFail($id);
         return view('admin.customers.edit', [
+            'customer' => $customer,
             'pageTitle' => __('messages.edit'),
             'breadcrumbs' => [
                 ['label' => __('messages.dashboard'), 'url' => '/admin/dashboard', 'active' => false],
@@ -146,4 +148,84 @@ class CustomerController extends Controller
 
 
 
+    public function update(Request $request, $id)
+    {
+        $customer = Companies::where('group_id', 4)->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'email' => 'required|email|unique:companies,email,' . $customer->id,
+            'address' => 'required|string|max:255', 'phone' => 'required|string|max:20',
+            'city' => 'nullable|string|max:255', 'street' => 'nullable|string|max:255',
+            'number_of_houses' => 'nullable|string|max:50',
+        ]);
+        $customer->update($data);
+        return redirect()->route('customers.index')->with('success', 'Customer updated');
+    }
+
+    public function destroy($id)
+    {
+        DB::transaction(function () use ($id) {
+            $customer = Companies::where('group_id', 4)->whereKey($id)->lockForUpdate()->firstOrFail();
+            abort_if($customer->users()->exists() || \App\Models\Sale::where('customer_id', $id)->exists(), 422, 'Customers with users or sales must be retained');
+            $customer->delete();
+        });
+        return response()->json(['success' => 'Customer deleted']);
+    }
+
+    public function listUsers($id)
+    {
+        $customer = Companies::where('group_id', 4)->with('users')->findOrFail($id);
+        return view('admin.customers.users', compact('customer'));
+    }
+
+    public function addUser($id)
+    {
+        $customer = Companies::where('group_id', 4)->findOrFail($id);
+        return view('admin.customers.user-form', compact('customer'));
+    }
+
+    public function storeUser(Request $request, $id)
+    {
+        $customer = Companies::where('group_id', 4)->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+        $customer->users()->create($data + ['group_id' => 4, 'status' => 'active']);
+        return redirect()->route('customers.index')->with('success', 'Customer account created');
+    }
+
+    public function editUser($id)
+    {
+        $user = \App\Models\User::where('group_id', 4)->whereHas('company', fn ($q) => $q->where('group_id', 4))->findOrFail($id);
+        $customer = $user->company;
+        return view('admin.customers.user-form', compact('customer', 'user'));
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = \App\Models\User::where('group_id', 4)->whereHas('company', fn ($q) => $q->where('group_id', 4))->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+        $user->update($data);
+        if (isset($data['password'])) {
+            $user->tokens()->delete();
+        }
+        return redirect()->route('customers.index')->with('success', 'Customer account updated');
+    }
+
+    public function deleteUser($id)
+    {
+        $user = \App\Models\User::where('group_id', 4)->whereHas('company', fn ($q) => $q->where('group_id', 4))->findOrFail($id);
+        abort_if(\App\Models\Sale::where('user_id', $user->id)->exists(), 422, 'Accounts with sales must be retained');
+        DB::transaction(function () use ($user) {
+            $user->tokens()->delete();
+            $user->delete();
+        });
+        return response()->json(['success' => 'Customer account deleted']);
+    }
 }

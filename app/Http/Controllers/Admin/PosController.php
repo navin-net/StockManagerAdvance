@@ -51,25 +51,19 @@ class PosController extends BaseController
             'cash_in_hand' => 'required|numeric|min:0',
         ]);
 
-        // Check if already open
-        $existing = DB::table('pos_registers')
-            ->where('user_id', auth()->id())
-            ->where('status', 'open')
-            ->first();
-
-        if ($existing) {
-            return redirect()->route('pos.index');
-        }
-
-        // Create register
-        $registerId = DB::table('pos_registers')->insertGetId([
-            'user_id' => auth()->id(),
-            'cash_in_hand' => $request->cash_in_hand,
-            'status' => 'open',
-            'opened_at' => now(),
-        ]);
-        DB::table('pos_registers')->where('id', $registerId)->update(['reference' => 'POS-' . now()->format('Ymd') . '-' . $registerId]);
-
+        $registerId = DB::transaction(function () use ($request) {
+            \App\Models\User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
+            $existing = DB::table('pos_registers')->where('user_id', auth()->id())->where('status', 'open')->lockForUpdate()->first();
+            if ($existing) {
+                return $existing->id;
+            }
+            $id = DB::table('pos_registers')->insertGetId([
+                'user_id' => auth()->id(), 'cash_in_hand' => round($request->cash_in_hand, 2),
+                'total_cash' => 0, 'status' => 'open', 'opened_at' => now(),
+            ]);
+            DB::table('pos_registers')->where('id', $id)->update(['reference' => 'POS-' . now()->format('Ymd') . '-' . $id]);
+            return $id;
+        });
 
         session([
             'register_opened' => true,
@@ -89,22 +83,14 @@ class PosController extends BaseController
             'total_cash' => 'required|numeric|min:0',
         ]);
 
-        $register = DB::table('pos_registers')
-            ->where('user_id', auth()->id())
-            ->where('status', 'open')
-            ->first();
-
-        if (!$register) {
-            return redirect('/admin')
-                ->with('error', 'No open register found.');
-        }
-
-        DB::table('pos_registers')->where('id', $register->id)->update([
-            'total_cash' => $validated['total_cash'],
-            'closed_by' => auth()->id(),
-            'closed_at' => now(),
-            'status' => 'closed',
-        ]);
+        DB::transaction(function () use ($validated) {
+            $register = DB::table('pos_registers')->where('user_id', auth()->id())->where('status', 'open')->lockForUpdate()->first();
+            abort_unless($register, 422, 'No open register found');
+            DB::table('pos_registers')->where('id', $register->id)->update([
+                'total_cash' => round($validated['total_cash'], 2), 'closed_by' => auth()->id(),
+                'closed_at' => now(), 'status' => 'closed',
+            ]);
+        });
 
         // Clear session
         session()->forget(['register_opened', 'cash_register_id']);
@@ -124,7 +110,7 @@ class PosController extends BaseController
 
 
         if (!$register) {
-            return redirect()->route('pos.openRegister');
+            return redirect()->route('pos.open-register');
         }
 
         session([
@@ -149,7 +135,7 @@ class PosController extends BaseController
             ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
             ->get();
 
-        $id = PosRegisters::where('user_id', auth()->id())->first()->id;
+        $id = $register->id;
 
 //        dd($id);
 
@@ -159,7 +145,10 @@ class PosController extends BaseController
         $customers = Companies::where('group_id', 4)->get();
         $warehouse = Warehouses::where('id',1)->get();
 
-        $total = Sale::where('cash_register_id', $id)->sum('total_amount');
+        $total = Payment::whereHas('sale', fn ($query) => $query->where('cash_register_id', $id))
+            ->where('method', 'cash')->where('status', 'completed')->sum('amount');
+        $total += DB::table('register_cash_movements')->where('register_id', $id)
+            ->selectRaw("COALESCE(SUM(CASE WHEN type = 'in' THEN amount ELSE -amount END), 0) as net")->value('net');
 
 //        dd($total);
 
@@ -182,147 +171,101 @@ class PosController extends BaseController
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'customer_id' => 'nullable|exists:companies,id',
-//            'warehouse_id' => 'required',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
             'cart' => 'required|array|min:1',
-            'cart.*.id' => 'required|exists:products,id',
-            'cart.*.qty' => 'required|integer|min:1',
+            'cart.*.id' => 'required|integer|distinct|exists:products,id',
+            'cart.*.qty' => 'required|integer|min:1|max:1000000',
             'payment_method' => 'required|in:cash,card,qr,bank',
-            'amount_paid' => 'required|numeric|gt:0',
+            'amount_paid' => 'required|numeric|gt:0|max:99999999.99',
             'discount_type' => 'nullable|in:fixed,percentage',
-            'discount_value' => 'nullable|numeric|min:0',
+            'discount_value' => 'nullable|numeric|min:0|max:99999999.99',
             'note' => 'nullable|string|max:500',
         ]);
-
-        $sale = DB::transaction(function () use ($request) {
-
-            // ── Step 1: Lock products & validate stock ────────────
-            $rows = [];
+        if (($data['discount_type'] ?? 'fixed') === 'percentage' && ($data['discount_value'] ?? 0) > 100) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['discount_value' => 'Percentage must be between 0 and 100']);
+        }
+        $sale = DB::transaction(function () use ($data) {
+            $register = DB::table('pos_registers')->where('user_id', auth()->id())->where('status', 'open')->lockForUpdate()->first();
+            abort_unless($register, 422, 'Open a register before making a sale');
+            $products = Products::whereIn('id', array_column($data['cart'], 'id'))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $subtotal = 0;
-
-            foreach ($request->cart as $item) {
-                $product = Products::lockForUpdate()->findOrFail($item['id']);
-
+            foreach ($data['cart'] as $item) {
+                $product = $products[$item['id']];
                 if ($product->stock_quantity < $item['qty']) {
-                    throw new \Exception("Insufficient stock for: {$product->name}");
+                    throw \Illuminate\Validation\ValidationException::withMessages(['cart' => 'Insufficient stock for ' . $product->name]);
                 }
-
-                $lineTotal = round($product->selling_price * $item['qty'], 2);
-                $subtotal += $lineTotal;
-                $rows[] = [
-                    'product' => $product,
-                    'qty' => (int) $item['qty'],
-                    'lineTotal' => $lineTotal,
-                ];
+                $subtotal += round($product->selling_price * $item['qty'], 2);
             }
-
-            // ── Step 2: Calculate totals ──────────────────────────
-            $discountType = $request->discount_type ?? 'fixed';
-            $discountValue = (float) ($request->discount_value ?? 0);
-            $discountAmt = $discountType === 'percentage'
-                ? round($subtotal * $discountValue / 100, 2)
-                : min($discountValue, $subtotal);
-
-            $afterDiscount = round($subtotal - $discountAmt, 2);
-//            $tax = round($afterDiscount * 0.08, 2);
-//            $totalAmount = round($afterDiscount + $tax, 2);
-            $totalAmount = round($afterDiscount , 2);
-
-            $amountPaid = (float) $request->amount_paid;
-            $posBalance = round($amountPaid - $totalAmount, 2);
-            $paymentStatus = $amountPaid >= $totalAmount ? 'completed' : 'pending';
-
-            // ── Step 3: Update the pending sale from session ──────
-            $sale = Sale::find(session('sale_id'));
-
-            if ($sale && $sale->status === 'pending') {
-                $sale->update([
-                    'customer_id'     => $request->customer_id ?? $sale->customer_id,
-                    'warehouse_id'    => $request->warehouse_id ?? $sale->warehouse_id,
-                    'sale_type'       => 'pos',
-                    'subtotal'        => $subtotal,       // ✅ saved
-                    'discount'        => $discountAmt,    // ✅ saved
-                    'discount_type'   => $discountType,   // ✅ saved
-                    'discount_value'  => $discountValue,  // ✅ saved
-                    'total_amount'    => $totalAmount,
-                    'status'          => 'completed',
-                    'payment_status'  => $paymentStatus,
-                    'date'            => now()->toDateString(),
-                ]);
-            } else {
-                $sale = Sale::create([
-                    'reference'       => Sale::generateReference(),
-                    'customer_id'     => $request->customer_id ?? 4,
-                    'cash_register_id'=> session('cash_register_id'),
-                    'user_id'         => auth()->id(),
-                    'warehouse_id'    => $request->warehouse_id,
-
-                    'subtotal'        => $subtotal,
-                    'discount'        => $discountAmt,
-                    'discount_type'   => $discountType,
-                    'discount_value'  => $discountValue,
-
-
-                    'total_amount'    => $totalAmount,
-                    'status'          => 'completed',
-                    'payment_status'  => $paymentStatus,
-                    'sale_type'       => 'pos',
-                    'date'            => now()->toDateString(),
-                ]);
+            if ($subtotal > 99999999.99) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['cart' => 'Sale total is too large']);
             }
-
-            // ── Step 4: Insert sale items & decrement stock ───────
-            foreach ($rows as $row) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $row['product']->id,
-                    'product_name' => $row['product']->name,
-                    'sale_price' => $row['product']->selling_price,
-                    'quantity' => $row['qty'],
-                    'subtotal' => $row['lineTotal'],
-                ]);
-
-                $row['product']->decrement('stock_quantity', $row['qty']);
+            $type = $data['discount_type'] ?? 'fixed';
+            $value = $data['discount_value'] ?? 0;
+            $discount = $type === 'percentage' ? round($subtotal * $value / 100, 2) : min(round($value, 2), $subtotal);
+            $total = round($subtotal - $discount, 2);
+            $tendered = round($data['amount_paid'], 2);
+            $applied = min($tendered, $total);
+            $change = max(0, round($tendered - $total, 2));
+            if ($data['payment_method'] !== 'cash' && $change > 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['amount_paid' => 'Noncash payments cannot exceed the total']);
             }
-
-            // ── Step 5: Record payment ────────────────────────────
-            Payment::create([
-                'sale_id' => $sale->id,
-                'reference' => $sale->reference,
-                'method' => $request->payment_method,
-                'amount' => $amountPaid,
-                'pos_paid' => $amountPaid,
-                'pos_balance' => $posBalance,
-                'paid_at' => now(),
-                'note' => $request->note,
-                'created_by' => auth()->id(),
+            $sale = Sale::create([
+                'reference' => Sale::generateReference(),
+                'customer_id' => $data['customer_id'] ?? null,
+                'warehouse_id' => $data['warehouse_id'] ?? null,
+                'cash_register_id' => $register->id,
+                'user_id' => auth()->id(), 'sale_type' => 'pos',
+                'subtotal' => $subtotal, 'discount' => $discount,
+                'discount_type' => $type, 'discount_value' => $value,
+                'total_amount' => $total, 'status' => 'completed',
+                'payment_status' => $applied >= $total ? 'completed' : 'partial',
+                'payment_method' => $data['payment_method'], 'date' => now()->toDateString(),
             ]);
-
-
-            if ($request->payment_method === 'cash') {
-                DB::table('pos_registers')
-                    ->where('id', session('cash_register_id'))
-                    ->update([
-                        'total_cash' => DB::raw("total_cash + {$amountPaid}"),
-                        'cash_in_hand' => DB::raw("cash_in_hand - {$posBalance}")
-                    ]);
+            foreach ($data['cart'] as $item) {
+                $product = $products[$item['id']];
+                $sale->items()->create([
+                    'product_id' => $product->id, 'product_name' => $product->name,
+                    'quantity' => $item['qty'], 'sale_price' => $product->selling_price,
+                    'subtotal' => round($product->selling_price * $item['qty'], 2),
+                ]);
+                $product->decrement('stock_quantity', $item['qty']);
             }
-
-            // ── Step 6: Clear sale_id so index creates a new pending sale ──
+            $sale->payments()->create([
+                'reference' => $sale->reference, 'method' => $data['payment_method'],
+                'amount' => $applied, 'pos_paid' => $tendered, 'pos_balance' => $change,
+                'status' => 'completed', 'paid_at' => now(), 'created_by' => auth()->id(),
+            ]);
+            if ($data['payment_method'] === 'cash') {
+                DB::table('pos_registers')->where('id', $register->id)->update(['total_cash' => round(($register->total_cash ?? 0) + $applied, 2)]);
+            }
             session()->forget('sale_id');
-
             return $sale;
-        });
-
-
-//        die($sale);
+        }, 3);
         return response()->json([
-            'success' => true,
-            'sale_id' => $sale->id,
-            'reference' => $sale->reference,
-            'receipt_url' => route('pos.receipt', $sale->id),
+            'success' => true, 'sale_id' => $sale->id,
+            'reference' => $sale->reference, 'receipt_url' => route('pos.receipt', $sale->id),
         ]);
+    }
+
+    public function addCash(Request $request)
+    {
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:0.01|max:99999999.99',
+            'type' => 'sometimes|in:in,out',
+            'reason' => 'required|string|max:255',
+        ]);
+        DB::transaction(function () use ($data) {
+            $register = DB::table('pos_registers')->where('user_id', auth()->id())->where('status', 'open')->lockForUpdate()->first();
+            abort_unless($register, 422, 'No open register');
+            DB::table('register_cash_movements')->insert([
+                'register_id' => $register->id, 'user_id' => auth()->id(),
+                'type' => $data['type'] ?? 'in', 'amount' => round($data['amount'], 2),
+                'reason' => $data['reason'], 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        });
+        return back()->with('success', 'Cash movement recorded');
     }
 
 

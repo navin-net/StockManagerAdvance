@@ -40,12 +40,13 @@ class ReportsController extends Controller
         $products = DB::table('sale_items')
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->join('products', 'products.id', '=', 'sale_items.product_id')
+            ->where('sales.status', 'completed')
             ->whereBetween('sales.date', [$start->toDateString(), $end->toDateString()])
             ->select(
                 'products.id', 'products.name', 'products.code',
-                DB::raw('SUM(sma_sale_items.quantity) as units_sold'),
-                DB::raw('SUM(sma_sale_items.quantity * sma_sale_items.sale_price) as revenue'),
-                DB::raw('COUNT(DISTINCT sma_sales.id) as order_count')
+                DB::raw('SUM(' . DB::connection()->getQueryGrammar()->wrap('sale_items.quantity') . ') as units_sold'),
+                DB::raw('SUM(' . DB::connection()->getQueryGrammar()->wrap('sale_items.quantity') . ' * ' . DB::connection()->getQueryGrammar()->wrap('sale_items.sale_price') . ') as revenue'),
+                DB::raw('COUNT(DISTINCT ' . DB::connection()->getQueryGrammar()->wrap('sales.id') . ') as order_count')
             )
             ->groupBy('products.id', 'products.name', 'products.code')
             ->orderByDesc('units_sold')
@@ -54,7 +55,7 @@ class ReportsController extends Controller
         $summary = [
             'units' => (int) $products->sum('units_sold'),
             'revenue' => (float) $products->sum('revenue'),
-            'orders' => (int) DB::table('sales')
+            'orders' => (int) DB::table('sales')->where('status', 'completed')
                 ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
                 ->whereExists(function ($query) {
                     $query->selectRaw('1')->from('sale_items')->whereColumn('sale_items.sale_id', 'sales.id');
@@ -68,8 +69,8 @@ class ReportsController extends Controller
     public function index(Request $request)
     {
         $year = (int) $request->input('year', now()->year);
-        $sales = Sale::with('items')->whereYear('date', $year)->get();
-        $purchases = Purchase::with('items')->whereYear('date', $year)->get();
+        $sales = Sale::with('items')->where('status', '!=', 'cancelled')->whereYear('date', $year)->get();
+        $purchases = Purchase::with('items')->where('status', '!=', 'cancelled')->whereYear('date', $year)->get();
 
         $salesByMonth = $sales->groupBy(fn ($sale) => (int) \Carbon\Carbon::parse($sale->date)->month);
         $purchasesByMonth = $purchases->groupBy(fn ($purchase) => (int) \Carbon\Carbon::parse($purchase->date)->month);
@@ -101,7 +102,7 @@ class ReportsController extends Controller
             [$year, $monthNumber] = explode('-', $month);
         }
 
-        $sales = Sale::with(['customer', 'payments', 'items'])
+        $sales = Sale::with(['customer', 'payments', 'items'])->where('status', '!=', 'cancelled')
             ->whereYear('date', $year)
             ->whereMonth('date', $monthNumber)
             ->when($request->filled('warehouse_id'), fn ($q) => $q->where('warehouse_id', $request->warehouse_id))
@@ -111,7 +112,7 @@ class ReportsController extends Controller
             ->get();
 
         $totalSales = $sales->sum('total_amount');
-        $totalPaid = $sales->sum(fn ($sale) => $sale->payments->sum('amount'));
+        $totalPaid = $sales->sum(fn ($sale) => $sale->payments->where('status', 'completed')->sum('amount'));
 
         $dailyGrouped = $sales->groupBy(fn ($sale) => $sale->date->format('Y-m-d'));
         $daily = [
@@ -128,7 +129,7 @@ class ReportsController extends Controller
         ];
 
         $paymentStatus = [
-            'paid' => $sales->where('payment_status', 'paid')->count(),
+            'paid' => $sales->whereIn('payment_status', ['paid', 'completed'])->count(),
             'pending' => $sales->where('payment_status', 'pending')->count(),
         ];
 
@@ -154,13 +155,14 @@ class ReportsController extends Controller
 
     public function dailySalesReport(Request $request)
     {
-        $date = $request->input('created_at', now()->format('Y-m-d'));
+        $request->validate(['date' => 'nullable|date_format:Y-m-d', 'created_at' => 'nullable|date_format:Y-m-d']);
+        $date = $request->input('date', $request->input('created_at', now()->format('Y-m-d')));
 
         $sales = $this->getFilteredDailySales($request, $date);
 
         // ----- Summary cards -----
         $totalSales = $sales->sum('total_amount');
-        $totalPaid = $sales->sum(fn($sale) => $sale->payments->sum('amount'));
+        $totalPaid = $sales->sum(fn($sale) => $sale->payments->where('status', 'completed')->sum('amount'));
 
         $summary = [
             'total_sales' => $totalSales,
@@ -205,11 +207,12 @@ class ReportsController extends Controller
     }
     public function dailySalesReportPdf(Request $request)
     {
+        $request->validate(['date' => 'nullable|date_format:Y-m-d']);
         $date  = $request->input('date', now()->format('Y-m-d'));
         $sales = $this->getFilteredDailySales($request, $date);
 
         $totalSales = $sales->sum('total_amount');
-        $totalPaid  = $sales->sum(fn ($sale) => $sale->payments->sum('amount'));
+        $totalPaid  = $sales->sum(fn ($sale) => $sale->payments->where('status', 'completed')->sum('amount'));
 
         $summary = [
             'total_sales'   => $totalSales,
@@ -224,7 +227,7 @@ class ReportsController extends Controller
     }
     private function getFilteredDailySales(Request $request, string $date)
     {
-        return Sale::with(['customer', 'payments'])
+        return Sale::with(['customer', 'payments'])->where('status', '!=', 'cancelled')
             ->whereDate('date', $date)
             ->when($request->filled('warehouse_id'), fn ($q) => $q->where('warehouse_id', $request->warehouse_id))
             ->when($request->filled('customer_id'), fn ($q) => $q->where('customer_id', $request->customer_id))
@@ -235,4 +238,40 @@ class ReportsController extends Controller
 
 
 
+    public function monthly_purchases(Request $request)
+    {
+        $data = $request->validate(['month' => 'nullable|date_format:Y-m']);
+        $month = $data['month'] ?? now()->format('Y-m');
+        $date = \Carbon\Carbon::createFromFormat('!Y-m', $month);
+        $purchases = Purchase::with('supplier', 'payments')->where('status', '!=', 'cancelled')
+            ->whereBetween('date', [$date->toDateString(), $date->copy()->endOfMonth()->toDateString()])->get();
+        return view('admin.reports.purchases', ['purchases' => $purchases, 'period' => $month]);
+    }
+
+    public function dailyPurchasesReport(Request $request)
+    {
+        [$purchases, $date] = $this->dailyPurchases($request);
+        return view('admin.reports.purchases', ['purchases' => $purchases, 'period' => $date]);
+    }
+
+    public function dailyPurchasesReportPdf(Request $request)
+    {
+        [$purchases, $date] = $this->dailyPurchases($request);
+        return Pdf::loadView('admin.reports.purchases_pdf', ['purchases' => $purchases, 'period' => $date])->stream('daily-purchases-' . $date . '.pdf');
+    }
+
+    public function openRegisterReport(Request $request)
+    {
+        $data = $request->validate(['status' => 'nullable|in:open,closed']);
+        $registers = \App\Models\PosRegisters::with('user')->when(isset($data['status']), fn ($q) => $q->where('status', $data['status']))->latest('opened_at')->paginate(50);
+        return view('admin.reports.registers', compact('registers'));
+    }
+
+    private function dailyPurchases(Request $request): array
+    {
+        $data = $request->validate(['date' => 'nullable|date_format:Y-m-d', 'supplier_id' => 'nullable|exists:companies,id']);
+        $date = $data['date'] ?? now()->toDateString();
+        return [Purchase::with('supplier', 'payments')->where('status', '!=', 'cancelled')->whereDate('date', $date)
+            ->when(isset($data['supplier_id']), fn ($q) => $q->where('supplier_id', $data['supplier_id']))->get(), $date];
+    }
 }

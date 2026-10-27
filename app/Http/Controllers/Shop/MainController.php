@@ -9,23 +9,6 @@ class MainController extends Controller
 {
 
 
-    public function index()
-    {
-        return view('frontend.index');
-    }
-
-
-    public function portfolio()
-    {
-        return view('frontend.portfolio.index');
-    }
-
-
-    public function register()
-    {
-        return view('frontend.portfolio.auth.register');
-    }
-
     public function store(Request $request)
     {
 
